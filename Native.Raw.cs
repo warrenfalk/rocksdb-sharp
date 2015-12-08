@@ -1,0 +1,1194 @@
+﻿/*
+    This file is the lowest level interface between the unmanged RocksDB C API and managed code.
+    This is the lowest level access exposed by this library, and probably the lowest level possible.
+
+    Most of this file derives directly from the C API header exported by RocksDB.
+    In particular, it was originally derived from version ccc8c10
+    https://github.com/facebook/rocksdb/blob/ccc8c10/include/rocksdb/c.h
+    And this should be treated as an ongoing "port" of that file into idomatic C#.
+
+    This file should therefore contain no managed wrapper functions.
+    It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
+      These should be adjacent to each other in the source.
+
+    Corresponding changes to c.h since the version above should be migrated to this file.
+    This file should remain based on the version of c.h from the version of rocksdb packaged here.
+    At the time of this writing, that is the latest commit on master because there are build issues
+    on windows in all released versions.
+
+    These are currently disabled in blocks by preprocessor defines as these are under development.
+
+    The following regular expression helped to parse out many of the exports from c.h
+    ^extern ROCKSDB_LIBRARY_API (char\*\*|int64_t|void|size_t|uint32_t|uint64_t|const char\*|char\*|unsigned char|int|rocksdb_[a-zA-Z0-9_]+\*|const rocksdb_[a-zA-Z0-9_]+\*)\s+rocksdb_([a-z]+)(_[a-zA-Z0-9_]+)?\(
+*/
+
+using System;
+using System.Runtime.InteropServices;
+
+namespace RocksDbSharp
+{
+public static partial class Native
+{
+/* BEGIN c.h */
+
+#region TYPES
+#if ROCKSDB_TYPES
+
+typedef struct rocksdb_t                 rocksdb_t;
+typedef struct rocksdb_backup_engine_t   rocksdb_backup_engine_t;
+typedef struct rocksdb_backup_engine_info_t   rocksdb_backup_engine_info_t;
+typedef struct rocksdb_restore_options_t rocksdb_restore_options_t;
+typedef struct rocksdb_cache_t           rocksdb_cache_t;
+typedef struct rocksdb_compactionfilter_t rocksdb_compactionfilter_t;
+typedef struct rocksdb_compactionfiltercontext_t
+    rocksdb_compactionfiltercontext_t;
+typedef struct rocksdb_compactionfilterfactory_t
+    rocksdb_compactionfilterfactory_t;
+typedef struct rocksdb_comparator_t      rocksdb_comparator_t;
+typedef struct rocksdb_env_t             rocksdb_env_t;
+typedef struct rocksdb_fifo_compaction_options_t rocksdb_fifo_compaction_options_t;
+typedef struct rocksdb_filelock_t        rocksdb_filelock_t;
+typedef struct rocksdb_filterpolicy_t    rocksdb_filterpolicy_t;
+typedef struct rocksdb_flushoptions_t    rocksdb_flushoptions_t;
+typedef struct rocksdb_iterator_t        rocksdb_iterator_t;
+typedef struct rocksdb_logger_t          rocksdb_logger_t;
+typedef struct rocksdb_mergeoperator_t   rocksdb_mergeoperator_t;
+typedef struct rocksdb_options_t         rocksdb_options_t;
+typedef struct rocksdb_block_based_table_options_t
+    rocksdb_block_based_table_options_t;
+typedef struct rocksdb_cuckoo_table_options_t
+    rocksdb_cuckoo_table_options_t;
+typedef struct rocksdb_randomfile_t      rocksdb_randomfile_t;
+typedef struct rocksdb_readoptions_t     rocksdb_readoptions_t;
+typedef struct rocksdb_seqfile_t         rocksdb_seqfile_t;
+typedef struct rocksdb_slicetransform_t  rocksdb_slicetransform_t;
+typedef struct rocksdb_snapshot_t        rocksdb_snapshot_t;
+typedef struct rocksdb_writablefile_t    rocksdb_writablefile_t;
+typedef struct rocksdb_writebatch_t      rocksdb_writebatch_t;
+typedef struct rocksdb_writeoptions_t    rocksdb_writeoptions_t;
+typedef struct rocksdb_universal_compaction_options_t rocksdb_universal_compaction_options_t;
+typedef struct rocksdb_livefiles_t     rocksdb_livefiles_t;
+typedef struct rocksdb_column_family_handle_t rocksdb_column_family_handle_t;
+
+#endif
+#endregion
+
+#region DB operations
+#if ROCKSDB_DB_OPERATIONS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_t* */ IntPtr rocksdb_open(
+    /* const rocksdb_options_t* */ IntPtr options, string name, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_t* */ IntPtr rocksdb_open_for_read_only(
+    /* const rocksdb_options_t* */ IntPtr options, string name,
+    bool error_if_log_file_exist, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_backup_engine_t* */ IntPtr rocksdb_backup_engine_open(
+    /* const rocksdb_options_t* */ IntPtr options, string path, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_backup_engine_create_new_backup(
+    /*rocksdb_backup_engine_t**/ IntPtr backupEngine, /*rocksdb_t**/ IntPtr db, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_restore_options_t* */ IntPtr rocksdb_restore_options_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_restore_options_destroy(
+    /*(rocksdb_restore_options_t*)*/ IntPtr restore_options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_restore_options_set_keep_log_files(
+    /*(rocksdb_restore_options_t*)*/ IntPtr restore_options, int v);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_backup_engine_restore_db_from_latest_backup(
+    /*rocksdb_backup_engine_t**/ IntPtr backupEngine, string db_dir, string wal_dir,
+    /*const rocksdb_restore_options_t**/ IntPtr restore_options, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const rocksdb_backup_engine_info_t* */ IntPtr rocksdb_backup_engine_get_backup_info(/*rocksdb_backup_engine_t**/ IntPtr backupEngine);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern int rocksdb_backup_engine_info_count(
+    /*const rocksdb_restore_options_t**/ IntPtr restore_options);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern long rocksdb_backup_engine_info_timestamp(/*const rocksdb_backup_engine_info_t**/ IntPtr backupEngineInfo,
+                                     int index);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern uint rocksdb_backup_engine_info_backup_id(/*const rocksdb_backup_engine_info_t**/ IntPtr backupEngineInfo,
+                                     int index);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern ulong rocksdb_backup_engine_info_size(/*const rocksdb_backup_engine_info_t**/ IntPtr backupEngineInfo,
+                                int index);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern uint rocksdb_backup_engine_info_number_files(
+    /*const rocksdb_backup_engine_info_t**/ IntPtr backupEngineInfo, int index);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_backup_engine_info_destroy(
+    /*const rocksdb_backup_engine_info_t**/ IntPtr backupEngineInfo);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_backup_engine_close(
+    /*rocksdb_backup_engine_t**/ IntPtr backupEngine);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_t* */ IntPtr rocksdb_open_column_families(
+    /* const rocksdb_options_t* */ IntPtr options, string name, int num_column_families,
+    /*(const char**)*/ IntPtr column_family_names,
+    /*(const rocksdb_options_t**)*/ IntPtr column_family_options,
+    /*(rocksdb_column_family_handle_t**)*/ IntPtr column_family_handles, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_t* */ IntPtr rocksdb_open_for_read_only_column_families(
+    /* const rocksdb_options_t* */ IntPtr options, string name, int num_column_families,
+    /*(const char**)*/ IntPtr column_family_names,
+    /*(const rocksdb_options_t**)*/ IntPtr column_family_options,
+    /*(rocksdb_column_family_handle_t**)*/ IntPtr column_family_handles,
+    bool error_if_log_file_exist, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* char** */ IntPtr rocksdb_list_column_families(
+            /* const rocksdb_options_t* */ IntPtr options, string name, /*(size_t*)*/ IntPtr lencf,
+    out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_list_column_families_destroy(
+            /*(char**)*/ IntPtr list, ulong len);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_column_family_handle_t* */ IntPtr rocksdb_create_column_family(/*rocksdb_t**/ IntPtr db,
+                             /* const rocksdb_options_t* */ IntPtr column_family_options,
+                             string column_family_name, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_drop_column_family(
+    /*rocksdb_t**/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family_handle, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_column_family_handle_destroy(
+    /*rocksdb_column_family_handle_t**/ IntPtr column_family_handle);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_close(/*rocksdb_t**/ IntPtr db);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_put(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte* key,
+    ulong keylen, /*const*/ byte* val, ulong vallen, out IntPtr errptr);
+
+// "long" was chosen over "ulong" for the lengths below because long is all that is possible for clr arrays anyway
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_put(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte[] key,
+    long keylen, /*const*/ byte[] val, long vallen, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_put_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte* key,
+    ulong keylen, /*const*/ byte* val, ulong vallen, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_delete(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte* key,
+    ulong keylen, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_delete(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte[] key,
+    long keylen, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_delete_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte* key,
+    ulong keylen, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_merge(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte* key,
+    ulong keylen, /*const*/ byte* val, ulong vallen, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_merge_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte* key,
+    ulong keylen, /*const*/ byte* val, ulong vallen, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_write(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+    /*(rocksdb_writebatch_t*)*/ IntPtr write_batch, out IntPtr errptr);
+
+/* Returns NULL if not found.  A malloc()ed array otherwise.
+   Stores the length of the array in *vallen. */
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern /* char* */ IntPtr rocksdb_get(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options, /*const*/ byte* key,
+            ulong keylen, /*(size_t*)*/ out ulong vallen, out IntPtr errptr);
+
+/* Returns NULL if not found.  A malloc()ed array otherwise.
+   Stores the length of the array in *vallen. */
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern /* char* */ IntPtr rocksdb_get(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options, /*const*/ byte[] key,
+            long keylen, /*(size_t*)*/ out long vallen, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern /* char* */ IntPtr rocksdb_get_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte* key,
+            ulong keylen, /*(size_t*)*/ ref ulong vallen, out IntPtr errptr);
+
+// if values_list[i] == NULL and errs[i] == NULL,
+// then we got status.IsNotFound(), which we will not return.
+// all errors except status status.ok() and status.IsNotFound() are returned.
+//
+// errs, values_list and values_list_sizes must be num_keys in length,
+// allocated by the caller.
+// errs is a list of strings as opposed to the conventional one error,
+// where errs[i] is the status for retrieval of keys_list[i].
+// each non-NULL errs entry is a malloc()ed, null terminated string.
+// each non-NULL values_list entry is a malloc()ed array, with
+// the length for each stored in values_list_sizes[i].
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_multi_get(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options, ulong num_keys,
+    /*const char* const**/ IntPtr keys_list, /*const size_t**/ IntPtr keys_list_sizes,
+            /*(char**)*/ IntPtr values_list, /*size_t**/ IntPtr values_list_sizes, /*(char**)*/ IntPtr errlist);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_multi_get_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options,
+            /*(const rocksdb_column_family_handle_t* const*)*/ IntPtr column_families,
+            ulong num_keys, /*(const char* const*)*/ IntPtr keys_list,
+            /*(const size_t*)*/ IntPtr keys_list_sizes, /*(char**)*/ IntPtr values_list,
+            /*(size_t*)*/ IntPtr values_list_sizes, /*(char**)*/ IntPtr errList);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_iterator_t* */ IntPtr rocksdb_create_iterator(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_iterator_t* */ IntPtr rocksdb_create_iterator_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const rocksdb_snapshot_t* */ IntPtr rocksdb_create_snapshot(
+    /*rocksdb_t**/ IntPtr db);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_release_snapshot(
+            /*rocksdb_t**/ IntPtr db, /*(const rocksdb_snapshot_t*)*/ IntPtr snapshot);
+
+/* Returns NULL if property name is unknown.
+   Else returns a pointer to a malloc()-ed null-terminated value. */
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* char* */ IntPtr rocksdb_property_value(/*rocksdb_t**/ IntPtr db,
+                                                        string propname);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* char* */ IntPtr rocksdb_property_value_cf(
+    /*rocksdb_t**/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    string propname);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_approximate_sizes(
+            /*rocksdb_t**/ IntPtr db, int num_ranges, /*(const char* const*)*/ byte** range_start_key,
+            /*(const size_t*)*/ IntPtr range_start_key_len, /*(const char* const*)*/ IntPtr range_limit_key,
+            /*(const size_t*)*/ IntPtr range_limit_key_len, /*(uint64_t*)*/ IntPtr sizes);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_approximate_sizes_cf(
+    /*rocksdb_t**/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+            int num_ranges, /*(const char* const*)*/ byte** range_start_key,
+            /*(const size_t*)*/ IntPtr range_start_key_len, /*(const char* const*)*/ IntPtr range_limit_key,
+            /*(const size_t*)*/ IntPtr range_limit_key_len, /*(uint64_t*)*/ IntPtr sizes);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_compact_range(/*rocksdb_t**/ IntPtr db,
+            /*(const char*)*/ byte* start_key,
+              ulong start_key_len,
+            /*(const char*)*/ byte* limit_key,
+              ulong limit_key_len);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_compact_range_cf(
+    /*rocksdb_t**/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*(const char*)*/ byte* start_key, ulong start_key_len, /*(const char*)*/ byte* limit_key,
+    ulong limit_key_len);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_delete_file(/*rocksdb_t**/ IntPtr db,
+                                                    string name);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const rocksdb_livefiles_t* */ IntPtr rocksdb_livefiles(
+    /*rocksdb_t**/ IntPtr db);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_flush(
+    /*rocksdb_t**/ IntPtr db, /*(const rocksdb_flushoptions_t*)*/ IntPtr flush_options, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_disable_file_deletions(/*rocksdb_t**/ IntPtr db,
+                                                               out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_enable_file_deletions(
+    /*rocksdb_t**/ IntPtr db, bool force, out IntPtr errptr);
+
+#endif
+#endregion
+
+#region Management operations
+#if ROCKSDB_MANAGEMENT_OPERATIONS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_destroy_db(
+    /* const rocksdb_options_t* */ IntPtr options, string name, out IntPtr errptr);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_repair_db(
+    /* const rocksdb_options_t* */ IntPtr options, string name, out IntPtr errptr);
+
+#endif
+#endregion
+
+#region Iterator
+#if ROCKSDB_ITERATOR
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_iter_destroy(rocksdb_iterator_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern bool rocksdb_iter_valid(
+    const rocksdb_iterator_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_iter_seek_to_first(rocksdb_iterator_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_iter_seek_to_last(rocksdb_iterator_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_iter_seek(rocksdb_iterator_t*,
+                                                  const char* k, size_t klen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_iter_next(rocksdb_iterator_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_iter_prev(rocksdb_iterator_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const char* */ IntPtr rocksdb_iter_key(
+    const rocksdb_iterator_t*, size_t* klen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const char* */ IntPtr rocksdb_iter_value(
+    const rocksdb_iterator_t*, size_t* vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_iter_get_error(
+    const rocksdb_iterator_t*, out IntPtr errptr);
+
+#endif
+#endregion
+
+#region Write batch
+#if ROCKSDB_WRITE_BATCH
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_writebatch_t* */ IntPtr rocksdb_writebatch_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_writebatch_t* */ IntPtr rocksdb_writebatch_create_from(
+    const char* rep, size_t size);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_destroy(
+    rocksdb_writebatch_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_clear(rocksdb_writebatch_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern int rocksdb_writebatch_count(rocksdb_writebatch_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_put(rocksdb_writebatch_t*,
+                                                       /*const*/ byte* key,
+                                                       size_t klen,
+                                                       /*const*/ byte* val,
+                                                       size_t vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_put_cf(
+    rocksdb_writebatch_t*, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte* key, size_t klen, /*const*/ byte* val, size_t vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_putv(
+    rocksdb_writebatch_t* b, int num_keys, const char* const* keys_list,
+    const size_t* keys_list_sizes, int num_values,
+    const char* const* values_list, const size_t* values_list_sizes);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_putv_cf(
+    rocksdb_writebatch_t* b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    int num_keys, const char* const* keys_list, const size_t* keys_list_sizes,
+    int num_values, const char* const* values_list,
+    const size_t* values_list_sizes);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_merge(rocksdb_writebatch_t*,
+                                                         /*const*/ byte* key,
+                                                         size_t klen,
+                                                         /*const*/ byte* val,
+                                                         size_t vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_merge_cf(
+    rocksdb_writebatch_t*, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte* key, size_t klen, /*const*/ byte* val, size_t vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_mergev(
+    rocksdb_writebatch_t* b, int num_keys, const char* const* keys_list,
+    const size_t* keys_list_sizes, int num_values,
+    const char* const* values_list, const size_t* values_list_sizes);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_mergev_cf(
+    rocksdb_writebatch_t* b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    int num_keys, const char* const* keys_list, const size_t* keys_list_sizes,
+    int num_values, const char* const* values_list,
+    const size_t* values_list_sizes);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_delete(rocksdb_writebatch_t*,
+                                                          /*const*/ byte* key,
+                                                          size_t klen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_delete_cf(
+    rocksdb_writebatch_t*, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte* key, size_t klen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_deletev(
+    rocksdb_writebatch_t* b, int num_keys, const char* const* keys_list,
+    const size_t* keys_list_sizes);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_deletev_cf(
+    rocksdb_writebatch_t* b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    int num_keys, const char* const* keys_list, const size_t* keys_list_sizes);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_put_log_data(
+    rocksdb_writebatch_t*, const char* blob, ulong len);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writebatch_iterate(
+    rocksdb_writebatch_t*, void* state,
+    void (*put)(void*, const char* k, size_t klen, const char* v, size_t vlen),
+    void (*deleted)(void*, const char* k, size_t klen));
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const char* */ IntPtr rocksdb_writebatch_data(
+    rocksdb_writebatch_t*, size_t* size);
+#endif
+#endregion
+
+#region Block based table options
+#if ROCKSDB_BLOCK_BASED_TABLE_OPTIONS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_block_based_table_options_t* */ IntPtr rocksdb_block_based_options_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_destroy(
+    rocksdb_block_based_table_options_t* options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_block_size(
+    rocksdb_block_based_table_options_t* options, size_t block_size);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_block_size_deviation(
+    rocksdb_block_based_table_options_t* options, int block_size_deviation);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_block_restart_interval(
+    rocksdb_block_based_table_options_t* options, int block_restart_interval);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_filter_policy(
+    rocksdb_block_based_table_options_t* options,
+    rocksdb_filterpolicy_t* filter_policy);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_no_block_cache(
+    rocksdb_block_based_table_options_t* options, unsigned char no_block_cache);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_block_cache(
+    rocksdb_block_based_table_options_t* options, rocksdb_cache_t* block_cache);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_block_cache_compressed(
+    rocksdb_block_based_table_options_t* options,
+    rocksdb_cache_t* block_cache_compressed);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_whole_key_filtering(
+    rocksdb_block_based_table_options_t*, unsigned char);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_format_version(
+    rocksdb_block_based_table_options_t*, int);
+enum {
+  rocksdb_block_based_table_index_type_binary_search = 0,
+  rocksdb_block_based_table_index_type_hash_search = 1,
+};
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_index_type(
+    rocksdb_block_based_table_options_t*, int);  // uses one of the above enums
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_hash_index_allow_collision(
+    rocksdb_block_based_table_options_t*, unsigned char);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_cache_index_and_filter_blocks(
+    rocksdb_block_based_table_options_t*, unsigned char);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_block_based_options_set_skip_table_builder_flush(
+    rocksdb_block_based_table_options_t* options, unsigned char);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_block_based_table_factory(
+    /* rocksdb_options_t* */ IntPtr opt, rocksdb_block_based_table_options_t* table_options);
+#endif
+#endregion
+
+#region Cuckoo table options
+#if ROCKSDB_CUCKOO_TABLE_OPTIONS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_cuckoo_table_options_t* */ IntPtr rocksdb_cuckoo_options_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_cuckoo_options_destroy(
+    rocksdb_cuckoo_table_options_t* options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_cuckoo_options_set_hash_ratio(
+    rocksdb_cuckoo_table_options_t* options, double v);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_cuckoo_options_set_max_search_depth(
+    rocksdb_cuckoo_table_options_t* options, uint32_t v);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_cuckoo_options_set_cuckoo_block_size(
+    rocksdb_cuckoo_table_options_t* options, uint32_t v);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_cuckoo_options_set_identity_as_first_hash(
+    rocksdb_cuckoo_table_options_t* options, unsigned char v);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_cuckoo_options_set_use_module_hash(
+    rocksdb_cuckoo_table_options_t* options, unsigned char v);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_cuckoo_table_factory(
+    /* rocksdb_options_t* */ IntPtr opt, rocksdb_cuckoo_table_options_t* table_options);
+
+#endif
+#endregion
+
+#region Options
+#if ROCKSDB_OPTIONS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_options_t* */ IntPtr rocksdb_options_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_destroy(/* rocksdb_options_t* */ IntPtr options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_increase_parallelism(
+    /* rocksdb_options_t* */ IntPtr opt, int total_threads);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_optimize_for_point_lookup(
+    /* rocksdb_options_t* */ IntPtr opt, ulong block_cache_size_mb);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_optimize_level_style_compaction(
+    /* rocksdb_options_t* */ IntPtr opt, ulong memtable_memory_budget);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_optimize_universal_style_compaction(
+    /* rocksdb_options_t* */ IntPtr opt, ulong memtable_memory_budget);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_compaction_filter(
+            /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_compactionfilter_t*)*/ IntPtr compaction_filter);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_compaction_filter_factory(
+            /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_compactionfilterfactory_t*)*/ IntPtr compaction_filter_factory);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_comparator(
+            /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_comparator_t*)*/ IntPtr comparator);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_merge_operator(
+            /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_mergeoperator_t*)*/ IntPtr merge_operator);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_uint64add_merge_operator(
+            /* rocksdb_options_t* */ IntPtr options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_compression_per_level(
+            /* rocksdb_options_t* */ IntPtr opt, /*(int*)*/ int[] level_values, ulong num_levels);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_create_if_missing(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_create_missing_column_families(/* rocksdb_options_t* */ IntPtr options,
+            bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_error_if_exists(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_paranoid_checks(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_env(/* rocksdb_options_t* */ IntPtr options,
+            /*(rocksdb_env_t*)*/ IntPtr env);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_info_log(/* rocksdb_options_t* */ IntPtr options,
+            /*(rocksdb_logger_t*)*/ IntPtr logger);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_info_log_level(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_write_buffer_size(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_open_files(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_total_wal_size(
+    /* rocksdb_options_t* */ IntPtr opt, ulong n);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_compression_options(
+    /* rocksdb_options_t* */ IntPtr options, int p1, int p2, int p3);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_prefix_extractor(
+            /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_slicetransform_t*)*/ IntPtr slice_transform);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_num_levels(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_level0_file_num_compaction_trigger(/* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_level0_slowdown_writes_trigger(/* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_level0_stop_writes_trigger(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_mem_compaction_level(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_target_file_size_base(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_target_file_size_multiplier(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_bytes_for_level_base(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_bytes_for_level_multiplier(/* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_expanded_compaction_factor(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_grandparent_overlap_factor(/* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_bytes_for_level_multiplier_additional(
+            /* rocksdb_options_t* */ IntPtr options, /*(int*)*/ int[] level_values, ulong num_levels);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_enable_statistics(
+    /* rocksdb_options_t* */ IntPtr options);
+
+/* returns a pointer to a malloc()-ed, null terminated string */
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* char* */ IntPtr rocksdb_options_statistics_get_string(
+    /* rocksdb_options_t* */ IntPtr opt);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_write_buffer_number(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_min_write_buffer_number_to_merge(/* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_write_buffer_number_to_maintain(/* rocksdb_options_t* */ IntPtr options,
+                                                        int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_background_compactions(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_background_flushes(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_log_file_size(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_log_file_time_to_roll(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_keep_log_file_num(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_recycle_log_file_num(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_soft_rate_limit(
+            /* rocksdb_options_t* */ IntPtr options, double value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_hard_rate_limit(
+            /* rocksdb_options_t* */ IntPtr options, double value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_rate_limit_delay_max_milliseconds(/* rocksdb_options_t* */ IntPtr options,
+            uint value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_manifest_file_size(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_table_cache_numshardbits(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_table_cache_remove_scan_count_limit(/* rocksdb_options_t* */ IntPtr options,
+                                                        int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_arena_block_size(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_use_fsync(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_db_log_dir(
+            /* rocksdb_options_t* */ IntPtr options, string value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_wal_dir(/* rocksdb_options_t* */ IntPtr options,
+            string value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_WAL_ttl_seconds(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_WAL_size_limit_MB(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_manifest_preallocation_size(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_purge_redundant_kvs_while_flush(/* rocksdb_options_t* */ IntPtr options,
+            bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_allow_os_buffer(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_allow_mmap_reads(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_allow_mmap_writes(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_is_fd_close_on_exec(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_skip_log_error_on_recovery(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_stats_dump_period_sec(
+    /* rocksdb_options_t* */ IntPtr options, uint value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_advise_random_on_open(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_access_hint_on_compaction_start(/* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_use_adaptive_mutex(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_bytes_per_sync(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_verify_checksums_in_compaction(/* rocksdb_options_t* */ IntPtr options,
+            bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_filter_deletes(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_sequential_skip_in_iterations(/* rocksdb_options_t* */ IntPtr options,
+            ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_disable_data_sync(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_disable_auto_compactions(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_delete_obsolete_files_period_micros(/* rocksdb_options_t* */ IntPtr options,
+            ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_source_compaction_factor(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_prepare_for_bulk_load(
+    /* rocksdb_options_t* */ IntPtr options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_memtable_vector_rep(
+    /* rocksdb_options_t* */ IntPtr options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_hash_skip_list_rep(
+            /* rocksdb_options_t* */ IntPtr options, ulong p1, int p2, int p3);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_hash_link_list_rep(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_plain_table_factory(
+            /* rocksdb_options_t* */ IntPtr options, ulong p1, int p2, double p3, ulong p4);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_min_level_to_compress(
+    /* rocksdb_options_t* */ IntPtr opt, int level);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_memtable_prefix_bloom_bits(
+            /* rocksdb_options_t* */ IntPtr options, uint value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void rocksdb_options_set_memtable_prefix_bloom_probes(/* rocksdb_options_t* */ IntPtr options, int value);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_max_successive_merges(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_min_partial_merge_operands(
+            /* rocksdb_options_t* */ IntPtr options, uint value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_bloom_locality(
+            /* rocksdb_options_t* */ IntPtr options, uint value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_inplace_update_support(
+            /* rocksdb_options_t* */ IntPtr options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_inplace_update_num_locks(
+            /* rocksdb_options_t* */ IntPtr options, ulong value);
+
+}
+public enum CompressionTypeEnum {
+  rocksdb_no_compression = 0,
+  rocksdb_snappy_compression = 1,
+  rocksdb_zlib_compression = 2,
+  rocksdb_bz2_compression = 3,
+  rocksdb_lz4_compression = 4,
+  rocksdb_lz4hc_compression = 5,
+}
+public static partial class Native {
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_compression(
+            /* rocksdb_options_t* */ IntPtr options, CompressionTypeEnum value);
+}
+public enum CompactionStyleEnum {
+  rocksdb_level_compaction = 0,
+  rocksdb_universal_compaction = 1,
+  rocksdb_fifo_compaction = 2,
+}
+public static partial class Native {
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_compaction_style(
+    /* rocksdb_options_t* */ IntPtr options, CompactionStyleEnum value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_universal_compaction_options(
+            /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_universal_compaction_options_t*)*/ IntPtr universal_compaction_options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_options_set_fifo_compaction_options(
+            /* rocksdb_options_t* */ IntPtr opt, /*(rocksdb_fifo_compaction_options_t*)*/ IntPtr fifo_compaction_options);
+#endif
+#endregion
+
+
+#region Compaction Filter
+#if ROCKSDB_COMPACTION_FILTER
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_compactionfilter_t* */ IntPtr rocksdb_compactionfilter_create(
+    void* state, void (*destructor)(void*),
+    unsigned char (*filter)(void*, int level, /*const*/ byte* key,
+                            size_t key_length, const char* existing_value,
+                            size_t value_length, char** new_value,
+                            size_t* new_value_length,
+                            unsigned char* value_changed),
+    const char* (*name)(void*));
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_compactionfilter_destroy(
+    rocksdb_compactionfilter_t*);
+
+#endif
+#endregion
+
+#region Compaction Filter Context
+#if ROCKSDB_COMPACTION_FILTER_CONTEXT
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern bool rocksdb_compactionfiltercontext_is_full_compaction(
+    rocksdb_compactionfiltercontext_t* context);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern bool rocksdb_compactionfiltercontext_is_manual_compaction(
+    rocksdb_compactionfiltercontext_t* context);
+
+#endif
+#endregion
+
+#region Compaction Filter Factory
+#if ROCKSDB_COMPACTION_FILTER_FACTORY
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_compactionfilterfactory_t* */ IntPtr rocksdb_compactionfilterfactory_create(
+    void* state, void (*destructor)(void*),
+    rocksdb_compactionfilter_t* (*create_compaction_filter)(
+        void*, rocksdb_compactionfiltercontext_t* context),
+    const char* (*name)(void*));
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_compactionfilterfactory_destroy(
+    rocksdb_compactionfilterfactory_t*);
+
+#endif
+#endregion
+
+#region Comparator
+#if ROCKSDB_COMPARATOR
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_comparator_t* */ IntPtr rocksdb_comparator_create(
+    void* state, void (*destructor)(void*),
+    int (*compare)(void*, const char* a, size_t alen, const char* b,
+                   size_t blen),
+    const char* (*name)(void*));
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_comparator_destroy(
+    rocksdb_comparator_t*);
+
+#endif
+#endregion
+
+#region Filter policy
+#if ROCKSDB_FILTER_POLICY
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_filterpolicy_t* */ IntPtr rocksdb_filterpolicy_create(
+    void* state, void (*destructor)(void*),
+    char* (*create_filter)(void*, const char* const* key_array,
+                           const size_t* key_length_array, int num_keys,
+                           size_t* filter_length),
+    unsigned char (*key_may_match)(void*, /*const*/ byte* key, ulong length,
+                                   const char* filter, size_t filter_length),
+    void (*delete_filter)(void*, const char* filter, size_t filter_length),
+    const char* (*name)(void*));
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_filterpolicy_destroy(
+    rocksdb_filterpolicy_t*);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_filterpolicy_t* */ IntPtr rocksdb_filterpolicy_create_bloom(int bits_per_key);
+
+#endif
+#endregion
+
+#region Merge Operator
+#if ROCKSDB_MERGE_OPERATOR
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_mergeoperator_t* */ IntPtr rocksdb_mergeoperator_create(
+    void* state, void (*destructor)(void*),
+    char* (*full_merge)(void*, /*const*/ byte* key, size_t key_length,
+                        const char* existing_value,
+                        size_t existing_value_length,
+                        const char* const* operands_list,
+                        const size_t* operands_list_length, int num_operands,
+                        unsigned char* success, size_t* new_value_length),
+    char* (*partial_merge)(void*, /*const*/ byte* key, size_t key_length,
+                           const char* const* operands_list,
+                           const size_t* operands_list_length, int num_operands,
+                           unsigned char* success, size_t* new_value_length),
+    void (*delete_value)(void*, /*const*/ byte* value, size_t value_length),
+    const char* (*name)(void*));
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_mergeoperator_destroy(
+    rocksdb_mergeoperator_t*);
+
+#endif
+#endregion
+
+#region Read options
+#if ROCKSDB_READ_OPTIONS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_readoptions_t* */ IntPtr rocksdb_readoptions_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_readoptions_destroy(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_readoptions_set_verify_checksums(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_readoptions_set_fill_cache(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_readoptions_set_snapshot(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*(const rocksdb_snapshot_t*)*/ IntPtr snapshot);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_readoptions_set_iterate_upper_bound(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*const*/ byte* key, ulong keylen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_readoptions_set_read_tier(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, int value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_readoptions_set_tailing(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, bool value);
+
+#endif
+#endregion
+
+#region Write options
+#if ROCKSDB_WRITE_OPTIONS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_writeoptions_t* */ IntPtr rocksdb_writeoptions_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writeoptions_destroy(
+    /*(rocksdb_writeoptions_t*)*/ IntPtr write_options);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writeoptions_set_sync(
+    /*(rocksdb_writeoptions_t*)*/ IntPtr write_options, bool value);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_writeoptions_disable_WAL(
+    /*(rocksdb_writeoptions_t*)*/ IntPtr write_options, int disable);
+
+#endif
+#endregion
+
+#region Flush options
+#if ROCKSDB_FLUSH_OPTIONS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_flushoptions_t* */ IntPtr rocksdb_flushoptions_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_flushoptions_destroy(
+    rocksdb_flushoptions_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_flushoptions_set_wait(
+    rocksdb_flushoptions_t*, unsigned char);
+
+#endif
+#endregion
+
+#region Cache
+#if ROCKSDB_CACHE
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_cache_t* */ IntPtr rocksdb_cache_create_lru(
+    size_t capacity);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_cache_destroy(rocksdb_cache_t* cache);
+
+#endif
+#endregion
+
+#region Env
+#if ROCKSDB_ENV
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_env_t* */ IntPtr rocksdb_create_default_env();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_env_set_background_threads(
+    rocksdb_env_t* env, int n);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_env_set_high_priority_background_threads(rocksdb_env_t* env, int n);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_env_join_all_threads(
+    rocksdb_env_t* env);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_env_destroy(rocksdb_env_t*);
+
+#endif
+#endregion
+
+#region SliceTransform
+#if ROCKSDB_SLICETRANSFORM
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_slicetransform_t* */ IntPtr rocksdb_slicetransform_create(
+    void* state, void (*destructor)(void*),
+    char* (*transform)(void*, /*const*/ byte* key, ulong length,
+                       size_t* dst_length),
+    unsigned char (*in_domain)(void*, /*const*/ byte* key, ulong length),
+    unsigned char (*in_range)(void*, /*const*/ byte* key, ulong length),
+    const char* (*name)(void*));
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_slicetransform_t* */ IntPtr rocksdb_slicetransform_create_fixed_prefix(size_t);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_slicetransform_t* */ IntPtr rocksdb_slicetransform_create_noop();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_slicetransform_destroy(
+    rocksdb_slicetransform_t*);
+
+#endif
+#endregion
+
+#region Universal Compaction options
+#if ROCKSDB_UNIVERSAL_COMPACTION_OPTIONS
+
+enum {
+  rocksdb_similar_size_compaction_stop_style = 0,
+  rocksdb_total_size_compaction_stop_style = 1
+};
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_universal_compaction_options_t* */ IntPtr rocksdb_universal_compaction_options_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_universal_compaction_options_set_size_ratio(
+    rocksdb_universal_compaction_options_t*, int);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_universal_compaction_options_set_min_merge_width(
+    rocksdb_universal_compaction_options_t*, int);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_universal_compaction_options_set_max_merge_width(
+    rocksdb_universal_compaction_options_t*, int);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_universal_compaction_options_set_max_size_amplification_percent(
+    rocksdb_universal_compaction_options_t*, int);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_universal_compaction_options_set_compression_size_percent(
+    rocksdb_universal_compaction_options_t*, int);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_universal_compaction_options_set_stop_style(
+    rocksdb_universal_compaction_options_t*, int);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_universal_compaction_options_destroy(
+    rocksdb_universal_compaction_options_t*);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* rocksdb_fifo_compaction_options_t* */ IntPtr rocksdb_fifo_compaction_options_create();
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_fifo_compaction_options_set_max_table_files_size(
+    rocksdb_fifo_compaction_options_t* fifo_opts, uint64_t size);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_fifo_compaction_options_destroy(
+    rocksdb_fifo_compaction_options_t* fifo_opts);
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern int rocksdb_livefiles_count(
+    const rocksdb_livefiles_t*);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const char* */ IntPtr rocksdb_livefiles_name(
+    const rocksdb_livefiles_t*, int index);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern int rocksdb_livefiles_level(
+    const rocksdb_livefiles_t*, int index);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* size_t */ ulong rocksdb_livefiles_size(const rocksdb_livefiles_t*, int index);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const char* */ IntPtr rocksdb_livefiles_smallestkey(
+    const rocksdb_livefiles_t*, int index, size_t* size);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern /* const char* */ IntPtr rocksdb_livefiles_largestkey(
+    const rocksdb_livefiles_t*, int index, size_t* size);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_livefiles_destroy(
+    const rocksdb_livefiles_t*);
+
+#endif
+#endregion
+
+#region Utility Helpers
+#if ROCKSDB_UTILITY_HELPERS
+
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_get_options_from_string(
+    /* const rocksdb_options_t* */ IntPtr base_options, const char* opts_str,
+    /* rocksdb_options_t* */ IntPtr new_options, out IntPtr errptr);
+
+#endif
+#endregion
+
+// referring to convention (3), this should be used by client
+// to free memory that was malloc()ed
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public static extern void rocksdb_free(IntPtr ptr);
+
+/* END c.h */
+}
+}
+
