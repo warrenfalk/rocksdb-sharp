@@ -21,5 +21,19 @@ namespace RocksDbSharp
                 handle = IntPtr.Zero;
             }
         }
+
+        public WriteOptions SetSync(bool value)
+        {
+            Native.rocksdb_writeoptions_set_sync(handle, value);
+            return this;
+        }
+
+        public WriteOptions DisableWal(int disable)
+        {
+            Native.rocksdb_writeoptions_disable_WAL(handle, disable);
+            return this;
+        }
+
+
     }
 }

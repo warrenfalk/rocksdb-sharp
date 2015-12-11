@@ -27,6 +27,10 @@ using System.Runtime.InteropServices;
 
 namespace RocksDbSharp
 {
+//void (*put)(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ ulong vlen),
+public delegate void WriteBatchIteratePutCallback(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ ulong vlen);
+//void (*deleted)(void*, const char* k, /*(size_t)*/ ulong klen)
+public delegate void WriteBatchIterateDeleteCallback(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen);
 public static partial class Native
 {
 /* BEGIN c.h */
@@ -225,7 +229,7 @@ public unsafe static extern void rocksdb_merge_cf(
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_write(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
-    /*(rocksdb_writebatch_t*)*/ IntPtr write_batch, out IntPtr errptr);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, out IntPtr errptr);
 
 /* Returns NULL if not found.  A malloc()ed array otherwise.
    Stores the length of the array in *vallen. */
@@ -377,7 +381,7 @@ public static extern void rocksdb_iter_seek_to_first(rocksdb_iterator_t*);
 public static extern void rocksdb_iter_seek_to_last(rocksdb_iterator_t*);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_iter_seek(rocksdb_iterator_t*,
-                                                  const char* k, size_t klen);
+                                                  const char* k, /*(size_t)*/ ulong klen);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_iter_next(rocksdb_iterator_t*);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
@@ -402,83 +406,113 @@ public static extern void rocksdb_iter_get_error(
 public static extern /* rocksdb_writebatch_t* */ IntPtr rocksdb_writebatch_create();
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern /* rocksdb_writebatch_t* */ IntPtr rocksdb_writebatch_create_from(
-    const char* rep, size_t size);
+    /*(const char*)*/ byte[] rep, /*(size_t)*/ long size);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_destroy(
-    rocksdb_writebatch_t*);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
-public static extern void rocksdb_writebatch_clear(rocksdb_writebatch_t*);
+public static extern void rocksdb_writebatch_clear(/*(rocksdb_writebatch_t*)*/ IntPtr writeBatch);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
-public static extern int rocksdb_writebatch_count(rocksdb_writebatch_t*);
+public static extern int rocksdb_writebatch_count(/*(rocksdb_writebatch_t*)*/ IntPtr writeBatch);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
-public static extern void rocksdb_writebatch_put(rocksdb_writebatch_t*,
+public static extern void rocksdb_writebatch_put(/*(rocksdb_writebatch_t*)*/ IntPtr writeBatch,
+                                                       /*const*/ byte[] key,
+                                                       /*(size_t)*/ ulong klen,
+                                                       /*const*/ byte[] val,
+                                                       /*(size_t)*/ ulong vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_writebatch_put(/*(rocksdb_writebatch_t*)*/ IntPtr writeBatch,
                                                        /*const*/ byte* key,
-                                                       size_t klen,
+                                                       /*(size_t)*/ ulong klen,
                                                        /*const*/ byte* val,
-                                                       size_t vlen);
+                                                       /*(size_t)*/ ulong vlen);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_put_cf(
-    rocksdb_writebatch_t*, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
-    /*const*/ byte* key, size_t klen, /*const*/ byte* val, size_t vlen);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte[] key, /*(size_t)*/ ulong klen, /*const*/ byte[] val, /*(size_t)*/ ulong vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_writebatch_put_cf(
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte* key, /*(size_t)*/ ulong klen, /*const*/ byte* val, /*(size_t)*/ ulong vlen);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_putv(
-    rocksdb_writebatch_t* b, int num_keys, const char* const* keys_list,
-    const size_t* keys_list_sizes, int num_values,
-    const char* const* values_list, const size_t* values_list_sizes);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, int num_keys, /*(const char* const*)*/ IntPtr keys_list,
+    /*(const size_t*)*/ IntPtr keys_list_sizes, int num_values,
+    /*(const char* const*)*/ IntPtr values_list, /*(const size_t*)*/ IntPtr values_list_sizes);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_putv_cf(
-    rocksdb_writebatch_t* b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
-    int num_keys, const char* const* keys_list, const size_t* keys_list_sizes,
-    int num_values, const char* const* values_list,
-    const size_t* values_list_sizes);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    int num_keys, /*(const char* const*)*/ IntPtr keys_list, /*(const size_t*)*/ IntPtr keys_list_sizes,
+    int num_values, /*(const char* const*)*/ IntPtr values_list,
+    /*(const size_t*)*/ IntPtr values_list_sizes);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
-public static extern void rocksdb_writebatch_merge(rocksdb_writebatch_t*,
+public static extern void rocksdb_writebatch_merge(/*(rocksdb_writebatch_t*)*/ IntPtr writeBatch,
+                                                         /*const*/ byte[] key,
+                                                         /*(size_t)*/ ulong klen,
+                                                         /*const*/ byte[] val,
+                                                         /*(size_t)*/ ulong vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_writebatch_merge(/*(rocksdb_writebatch_t*)*/ IntPtr writeBatch,
                                                          /*const*/ byte* key,
-                                                         size_t klen,
+                                                         /*(size_t)*/ ulong klen,
                                                          /*const*/ byte* val,
-                                                         size_t vlen);
+                                                         /*(size_t)*/ ulong vlen);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_merge_cf(
-    rocksdb_writebatch_t*, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
-    /*const*/ byte* key, size_t klen, /*const*/ byte* val, size_t vlen);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte[] key, /*(size_t)*/ ulong klen, /*const*/ byte[] val, /*(size_t)*/ ulong vlen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_writebatch_merge_cf(
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte* key, /*(size_t)*/ ulong klen, /*const*/ byte* val, /*(size_t)*/ ulong vlen);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_mergev(
-    rocksdb_writebatch_t* b, int num_keys, const char* const* keys_list,
-    const size_t* keys_list_sizes, int num_values,
-    const char* const* values_list, const size_t* values_list_sizes);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, int num_keys, /*(const char* const*)*/ IntPtr keys_list,
+    /*(const size_t*)*/ IntPtr keys_list_sizes, int num_values,
+    /*(const char* const*)*/ IntPtr values_list, /*(const size_t*)*/ IntPtr values_list_sizes);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_mergev_cf(
-    rocksdb_writebatch_t* b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
-    int num_keys, const char* const* keys_list, const size_t* keys_list_sizes,
-    int num_values, const char* const* values_list,
-    const size_t* values_list_sizes);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    int num_keys, /*(const char* const*)*/ IntPtr keys_list, /*(const size_t*)*/ IntPtr keys_list_sizes,
+    int num_values, /*(const char* const*)*/ IntPtr values_list,
+    /*(const size_t*)*/ IntPtr values_list_sizes);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
-public static extern void rocksdb_writebatch_delete(rocksdb_writebatch_t*,
+public static extern void rocksdb_writebatch_delete(/*(rocksdb_writebatch_t*)*/ IntPtr writeBatch,
+                                                          /*const*/ byte[] key,
+                                                          /*(size_t)*/ ulong klen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_writebatch_delete(/*(rocksdb_writebatch_t*)*/ IntPtr writeBatch,
                                                           /*const*/ byte* key,
-                                                          size_t klen);
+                                                          /*(size_t)*/ ulong klen);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_delete_cf(
-    rocksdb_writebatch_t*, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
-    /*const*/ byte* key, size_t klen);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte[] key, /*(size_t)*/ ulong klen);
+[DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
+public unsafe static extern void rocksdb_writebatch_delete_cf(
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*const*/ byte* key, /*(size_t)*/ ulong klen);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_deletev(
-    rocksdb_writebatch_t* b, int num_keys, const char* const* keys_list,
-    const size_t* keys_list_sizes);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, int num_keys, /*(const char* const*)*/ IntPtr keys_list,
+    /*(const size_t*)*/ IntPtr keys_list_sizes);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_deletev_cf(
-    rocksdb_writebatch_t* b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
-    int num_keys, const char* const* keys_list, const size_t* keys_list_sizes);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    int num_keys, /*(const char* const*)*/ IntPtr keys_list, /*(const size_t*)*/ IntPtr keys_list_sizes);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_put_log_data(
-    rocksdb_writebatch_t*, const char* blob, ulong len);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, byte[] blob, ulong len);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern void rocksdb_writebatch_iterate(
-    rocksdb_writebatch_t*, void* state,
-    void (*put)(void*, const char* k, size_t klen, const char* v, size_t vlen),
-    void (*deleted)(void*, const char* k, size_t klen));
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(void*)*/ IntPtr state,
+    //void (*put)(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ ulong vlen),
+    WriteBatchIteratePutCallback put,
+    //void (*deleted)(void*, const char* k, /*(size_t)*/ ulong klen)
+    WriteBatchIterateDeleteCallback deleted);
 [DllImport("librocksdb", CallingConvention = CallingConvention.Cdecl)]
 public static extern /* const char* */ IntPtr rocksdb_writebatch_data(
-    rocksdb_writebatch_t*, size_t* size);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(size_t*)*/ ulong size);
 #endif
 #endregion
 

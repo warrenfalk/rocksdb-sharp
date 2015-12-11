@@ -65,6 +65,11 @@ namespace RocksDbSharp
             }
         }
 
+        public void Write(WriteBatch writeBatch, WriteOptions writeOptions = null)
+        {
+            Native.rocksdb_write(handle, (writeOptions ?? defaultWriteOptions).Handle, writeBatch.Handle);
+        }
+
         public void Remove(string key, WriteOptions writeOptions = null)
         {
             Native.rocksdb_delete(handle, (writeOptions ?? defaultWriteOptions).Handle, key);

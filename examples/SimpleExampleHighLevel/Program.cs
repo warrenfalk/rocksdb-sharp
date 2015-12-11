@@ -1,5 +1,6 @@
 ﻿using RocksDbSharp;
 using System;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleExampleHighLevel
@@ -44,6 +45,17 @@ namespace SimpleExampleHighLevel
                         var buffer = new byte[100];
                         long length = db.Get(key, buffer, 0, buffer.Length);
                     }
+
+                    WriteBatch batch = new WriteBatch()
+                        .Put("one", "uno")
+                        .Put("two", "deuce")
+                        .Put("two", "doce")
+                        .Put("three", "tres");
+
+                    db.Write(batch);
+
+                    var two = db.Get("two");
+                    Debug.Assert(two == "doce");
                 }
                 catch (RocksDbException)
                 {

@@ -111,5 +111,30 @@ namespace RocksDbSharp
             var bkey = (encoding ?? Encoding.UTF8).GetBytes(key);
             rocksdb_delete(db, writeOptions, bkey, bkey.LongLength, out errptr);
         }
+
+        public static void rocksdb_writebatch_put(IntPtr writeOptions, string key, string val, Encoding encoding)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key, v = val)
+                {
+                    int klength = key.Length;
+                    int vlength = val.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    int bvlength = encoding.GetByteCount(v, vlength);
+                    var buffer = Marshal.AllocHGlobal(bklength + bvlength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+                    byte* bv = bk + bklength;
+                    encoding.GetBytes(v, vlength, bv, bvlength);
+
+                    rocksdb_writebatch_put(writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength);
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
     }
 }

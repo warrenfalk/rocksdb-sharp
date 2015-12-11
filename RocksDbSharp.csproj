@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -53,6 +53,7 @@
     <Compile Include="ReadOptions.cs" />
     <Compile Include="RocksDb.cs" />
     <Compile Include="RocksDbException.cs" />
+    <Compile Include="WriteBatch.cs" />
     <Compile Include="WriteOptions.cs" />
   </ItemGroup>
   <ItemGroup>

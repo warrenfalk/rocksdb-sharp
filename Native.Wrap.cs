@@ -110,5 +110,16 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public static void rocksdb_write(
+            /*rocksdb_t**/ IntPtr db,
+            /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+            /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch)
+        {
+            IntPtr errptr;
+            rocksdb_write(db, writeOptions, writeBatch, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
     }
 }
