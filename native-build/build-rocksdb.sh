@@ -10,7 +10,6 @@ ROCKSDBREMOTE=https://github.com/warrenfalk/rocksdb
 GFLAGSREMOTE=https://github.com/warrenfalk/gflags
 SNAPPYREMOTE=https://github.com/warrenfalk/snappy
 
-RUNTESTS=YES
 CONCURRENCY=8
 
 fail() {
@@ -188,6 +187,6 @@ mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	}
 	cmd //c "msbuild build/rocksdb.sln /p:Configuration=Release /m:$CONCURRENCY" || fail "Rocksdb release build failed"
 	git checkout -- thirdparty.inc
-	mkdir -p ../../native/rocksdb && cp -v ./build/Release/rocksdb.dll ../../native/rocksdb
+	mkdir -p ../../native/amd64 && cp -v ./build/Release/rocksdb.dll ../../native/amd64/librocksdb.dll
 }) || fail "rocksdb build failed"
 
