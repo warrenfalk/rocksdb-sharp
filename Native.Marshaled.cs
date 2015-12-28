@@ -70,9 +70,8 @@ namespace RocksDbSharp
                         return null;
 
                     byte* bv = (byte*)resultPtr.ToPointer();
-                    char[] vchars;
                     int vlength = encoding.GetCharCount(bv, (int)bvlength);
-                    fixed (char *v = vchars = new char[vlength])
+                    fixed (char *v = new char[vlength])
                     {
                         encoding.GetChars(bv, (int)bvlength, v, vlength);
                         return new string(v, 0, vlength);
