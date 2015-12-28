@@ -10,13 +10,15 @@ https://github.com/facebook/rocksdb/blob/ccc8c10/examples/c_simple_example.c
 using RocksDbSharp;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace SimpleExampleLowLevel
 {
     class Program
     {
-        static string DBPath = Environment.ExpandEnvironmentVariables("%TMP%/rocksdb_simple_example");
-        static string DBBackupPath = Environment.ExpandEnvironmentVariables("%TMP%/rocksdb_simple_example_backup");
+        static string temp = Path.GetTempPath();
+        static string DBPath = Environment.ExpandEnvironmentVariables(Path.Combine(temp, "rocksdb_simple_example"));
+        static string DBBackupPath = Environment.ExpandEnvironmentVariables(Path.Combine(temp, "rocksdb_simple_example_backup"));
 
         static void Main(string[] args)
         {

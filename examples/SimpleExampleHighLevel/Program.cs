@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.IO;
 
 namespace SimpleExampleHighLevel
 {
@@ -9,7 +10,8 @@ namespace SimpleExampleHighLevel
     {
         static void Main(string[] args)
         {
-            string path = Environment.ExpandEnvironmentVariables("%TMP%/rocksdb_simple_hl_example");
+            string temp = Path.GetTempPath();
+            string path = Environment.ExpandEnvironmentVariables(Path.Combine(temp, "rocksdb_simple_hl_example"));
             // the Options class contains a set of configurable DB options
             // that determines the behavior of a database
             // Why is the syntax, SetXXX(), not very C#-like? See Options for an explanation
