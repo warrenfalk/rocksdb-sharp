@@ -186,3 +186,6 @@ UpgradeLog*.htm
 
 amd64/rocksdb.dll
 native/**/*.dll
+native/
+native*
+*.userprefs
