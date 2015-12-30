@@ -3,7 +3,7 @@
 # You therefore should install git bash, Visual Studio 2015, and cmake
 # Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
 
-ROCKSDBVERSION=c6fedf2bf
+ROCKSDBVERSION=6067cd280
 GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 
@@ -80,7 +80,7 @@ if [[ $OSINFO == *"MSYS"* ]]; then
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
-		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "wf_win_master"
+		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocskdb_sharp"
 		git checkout -- thirdparty.inc
 		patch -N < ../rocksdb.thirdparty.inc.patch || warn "Patching of thirdparty.inc failed"
 		rm -f thirdparty.inc.rej thirdparty.inc.orig
@@ -201,7 +201,7 @@ else
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
-		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "wf_win_master"
+		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocskdb_sharp"
 
 		(. ./build_tools/build_detect_platform detected~; {
 			grep detected~ -e '-DSNAPPY' &> /dev/null || fail "failed to detect snappy, install libsnappy-dev"

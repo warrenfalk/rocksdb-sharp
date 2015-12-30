@@ -17,18 +17,20 @@ namespace RocksDbSharp
         public IntPtr Handle { get { return handle; } }
 
 #if ROCKSDB_BLOCK_BASED_TABLE_OPTIONS
-        public void set_block_based_table_factory(rocksdb_block_based_table_options_t* table_options)
+        public Options SetBlockBasedTableFactory(BlockBasedTableOptions table_options)
         {
             // Args: table_options
-            Native0.rocksdb_options_set_block_based_table_factory(handle, table_options);
+            Native.rocksdb_options_set_block_based_table_factory(handle, table_options.Handle);
+            return this;
         }
 #endif
 
 #if ROCKSDB_CUCKOO_TABLE_OPTIONS
-        public void set_cuckoo_table_factory(rocksdb_cuckoo_table_options_t* table_options)
+        public Options set_cuckoo_table_factory(rocksdb_cuckoo_table_options_t* table_options)
         {
             // Args: table_options
-            Native0.rocksdb_options_set_cuckoo_table_factory(handle, table_options);
+            Native.rocksdb_options_set_cuckoo_table_factory(handle, table_options);
+            return this;
         }
 #endif
         public Options()
@@ -174,6 +176,12 @@ namespace RocksDbSharp
         public Options SetPrefixExtractor(IntPtr sliceTransform)
         {
             Native.rocksdb_options_set_prefix_extractor(handle, sliceTransform);
+            return this;
+        }
+
+        public Options SetPrefixExtractor(SliceTransform sliceTransform)
+        {
+            Native.rocksdb_options_set_prefix_extractor(handle, sliceTransform.Handle);
             return this;
         }
 
@@ -600,6 +608,12 @@ namespace RocksDbSharp
         public Options SetFifoCompactionOptions(IntPtr fifoCompactionOptions)
         {
             Native.rocksdb_options_set_fifo_compaction_options(handle, fifoCompactionOptions);
+            return this;
+        }
+
+        public Options SetMemtablePrefixBloomHugePageTlbSize(ulong size)
+        {
+            Native.rocksdb_options_set_memtable_prefix_bloom_huge_page_tlb_size(handle, size);
             return this;
         }
     }

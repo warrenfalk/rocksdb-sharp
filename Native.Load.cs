@@ -10,6 +10,8 @@ namespace RocksDbSharp
     {
         static Native()
         {
+            // Note: this works in Windows, but not Mono because mono looks up the unmanaged lib path before this static constructor completes
+            // still working on a solution
             LoadLibrary();
         }
 

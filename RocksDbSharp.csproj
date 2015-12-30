@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -55,6 +55,9 @@
     <Compile Include="RocksDbException.cs" />
     <Compile Include="WriteBatch.cs" />
     <Compile Include="WriteOptions.cs" />
+    <Compile Include="BlockBasedTableOptions.cs" />
+    <Compile Include="BloomFilterPolicy.cs" />
+    <Compile Include="SliceTransform.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />

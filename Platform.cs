@@ -61,10 +61,8 @@ namespace RocksDbSharp
 
             var path = Path.Combine("native", subdir, libname + extension);
             var handle = Load(path);
-            /*
             if (handle == IntPtr.Zero)
                 throw new Exception(string.Format("Unable to load dll at {0}", path));
-            */
         }
 
         public static IntPtr MonoLoad(string path)
@@ -75,9 +73,11 @@ namespace RocksDbSharp
             IntPtr libraryNamePtr = Marshal.StringToHGlobalAnsi(name);
             IntPtr pathPtr = Marshal.StringToHGlobalAnsi(path);
             mono_dllmap_insert(IntPtr.Zero, libraryNamePtr, IntPtr.Zero, pathPtr, IntPtr.Zero);
+            Console.WriteLine(name);
+            Console.WriteLine(path);
             Marshal.FreeHGlobal(libraryNamePtr);
             Marshal.FreeHGlobal(pathPtr);
-            return IntPtr.Zero; //dlopen(path, 9);
+            return dlopen(path, 9);
         }
     }
 }
