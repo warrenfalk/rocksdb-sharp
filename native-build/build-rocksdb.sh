@@ -3,7 +3,7 @@
 # You therefore should install git bash, Visual Studio 2015, and cmake
 # Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
 
-ROCKSDBVERSION=d4d3aa75a
+ROCKSDBVERSION=e7fbe2ef1
 GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 
@@ -198,19 +198,30 @@ elif [[ $OSDETECT == *"Darwin"* ]]; then
 	fail "Mac OSX build is not yet operational"
 else
 	echo "Assuming a linux-like environment"
+	#sudo apt-get install gcc-5-multilib g++-5-multilib
+	#sudo apt-get install libsnappy-dev:i386 libbz2-dev:i386 libsnappy-dev libbz2-dev
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
-		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocskdb_sharp"
+		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocksdb_sharp"
 
 		(. ./build_tools/build_detect_platform detected~; {
 			grep detected~ -e '-DSNAPPY' &> /dev/null || fail "failed to detect snappy, install libsnappy-dev"
-			grep detected~ -e '-DGFLAGS' &> /dev/null || fail "failed to detect gflags, install libgflags-dev"
 			grep detected~ -e '-DZLIB' &> /dev/null || fail "failed to detect zlib, install libzlib-dev"
 		}) || fail "dependency detection failed"
+		echo "----- Build 64 bit --------------------------------------------------"
+		make clean
+		make -j$CONCURRENCY shared_lib || fail "64-bit build failed"
+		strip librocksdb.so
+		mkdir -p ../../native/amd64 && cp -vL ./librocksdb.so ../../native/amd64/librocksdb.so
+		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -vL ./librocksdb.so ../../native-${ROCKSDBVERSION}/amd64/librocksdb.so
+		echo "----- Build 32 bit --------------------------------------------------"
+		make clean
+		CFLAGS=-m32 make -j$CONCURRENCY shared_lib || fail "32-bit build failed"
+		strip librocksdb.so
+		mkdir -p ../../native/i386 && cp -vL ./librocksdb.so ../../native/i386/librocksdb.so
+		mkdir -p ../../native-${ROCKSDBVERSION}/i386 && cp -vL ./librocksdb.so ../../native-${ROCKSDBVERSION}/i386/librocksdb.so
 
-		make -j$CONCURRENCY shared_lib
-		strip librocksdb.so.4.3.0
-		mkdir -p ../../native/amd64 && cp -v ./librocksdb.so.4.3.0 ../../native/amd64/librocksdb.so
+
 	}) || fail "rocksdb build failed"
 fi
