@@ -24,14 +24,14 @@ namespace NativeImport
                 case (int)PlatformID.Win32S: // Win16 NTVDM on Win x86?
                 case (int)PlatformID.Win32NT: // Windows NT
                 case (int)PlatformID.WinCE:
-                    return Importers.Load<T>(Importers.Windows, path + ".dll");
+                    return Importers.Import<T>(Importers.Windows, path + ".dll");
                 case (int)PlatformID.MacOSX:
                 case 128: // Mono Mac
-                    return Importers.Load<T>(Importers.Posix, path + ".dylib");
+                    return Importers.Import<T>(Importers.Posix, path + ".dylib");
                 case (int)PlatformID.Unix:
-                    return Importers.Load<T>(Importers.Posix, path + ".so");
+                    return Importers.Import<T>(Importers.Posix, path + ".so");
                 default:
-                    return Importers.Load<T>(Importers.Windows, path);
+                    return Importers.Import<T>(Importers.Windows, path);
             }
 
         }
@@ -126,8 +126,7 @@ namespace NativeImport
             }
         }
 
-        // TODO: refactor: rename to Import
-        public static T Load<T>(INativeLibImporter importer, string name) where T : class
+        public static T Import<T>(INativeLibImporter importer, string name) where T : class
         {
             var assemblyName = new AssemblyName("DynamicLink");
             var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
@@ -247,6 +246,7 @@ namespace NativeImport
                     il.Emit(OpCodes.Ldarg_3);
                 for (short argNum = 4; argNum <= args.Length; argNum++)
                     il.Emit(OpCodes.Ldarg_S, argNum);
+                il.Emit(OpCodes.Tailcall);
                 il.Emit(OpCodes.Callvirt, delegates[i].DelegateType.GetMethod("Invoke"));
                 il.Emit(OpCodes.Ret);
             }
