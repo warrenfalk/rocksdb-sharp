@@ -8,7 +8,7 @@ namespace RocksDbSharp
 
         public WriteOptions()
         {
-            handle = Native.rocksdb_writeoptions_create();
+            handle = Native.Instance.rocksdb_writeoptions_create();
         }
 
         public IntPtr Handle { get { return handle; } }
@@ -17,20 +17,20 @@ namespace RocksDbSharp
         {
             if (handle != IntPtr.Zero)
             {
-                Native.rocksdb_writeoptions_destroy(handle);
+                Native.Instance.rocksdb_writeoptions_destroy(handle);
                 handle = IntPtr.Zero;
             }
         }
 
         public WriteOptions SetSync(bool value)
         {
-            Native.rocksdb_writeoptions_set_sync(handle, value);
+            Native.Instance.rocksdb_writeoptions_set_sync(handle, value);
             return this;
         }
 
         public WriteOptions DisableWal(int disable)
         {
-            Native.rocksdb_writeoptions_disable_WAL(handle, disable);
+            Native.Instance.rocksdb_writeoptions_disable_WAL(handle, disable);
             return this;
         }
 

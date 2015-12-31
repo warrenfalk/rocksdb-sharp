@@ -6,18 +6,8 @@ using System.Threading.Tasks;
 
 namespace RocksDbSharp
 {
-    static partial class Native
+    public abstract partial class Native
     {
-        static Native()
-        {
-            // Note: this works in Windows, but not Mono because mono looks up the unmanaged lib path before this static constructor completes
-            // still working on a solution
-            LoadLibrary();
-        }
-
-        public static void LoadLibrary()
-        {
-            Platform.Load("librocksdb");
-        }
+        public static Native Instance = NativeImport.Auto.Import<Native>("librocksdb");
     }
 }

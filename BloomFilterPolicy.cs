@@ -18,7 +18,7 @@ namespace RocksDbSharp
         {
             if (handle != IntPtr.Zero)
             {
-                Native.rocksdb_filterpolicy_destroy(handle);
+                Native.Instance.rocksdb_filterpolicy_destroy(handle);
                 handle = IntPtr.Zero;
             }
         }
@@ -42,7 +42,7 @@ namespace RocksDbSharp
         /// </summary>
         /// <param name="bits_per_key">Bits per key.</param>
         public static BloomFilterPolicy Create(int bits_per_key = 10, bool use_block_based_builder = true) {
-            IntPtr handle = use_block_based_builder ? Native.rocksdb_filterpolicy_create_bloom(bits_per_key) : Native.rocksdb_filterpolicy_create_bloom_full(bits_per_key);
+            IntPtr handle = use_block_based_builder ? Native.Instance.rocksdb_filterpolicy_create_bloom(bits_per_key) : Native.Instance.rocksdb_filterpolicy_create_bloom_full(bits_per_key);
             return new BloomFilterPolicy(handle);
         }
     }

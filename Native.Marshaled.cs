@@ -9,9 +9,9 @@ using System.Text;
 
 namespace RocksDbSharp
 {
-    public static partial class Native
+    public abstract partial class Native
     {
-        public static void rocksdb_put(
+        public void rocksdb_put(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             string key,
@@ -41,7 +41,7 @@ namespace RocksDbSharp
             }
         }
 
-        public static string rocksdb_get(
+        public string rocksdb_get(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_readoptions_t**/ IntPtr read_options,
             string key,
@@ -80,7 +80,7 @@ namespace RocksDbSharp
             }
         }
 
-        public static byte[] rocksdb_get(
+        public byte[] rocksdb_get(
             IntPtr db,
             IntPtr read_options,
             byte[] key,
@@ -100,7 +100,7 @@ namespace RocksDbSharp
 
 
 
-        public static void rocksdb_delete(
+        public void rocksdb_delete(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             /*const*/ string key,
@@ -111,7 +111,7 @@ namespace RocksDbSharp
             rocksdb_delete(db, writeOptions, bkey, bkey.LongLength, out errptr);
         }
 
-        public static void rocksdb_writebatch_put(IntPtr writeOptions, string key, string val, Encoding encoding)
+        public void rocksdb_writebatch_put(IntPtr writeOptions, string key, string val, Encoding encoding)
         {
             unsafe
             {

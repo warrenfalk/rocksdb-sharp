@@ -14,7 +14,7 @@ namespace RocksDbSharp
         public RocksDbException(IntPtr errptr)
             : this(Marshal.PtrToStringAnsi(errptr))
         {
-            Native.rocksdb_free(errptr);
+            Native.Instance.rocksdb_free(errptr);
         }
     }
 }

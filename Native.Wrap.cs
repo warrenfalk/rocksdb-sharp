@@ -6,9 +6,9 @@ namespace RocksDbSharp
     /*
     These wrappers provide translation from the error output of the C API into exceptions
     */
-    public static partial class Native
+    public abstract partial class Native
     {
-        public static IntPtr rocksdb_open(
+        public IntPtr rocksdb_open(
             /* const rocksdb_options_t* */ IntPtr options,
             string name)
         {
@@ -19,7 +19,7 @@ namespace RocksDbSharp
             return result;
         }
 
-        public static void rocksdb_put(
+        public void rocksdb_put(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             string key,
@@ -32,7 +32,7 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
-        public static void rocksdb_put(
+        public void rocksdb_put(
             IntPtr db,
             IntPtr writeOptions,
             byte[] key,
@@ -47,7 +47,7 @@ namespace RocksDbSharp
         }
 
 
-        public static string rocksdb_get(
+        public string rocksdb_get(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_readoptions_t**/ IntPtr read_options,
             string key,
@@ -60,7 +60,7 @@ namespace RocksDbSharp
             return result;
         }
 
-        public static IntPtr rocksdb_get(
+        public IntPtr rocksdb_get(
             IntPtr db,
             IntPtr read_options,
             byte[] key,
@@ -74,7 +74,7 @@ namespace RocksDbSharp
             return result;
         }
 
-        public static byte[] rocksdb_get(
+        public byte[] rocksdb_get(
             IntPtr db,
             IntPtr read_options,
             byte[] key,
@@ -87,7 +87,7 @@ namespace RocksDbSharp
             return result;
         }
 
-        public static void rocksdb_delete(
+        public void rocksdb_delete(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             /*const*/ string key)
@@ -98,7 +98,7 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
-        public static void rocksdb_delete(
+        public void rocksdb_delete(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             /*const*/ byte[] key,
@@ -110,7 +110,7 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
-        public static void rocksdb_write(
+        public void rocksdb_write(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch)

@@ -21,20 +21,20 @@ namespace RocksDbSharp
 
         public void Dispose()
         {
-            Native.rocksdb_close(handle);
+            Native.Instance.rocksdb_close(handle);
         }
 
         IntPtr IRocksDbHandle.Handle { get { return handle; } }
 
         public static RocksDb Open(Options options, string path)
         {
-            IntPtr db = Native.rocksdb_open(options.Handle, path);
+            IntPtr db = Native.Instance.rocksdb_open(options.Handle, path);
             return new RocksDb(db);
         }
 
         public string Get(string key, ReadOptions readOptions = null, Encoding encoding = null)
         {
-            return Native.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, encoding ?? defaultEncoding);
+            return Native.Instance.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, encoding ?? defaultEncoding);
         }
 
         public byte[] Get(byte[] key, ReadOptions readOptions = null)
@@ -44,7 +44,7 @@ namespace RocksDbSharp
 
         public byte[] Get(byte[] key, long keyLength, ReadOptions readOptions = null)
         {
-            return Native.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, keyLength);
+            return Native.Instance.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, keyLength);
         }
 
         public long Get(byte[] key, byte[] buffer, long offset, long length, ReadOptions readOptions = null)
@@ -57,22 +57,22 @@ namespace RocksDbSharp
             unsafe
             {
                 long valLength;
-                var ptr = Native.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, keyLength, out valLength);
+                var ptr = Native.Instance.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, keyLength, out valLength);
                 valLength = Math.Min(length, valLength);
                 Marshal.Copy(ptr, buffer, (int)offset, (int)valLength);
-                Native.rocksdb_free(ptr);
+                Native.Instance.rocksdb_free(ptr);
                 return valLength;
             }
         }
 
         public void Write(WriteBatch writeBatch, WriteOptions writeOptions = null)
         {
-            Native.rocksdb_write(handle, (writeOptions ?? defaultWriteOptions).Handle, writeBatch.Handle);
+            Native.Instance.rocksdb_write(handle, (writeOptions ?? defaultWriteOptions).Handle, writeBatch.Handle);
         }
 
         public void Remove(string key, WriteOptions writeOptions = null)
         {
-            Native.rocksdb_delete(handle, (writeOptions ?? defaultWriteOptions).Handle, key);
+            Native.Instance.rocksdb_delete(handle, (writeOptions ?? defaultWriteOptions).Handle, key);
         }
 
         public void Remove(byte[] key, WriteOptions writeOptions = null)
@@ -82,12 +82,12 @@ namespace RocksDbSharp
 
         public void Remove(byte[] key, long keyLength, WriteOptions writeOptions = null)
         {
-            Native.rocksdb_delete(handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength);
+            Native.Instance.rocksdb_delete(handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength);
         }
 
         public void Put(string key, string value, WriteOptions writeOptions = null, Encoding encoding = null)
         {
-            Native.rocksdb_put(handle, (writeOptions ?? defaultWriteOptions).Handle, key, value, encoding ?? defaultEncoding);
+            Native.Instance.rocksdb_put(handle, (writeOptions ?? defaultWriteOptions).Handle, key, value, encoding ?? defaultEncoding);
         }
 
         public void Put(byte[] key, byte[] value, WriteOptions writeOptions = null)
@@ -97,7 +97,7 @@ namespace RocksDbSharp
 
         public void Put(byte[] key, long keyLength, byte[] value, long valueLength, WriteOptions writeOptions = null)
         {
-            Native.rocksdb_put(handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength, value, valueLength);
+            Native.Instance.rocksdb_put(handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength, value, valueLength);
         }
     }
 }

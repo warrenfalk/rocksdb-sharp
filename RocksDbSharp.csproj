@@ -58,6 +58,7 @@
     <Compile Include="BlockBasedTableOptions.cs" />
     <Compile Include="BloomFilterPolicy.cs" />
     <Compile Include="SliceTransform.cs" />
+    <Compile Include="AutoNativeImport.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
