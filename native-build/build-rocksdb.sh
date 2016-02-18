@@ -197,9 +197,31 @@ if [[ $OSINFO == *"MSYS"* ]]; then
 elif [[ $OSDETECT == *"Darwin"* ]]; then
 	fail "Mac OSX build is not yet operational"
 else
-	echo "Assuming a linux-like environment"
+	echo "Assuming a posix-like environment"
+	if [ "$(uname)" == "Darwin" ]; then
+		echo "Mac (Darwin) detected"
+		LIBEXT=.dylib
+	else
+		LIBEXT=.so
+	fi
+	# Linux Dependencies
 	#sudo apt-get install gcc-5-multilib g++-5-multilib
 	#sudo apt-get install libsnappy-dev:i386 libbz2-dev:i386 libsnappy-dev libbz2-dev
+
+	# Mac Dependencies
+	#brew install snappy --universal
+    # Don't have universal version of lz4 through brew, have to build manually
+	# git clone git@github.com:Cyan4973/lz4.git
+	# make -C lz4/lib
+	# cp -L lz4/lib/liblz4.dylib ./liblz4_64.dylib
+	# make -C lz4/lib clean
+	# CFLAGS="-arch i386" CXXFLAGS="-arch i386" LDFLAGS="-arch i386" make -C lz4/lib
+	# cp -L lz4/lib/liblz4.dylib ./liblz4_32.dylib
+	# lipo -create ./liblz4_32.dylib ./liblz4_64.dylib -output ./liblz4.dylib
+	# cp -v ./liblz4.dylib lz4/lib/$(readlink lz4/lib/liblz4.dylib)
+	# touch lz4/lib/liblz4
+	# make -C lz4/lib install
+
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
@@ -212,15 +234,15 @@ else
 		echo "----- Build 64 bit --------------------------------------------------"
 		make clean
 		make -j$CONCURRENCY shared_lib || fail "64-bit build failed"
-		strip librocksdb.so
-		mkdir -p ../../native/amd64 && cp -vL ./librocksdb.so ../../native/amd64/librocksdb.so
-		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -vL ./librocksdb.so ../../native-${ROCKSDBVERSION}/amd64/librocksdb.so
+		strip librocksdb${LIBEXT}
+		mkdir -p ../../native/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native/amd64/librocksdb${LIBEXT}
+		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/amd64/librocksdb${LIBEXT}
 		echo "----- Build 32 bit --------------------------------------------------"
 		make clean
 		CFLAGS=-m32 make -j$CONCURRENCY shared_lib || fail "32-bit build failed"
-		strip librocksdb.so
-		mkdir -p ../../native/i386 && cp -vL ./librocksdb.so ../../native/i386/librocksdb.so
-		mkdir -p ../../native-${ROCKSDBVERSION}/i386 && cp -vL ./librocksdb.so ../../native-${ROCKSDBVERSION}/i386/librocksdb.so
+		strip librocksdb${LIBEXT}
+		mkdir -p ../../native/i386 && cp -vL ./librocksdb${LIBEXT} ../../native/i386/librocksdb${LIBEXT}
+		mkdir -p ../../native-${ROCKSDBVERSION}/i386 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/i386/librocksdb${LIBEXT}
 
 
 	}) || fail "rocksdb build failed"
