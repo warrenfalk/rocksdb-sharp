@@ -1,6 +1,6 @@
 ﻿# rocksdb-sharp
 
-## RocksDb for C#
+## RocksDb for C# #
 RocksDB is a key-value database with a log-structured-merge design, optimized for flash and RAM storage,
 which can be tuned to balance write-, read-, and space-amplification factors.
 
@@ -36,16 +36,26 @@ This project also contains a build script for building the rocksdb library on wi
 
 ## Building Native Library
 
-Rocksdb-sharp relies on a native binary.
-Thanks to the Bing team at Microsoft who now also use rocksdb
-and have contributed back to the community, there is now a Windows build.
-Rocksdb-sharp should work on any platform as long as the native library is available.
+This repository includes scripts to enable you to build the native library. For now you must build them yourself but prebuilt binaries are expected to eventually be hosted.
 
-### Windows
+(This is not a native C# library and the difficulty of a potential native C# library almost certainly far exceeds any usefulness of such a thing and so is not planned and will probably never exist).
 
-Required: Git (git bash environment), CMake, Visual Studio 2015 (2012 update 4 may work but is untested).
+This is now buildable on Windows thanks to the Bing team at Microsoft who are actively using rocksdb.  Rocksdb-sharp should work on any platform if the native library is available.
 
-Open git bash, cd to native-build and run build-rocksdb.sh
+### Windows Native Build Instructions
+
+#### Prerequisities:
+* Git for Windows (specifically, the git bash environment)
+* CMake
+* Visual Studio 2015 (2012 update 4 might work, but I have not tested it)
+
+#### Build Instructions:
+1. Open "Developer Command Prompt for VS2015"
+2. Run git's ```bash.exe```
+3. cd to the ```native-build``` folder within the repository
+4. execute ```./build-rocksdb.sh```
+
+This will create a librocksdb.dll and copy it to the where the .sln file is expecting it to be.  (If you only need to run this in Windows, you can remove the references to the other two platform binaries from the .sln)
 
 ### Linux
 
