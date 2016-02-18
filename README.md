@@ -30,6 +30,10 @@ using (var db = RocksDb.Open(options, path))
 }
 ```
 
+### Requirements
+
+On Linux and Mac, the snappy library (libsnappy) must be installed.
+
 ## Caveats and Warnings:
 
 ### 64-bit only
