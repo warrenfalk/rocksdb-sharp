@@ -80,7 +80,7 @@ if [[ $OSINFO == *"MSYS"* ]]; then
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
-		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocskdb_sharp"
+		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocksdb_sharp"
 		git checkout -- thirdparty.inc
 		patch -N < ../rocksdb.thirdparty.inc.patch || warn "Patching of thirdparty.inc failed"
 		rm -f thirdparty.inc.rej thirdparty.inc.orig
