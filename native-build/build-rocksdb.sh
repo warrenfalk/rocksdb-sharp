@@ -200,8 +200,10 @@ else
 	echo "Assuming a posix-like environment"
 	if [ "$(uname)" == "Darwin" ]; then
 		echo "Mac (Darwin) detected"
+		CFLAGS=
 		LIBEXT=.dylib
 	else
+		CFLAGS=-static-libstdc++
 		LIBEXT=.so
 	fi
 	# Linux Dependencies
@@ -233,13 +235,13 @@ else
 		}) || fail "dependency detection failed"
 		echo "----- Build 64 bit --------------------------------------------------"
 		make clean
-		make -j$CONCURRENCY shared_lib || fail "64-bit build failed"
+		CFLAGS="${CFLAGS}" make -j$CONCURRENCY shared_lib || fail "64-bit build failed"
 		strip librocksdb${LIBEXT}
 		mkdir -p ../../native/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native/amd64/librocksdb${LIBEXT}
 		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/amd64/librocksdb${LIBEXT}
 		echo "----- Build 32 bit --------------------------------------------------"
 		make clean
-		CFLAGS=-m32 make -j$CONCURRENCY shared_lib || fail "32-bit build failed"
+		CFLAGS="${CFLAGS} -m32" make -j$CONCURRENCY shared_lib || fail "32-bit build failed"
 		strip librocksdb${LIBEXT}
 		mkdir -p ../../native/i386 && cp -vL ./librocksdb${LIBEXT} ../../native/i386/librocksdb${LIBEXT}
 		mkdir -p ../../native-${ROCKSDBVERSION}/i386 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/i386/librocksdb${LIBEXT}
