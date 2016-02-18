@@ -3,7 +3,7 @@
 # You therefore should install git bash, Visual Studio 2015, and cmake
 # Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
 
-ROCKSDBVERSION=e7fbe2ef1
+ROCKSDBVERSION=d733dd572
 GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 
@@ -35,7 +35,7 @@ checkout() {
 	FETCHREF="$4"
 	test -d .git || git init
 	test -d .git || fail "unable to initialize $NAME repository"
-	git fetch "$REMOTE" "${FETCHREF}" || fail "Unable to fetch latest $NAME"
+	git fetch "$REMOTE" "${FETCHREF}" || fail "Unable to fetch latest ${FETCHREF} from {$REMOTE}"
 	git checkout "$VERSION" || fail "Unable to checkout $NAME version ${VERSION}"
 }
 
