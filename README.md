@@ -30,9 +30,17 @@ using (var db = RocksDb.Open(options, path))
 }
 ```
 
+## Caveats and Warnings:
+
+### 64-bit only
+RocksDb is supported only in 64-bit mode. Although I contributed a fix that allows it to compile in 32-bit mode, this is untested and unsupported, may not work at all, and almost certainly will have at least some major issues and should not be attempted in production.
+
+### Non-stable Native
+The current version of rocksdb that makes this possible is not yet released and so this will currently build straight off the last commit I selected from the rocksdb master branch. Don't use this in production yet.
+
 ## Extras
 
-This project also contains a build script for building the rocksdb library on windows.
+This project also contains a build script for building the rocksdb library on Windows, which is useful on its own.  (It also builds Linux and Mac, but these are natively supported and so are not difficult)
 
 ## Building Native Library
 
@@ -57,17 +65,20 @@ This is now buildable on Windows thanks to the Bing team at Microsoft who are ac
 
 This will create a librocksdb.dll and copy it to the where the .sln file is expecting it to be.  (If you only need to run this in Windows, you can remove the references to the other two platform binaries from the .sln)
 
-### Linux
+### Linux Native Build Instructions
 
-TODO: add instructions
+1. ```cd native-build```
+2. ```./build-rocksdb.sh```
 
-### Mac
+### Mac Native Build Instructions
 
-TODO: add instructions
+1. ```cd native-build```
+2. ```./build-rocksdb.sh```
+
+Note: the Mono environment that is most used on a Mac is 32-bit, but Rocksdb is 64-bit only. Although a change I contributed now allows RocksDb to compile in 32 bit, it is not supported and may not work.  You should definitely only run 64-bit Mono to use RocksDb with Mono on Mac.
 
 ## TODO
 
   * Many of the C-API functions imports are still under development.
   * Eventually this will be made availabe by NuGet.
-  * Libraries for Linux and MacOS need to be built.
-
+  
