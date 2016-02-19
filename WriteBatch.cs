@@ -126,6 +126,11 @@ namespace RocksDbSharp
             return this;
         }
 
+        public WriteBatch Delete(byte[] key)
+        {
+            return Delete(key, (ulong)key.Length);
+        }
+
         public WriteBatch Delete(byte[] key, ulong klen)
         {
             Native.Instance.rocksdb_writebatch_delete(handle, key, klen);
