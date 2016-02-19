@@ -53,6 +53,11 @@ namespace RocksDbSharp
             return this;
         }
 
+        public WriteBatch Put(byte[] key, byte[] val)
+        {
+            return Put(key, (ulong)key.Length, val, (ulong)val.Length);
+        }
+
         public WriteBatch Put(byte[] key, ulong klen, byte[] val, ulong vlen)
         {
             Native.Instance.rocksdb_writebatch_put(handle, key, klen, val, vlen);

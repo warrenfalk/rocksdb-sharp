@@ -48,13 +48,32 @@ namespace SimpleExampleHighLevel
                         long length = db.Get(key, buffer, 0, buffer.Length);
                     }
 
-                    WriteBatch batch = new WriteBatch()
-                        .Put("one", "uno")
-                        .Put("two", "deuce")
-                        .Put("two", "doce")
-                        .Put("three", "tres");
+                    {
+                        // Removal of non-existent keys
+                        db.Remove("I don't exist");
+                    }
 
-                    db.Write(batch);
+                    {
+                        // Write batches
+                        // With strings
+                        using (WriteBatch batch = new WriteBatch()
+                            .Put("one", "uno")
+                            .Put("two", "deuce")
+                            .Put("two", "doce")
+                            .Put("three", "tres"))
+                        {
+                            db.Write(batch);
+                        }
+
+                        // With bytes
+                        var utf8 = Encoding.UTF8;
+                        using (WriteBatch batch = new WriteBatch()
+                            .Put(utf8.GetBytes("four"), new byte[] { 4, 4, 4 } )
+                            .Put(utf8.GetBytes("five"), new byte[] { 5, 5, 5 } ))
+                        {
+                            db.Write(batch);
+                        }
+                    }
 
                     var two = db.Get("two");
                     Debug.Assert(two == "doce");
