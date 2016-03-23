@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace RocksDbSharp
@@ -121,5 +122,22 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public byte[] rocksdb_iter_key(IntPtr iterator)
+        {
+            ulong length;
+            IntPtr buffer = rocksdb_iter_key(iterator, out length);
+            byte[] result = new byte[(int)length];
+            Marshal.Copy(buffer, result, 0, (int)length);
+            return result;
+        }
+
+        public byte[] rocksdb_iter_value(IntPtr iterator)
+        {
+            ulong length;
+            IntPtr buffer = rocksdb_iter_value(iterator, out length);
+            byte[] result = new byte[(int)length];
+            Marshal.Copy(buffer, result, 0, (int)length);
+            return result;
+        }
     }
 }

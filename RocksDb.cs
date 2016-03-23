@@ -99,5 +99,11 @@ namespace RocksDbSharp
         {
             Native.Instance.rocksdb_put(handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength, value, valueLength);
         }
+
+        public Iterator NewIterator(ReadOptions readOptions = null)
+        {
+            IntPtr iteratorHandle = Native.Instance.rocksdb_create_iterator(handle, (readOptions ?? defaultReadOptions).Handle);
+            return new Iterator(iteratorHandle);
+        }
     }
 }

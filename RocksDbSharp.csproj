@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM;ROCKSDB_ITERATOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM</DefineConstants>
+    <DefineConstants>TRACE;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM;ROCKSDB_ITERATOR</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IRocksDbHandle.cs" />
+    <Compile Include="Iterator.cs" />
     <Compile Include="Native.Wrap.cs" />
     <Compile Include="Native.Raw.cs" />
     <Compile Include="Native.Load.cs" />

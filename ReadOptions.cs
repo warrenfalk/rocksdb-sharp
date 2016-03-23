@@ -50,6 +50,23 @@ namespace RocksDbSharp
             return this;
         }
 
+        public ReadOptions SetIterateUpperBound(byte[] key, ulong keyLen)
+        {
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(handle, key, keyLen);
+            return this;
+        }
+
+        public ReadOptions SetIterateUpperBound(byte[] key)
+        {
+            return SetIterateUpperBound(key, (ulong)key.LongLength);
+        }
+
+        public unsafe ReadOptions SetIterateUpperBound(string key)
+        {
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(handle, key);
+            return this;
+        }
+
         public ReadOptions SetReadTier(int value)
         {
             Native.Instance.rocksdb_readoptions_set_read_tier(handle, value);

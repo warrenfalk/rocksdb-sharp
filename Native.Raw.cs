@@ -315,21 +315,23 @@ public abstract void rocksdb_repair_db(
 #region Iterator
 #if ROCKSDB_ITERATOR
 
-public abstract void rocksdb_iter_destroy(rocksdb_iterator_t*);
+public abstract void rocksdb_iter_destroy(/*(rocksdb_iterator_t*)*/ IntPtr iter);
 public abstract bool rocksdb_iter_valid(
-    const rocksdb_iterator_t*);
-public abstract void rocksdb_iter_seek_to_first(rocksdb_iterator_t*);
-public abstract void rocksdb_iter_seek_to_last(rocksdb_iterator_t*);
-public abstract void rocksdb_iter_seek(rocksdb_iterator_t*,
-                                                  const char* k, /*(size_t)*/ ulong klen);
-public abstract void rocksdb_iter_next(rocksdb_iterator_t*);
-public abstract void rocksdb_iter_prev(rocksdb_iterator_t*);
+    /*(const rocksdb_iterator_t*)*/ IntPtr iter);
+public abstract void rocksdb_iter_seek_to_first(/*(rocksdb_iterator_t*)*/ IntPtr iter);
+public abstract void rocksdb_iter_seek_to_last(/*(rocksdb_iterator_t*)*/ IntPtr iter);
+public unsafe abstract void rocksdb_iter_seek(/*(rocksdb_iterator_t*)*/ IntPtr iter,
+                                                  /*(const char*)*/ byte* k, /*(size_t)*/ ulong klen);
+public abstract void rocksdb_iter_seek(/*(rocksdb_iterator_t*)*/ IntPtr iter,
+                                                  /*(const char*)*/ byte[] k, /*(size_t)*/ ulong klen);
+public abstract void rocksdb_iter_next(/*(rocksdb_iterator_t*)*/ IntPtr iter);
+public abstract void rocksdb_iter_prev(/*(rocksdb_iterator_t*)*/ IntPtr iter);
 public abstract /* const char* */ IntPtr rocksdb_iter_key(
-    const rocksdb_iterator_t*, size_t* klen);
+    /*(const rocksdb_iterator_t*)*/ IntPtr iter, /*(size_t*)*/ out ulong klen);
 public abstract /* const char* */ IntPtr rocksdb_iter_value(
-    const rocksdb_iterator_t*, size_t* vlen);
+    /*(const rocksdb_iterator_t*)*/ IntPtr iter, /*(size_t*)*/ out ulong vlen);
 public abstract void rocksdb_iter_get_error(
-    const rocksdb_iterator_t*, out IntPtr errptr);
+    /*(const rocksdb_iterator_t*)*/ IntPtr iter, out IntPtr errptr);
 
 #endif
 #endregion
@@ -824,6 +826,8 @@ public abstract void rocksdb_readoptions_set_snapshot(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*(const rocksdb_snapshot_t*)*/ IntPtr snapshot);
 public unsafe abstract void rocksdb_readoptions_set_iterate_upper_bound(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*const*/ byte* key, ulong keylen);
+public abstract void rocksdb_readoptions_set_iterate_upper_bound(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*const*/ byte[] key, ulong keylen);
 public abstract void rocksdb_readoptions_set_read_tier(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, int value);
 public abstract void rocksdb_readoptions_set_tailing(

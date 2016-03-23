@@ -77,6 +77,19 @@ namespace SimpleExampleHighLevel
 
                     var two = db.Get("two");
                     Debug.Assert(two == "doce");
+
+                    {
+                        // Iterators
+                        using (ReadOptions readOpts = new ReadOptions().SetIterateUpperBound("t"))
+                        using (var iterator = db.NewIterator(readOpts))
+                        {
+                            for (iterator.Seek("k"); iterator.Valid(); iterator.Next())
+                            {
+                                Console.WriteLine(iterator.StringKey() + " -> " + iterator.StringValue());
+                            }
+                        }
+                    }
+
                 }
                 catch (RocksDbException)
                 {

@@ -135,5 +135,93 @@ namespace RocksDbSharp
             }
         }
 
+        public void rocksdb_iter_seek(
+            IntPtr iter,
+            string key,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key)
+                {
+                    int klength = key.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    rocksdb_iter_seek(iter, bk, (ulong)bklength);
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
+
+        public void rocksdb_readoptions_set_iterate_upper_bound(
+            /*(rocksdb_readoptions_t*)*/ IntPtr read_options,
+            /*const*/ string key,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key)
+                {
+                    int klength = key.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    rocksdb_readoptions_set_iterate_upper_bound(read_options, bk, (ulong)bklength);
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
+        public string rocksdb_iter_key_string(
+            /*rocksdb_t**/ IntPtr iter,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            ulong bklength;
+            unsafe
+            {
+                var resultPtr = rocksdb_iter_key(iter, out bklength);
+
+                byte* bk = (byte*)resultPtr.ToPointer();
+                int klength = encoding.GetCharCount(bk, (int)bklength);
+                fixed (char* k = new char[klength])
+                {
+                    encoding.GetChars(bk, (int)bklength, k, klength);
+                    return new string(k, 0, klength);
+                }
+            }
+        }
+
+        public string rocksdb_iter_value_string(
+            /*rocksdb_t**/ IntPtr iter,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            ulong bvlength;
+            unsafe
+            {
+                var resultPtr = rocksdb_iter_value(iter, out bvlength);
+
+                byte* bv = (byte*)resultPtr.ToPointer();
+                int vlength = encoding.GetCharCount(bv, (int)bvlength);
+                fixed (char* v = new char[vlength])
+                {
+                    encoding.GetChars(bv, (int)bvlength, v, vlength);
+                    return new string(v, 0, vlength);
+                }
+            }
+        }
     }
 }
