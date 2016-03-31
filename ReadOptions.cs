@@ -9,6 +9,7 @@ namespace RocksDbSharp
     public class ReadOptions : IDisposable, IRocksDbHandle
     {
         private IntPtr handle;
+        private byte[] iterateUpperBound;
 
         public ReadOptions()
         {
@@ -52,19 +53,21 @@ namespace RocksDbSharp
 
         public ReadOptions SetIterateUpperBound(byte[] key, ulong keyLen)
         {
+            iterateUpperBound = key; // necessary because the value will not be copied and so may be gone by the time it is needed
             Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(handle, key, keyLen);
             return this;
         }
 
         public ReadOptions SetIterateUpperBound(byte[] key)
         {
+            iterateUpperBound = key; // necessary because the value will not be copied and so may be gone by the time it is needed
             return SetIterateUpperBound(key, (ulong)key.LongLength);
         }
 
-        public unsafe ReadOptions SetIterateUpperBound(string key)
+        public unsafe ReadOptions SetIterateUpperBound(string stringKey, Encoding encoding = null)
         {
-            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(handle, key);
-            return this;
+            var key = (encoding ?? Encoding.UTF8).GetBytes(stringKey);
+            return SetIterateUpperBound(key);
         }
 
         public ReadOptions SetReadTier(int value)

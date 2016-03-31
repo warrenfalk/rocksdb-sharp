@@ -36,6 +36,9 @@ namespace RocksDbSharp
                     encoding.GetBytes(v, vlength, bv, bvlength);
 
                     rocksdb_put(db, writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
                     Marshal.FreeHGlobal(buffer);
                 }
             }
@@ -62,6 +65,9 @@ namespace RocksDbSharp
                     encoding.GetBytes(k, klength, bk, bklength);
 
                     var resultPtr = rocksdb_get(db, read_options, bk, (ulong)bklength, out bvlength, out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
                     Marshal.FreeHGlobal(buffer);
 
                     if (errptr != IntPtr.Zero)
@@ -130,6 +136,9 @@ namespace RocksDbSharp
                     encoding.GetBytes(v, vlength, bv, bvlength);
 
                     rocksdb_writebatch_put(writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
                     Marshal.FreeHGlobal(buffer);
                 }
             }
@@ -153,34 +162,24 @@ namespace RocksDbSharp
                     encoding.GetBytes(k, klength, bk, bklength);
 
                     rocksdb_iter_seek(iter, bk, (ulong)bklength);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
                     Marshal.FreeHGlobal(buffer);
                 }
             }
         }
 
-
-        public void rocksdb_readoptions_set_iterate_upper_bound(
-            /*(rocksdb_readoptions_t*)*/ IntPtr read_options,
-            /*const*/ string key,
-            Encoding encoding = null)
+#if DEBUG
+        // Zero out memory before freeing it when in debug mode so that we see problems
+        // resulting from the contents still being used on the native side
+        private unsafe static void Zero(byte* bk, int bklength)
         {
-            unsafe
-            {
-                if (encoding == null)
-                    encoding = Encoding.UTF8;
-                fixed (char* k = key)
-                {
-                    int klength = key.Length;
-                    int bklength = encoding.GetByteCount(k, klength);
-                    var buffer = Marshal.AllocHGlobal(bklength);
-                    byte* bk = (byte*)buffer.ToPointer();
-                    encoding.GetBytes(k, klength, bk, bklength);
-
-                    rocksdb_readoptions_set_iterate_upper_bound(read_options, bk, (ulong)bklength);
-                    Marshal.FreeHGlobal(buffer);
-                }
-            }
+            var end = bk + bklength;
+            for (; bk < end; bk++)
+                *bk = 0;
         }
+#endif
 
         public string rocksdb_iter_key_string(
             /*rocksdb_t**/ IntPtr iter,

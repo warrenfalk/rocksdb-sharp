@@ -83,10 +83,15 @@ namespace SimpleExampleHighLevel
                         using (ReadOptions readOpts = new ReadOptions().SetIterateUpperBound("t"))
                         using (var iterator = db.NewIterator(readOpts))
                         {
-                            for (iterator.Seek("k"); iterator.Valid(); iterator.Next())
-                            {
-                                Console.WriteLine(iterator.StringKey() + " -> " + iterator.StringValue());
-                            }
+                            iterator.Seek("k");
+                            Debug.Assert(iterator.Valid());
+                            Debug.Assert(iterator.StringKey() == "key");
+                            iterator.Next();
+                            Debug.Assert(iterator.Valid());
+                            Debug.Assert(iterator.StringKey() == "one");
+                            Debug.Assert(iterator.StringValue() == "uno");
+                            iterator.Next();
+                            Debug.Assert(!iterator.Valid());
                         }
                     }
 
