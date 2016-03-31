@@ -23,7 +23,7 @@ namespace PrefixExample
                 .SetFilterPolicy(BloomFilterPolicy.Create(10, false))
                 .SetWholeKeyFiltering(false)
             )
-            using (var options = new Options()
+            using (var options = new DbOptions()
                 .SetCreateIfMissing(true)
                 .SetWriteBufferSize(writeBufferSize)
                 .SetMaxWriteBufferNumber(maxWriteBufferNumber)

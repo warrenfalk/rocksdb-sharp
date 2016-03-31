@@ -26,7 +26,7 @@ namespace RocksDbSharp
 
         IntPtr IRocksDbHandle.Handle { get { return handle; } }
 
-        public static RocksDb Open(Options options, string path)
+        public static RocksDb Open(OptionsHandle options, string path)
         {
             IntPtr db = Native.Instance.rocksdb_open(options.Handle, path);
             return new RocksDb(db);
