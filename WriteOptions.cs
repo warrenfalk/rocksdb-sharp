@@ -2,35 +2,33 @@
 
 namespace RocksDbSharp
 {
-    public class WriteOptions : IDisposable, IRocksDbHandle
+    public class WriteOptions
     {
-        private IntPtr handle;
-
         public WriteOptions()
         {
-            handle = Native.Instance.rocksdb_writeoptions_create();
+            Handle = Native.Instance.rocksdb_writeoptions_create();
         }
 
-        public IntPtr Handle { get { return handle; } }
+        public IntPtr Handle { get; protected set; }
 
-        public void Dispose()
+        ~WriteOptions()
         {
-            if (handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
-                Native.Instance.rocksdb_writeoptions_destroy(handle);
-                handle = IntPtr.Zero;
+                Native.Instance.rocksdb_writeoptions_destroy(Handle);
+                Handle = IntPtr.Zero;
             }
         }
 
         public WriteOptions SetSync(bool value)
         {
-            Native.Instance.rocksdb_writeoptions_set_sync(handle, value);
+            Native.Instance.rocksdb_writeoptions_set_sync(Handle, value);
             return this;
         }
 
         public WriteOptions DisableWal(int disable)
         {
-            Native.Instance.rocksdb_writeoptions_disable_WAL(handle, disable);
+            Native.Instance.rocksdb_writeoptions_disable_WAL(Handle, disable);
             return this;
         }
 

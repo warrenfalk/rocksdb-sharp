@@ -15,7 +15,7 @@ namespace SimpleExampleHighLevel
             // the Options class contains a set of configurable DB options
             // that determines the behavior of a database
             // Why is the syntax, SetXXX(), not very C#-like? See Options for an explanation
-            using (var options = new DbOptions().SetCreateIfMissing(true))
+            var options = new DbOptions().SetCreateIfMissing(true);
             using (var db = RocksDb.Open(options, path))
             {
                 try
@@ -80,7 +80,8 @@ namespace SimpleExampleHighLevel
 
                     {
                         // Iterators
-                        using (ReadOptions readOpts = new ReadOptions().SetIterateUpperBound("t"))
+                        var readOpts = new ReadOptions()
+                            .SetIterateUpperBound("t");
                         using (var iterator = db.NewIterator(readOpts))
                         {
                             iterator.Seek("k");

@@ -7,13 +7,23 @@ using System.Threading.Tasks;
 
 namespace RocksDbSharp
 {
-    public class Iterator : IDisposable, IRocksDbHandle
+    public class Iterator : IDisposable
     {
         private IntPtr handle;
+        private ReadOptions readOptions;
 
         internal Iterator(IntPtr handle)
         {
             this.handle = handle;
+        }
+
+        internal Iterator(IntPtr handle, ReadOptions readOptions) : this(handle)
+        {
+            // Note: passing readOptions in here has no actual effect except to keep readOptions
+            // from being garbage collected whilst the Iterator is still alive because the
+            // the iterator on the native side will actually read things from some of the readOptions
+            // directly
+            this.readOptions = readOptions;
         }
 
         public IntPtr Handle { get { return handle; } }

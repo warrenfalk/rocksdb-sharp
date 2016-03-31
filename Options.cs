@@ -10,7 +10,7 @@ namespace RocksDbSharp
        1. The rocksdb C API does not support reading the options and so a class with properties is not an appropriate representation
        2. The API functions are named as imperatives and don't always begin with "set" so one like "OptimizeLevelStyleCompaction" wouldn't work right
     */
-    public abstract class OptionsHandle : IDisposable, IRocksDbHandle
+    public abstract class OptionsHandle
     {
         public IntPtr Handle { get; private set; }
 
@@ -19,7 +19,7 @@ namespace RocksDbSharp
             this.Handle = Native.Instance.rocksdb_options_create();
         }
 
-        public void Dispose()
+        ~OptionsHandle()
         {
             if (Handle != IntPtr.Zero)
             {

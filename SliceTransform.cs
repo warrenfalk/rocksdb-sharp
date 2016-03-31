@@ -3,23 +3,21 @@
 namespace RocksDbSharp
 {
     #if ROCKSDB_SLICETRANSFORM
-    public class SliceTransform : IDisposable, IRocksDbHandle
+    public class SliceTransform
     {
-        private IntPtr handle;
-
-        public IntPtr Handle { get { return handle; } }
+        public IntPtr Handle { get; protected set; }
 
         private SliceTransform(IntPtr handle)
         {
-            this.handle = handle;
+            this.Handle = handle;
         }
 
-        public void Dispose()
+        ~SliceTransform()
         {
-            if (handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
-                Native.Instance.rocksdb_slicetransform_destroy(handle);
-                handle = IntPtr.Zero;
+                Native.Instance.rocksdb_slicetransform_destroy(Handle);
+                Handle = IntPtr.Zero;
             }
         }
 

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace RocksDbSharp
 {
-    public class WriteBatch : IDisposable, IRocksDbHandle
+    public class WriteBatch : IDisposable
     {
         private IntPtr handle;
         private Encoding defaultEncoding = Encoding.UTF8;

@@ -19,11 +19,10 @@ namespace PrefixExample
             
             string temp = Path.GetTempPath();
             string path = Environment.ExpandEnvironmentVariables(Path.Combine(temp, "rocksdb_prefix_example"));
-            using (var bbto = new BlockBasedTableOptions()
+            var bbto = new BlockBasedTableOptions()
                 .SetFilterPolicy(BloomFilterPolicy.Create(10, false))
-                .SetWholeKeyFiltering(false)
-            )
-            using (var options = new DbOptions()
+                .SetWholeKeyFiltering(false);
+            var options = new DbOptions()
                 .SetCreateIfMissing(true)
                 .SetWriteBufferSize(writeBufferSize)
                 .SetMaxWriteBufferNumber(maxWriteBufferNumber)
@@ -32,8 +31,7 @@ namespace PrefixExample
                 .SetMemtablePrefixBloomProbes(memtablePrefixBloomProbes)
                 .SetMemtablePrefixBloomHugePageTlbSize(memtablePrefixBloomHugePageTlbSize) // Not supported in C API?
                 .SetPrefixExtractor(SliceTransform.CreateFixedPrefix(8))
-                .SetBlockBasedTableFactory(bbto)
-            )
+                .SetBlockBasedTableFactory(bbto);
             using (var db = RocksDb.Open(options, path))
             {
             }

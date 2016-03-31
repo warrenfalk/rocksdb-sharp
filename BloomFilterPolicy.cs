@@ -3,23 +3,21 @@
 namespace RocksDbSharp
 {
     #if ROCKSDB_FILTER_POLICY
-    public class BloomFilterPolicy : IDisposable, IRocksDbHandle
+    public class BloomFilterPolicy
     {
-        private IntPtr handle;
-
-        public IntPtr Handle { get { return handle; } }
+        public IntPtr Handle { get; protected set; }
 
         private BloomFilterPolicy(IntPtr handle)
         {
-            this.handle = handle;
+            this.Handle = handle;
         }
 
-        public void Dispose()
+        ~BloomFilterPolicy()
         {
-            if (handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
-                Native.Instance.rocksdb_filterpolicy_destroy(handle);
-                handle = IntPtr.Zero;
+                Native.Instance.rocksdb_filterpolicy_destroy(Handle);
+                Handle = IntPtr.Zero;
             }
         }
 

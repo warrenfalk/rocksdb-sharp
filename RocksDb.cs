@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RocksDbSharp
 {
-    public class RocksDb : IDisposable, IRocksDbHandle
+    public class RocksDb : IDisposable
     {
         private IntPtr handle;
         private ReadOptions defaultReadOptions;
@@ -23,8 +23,6 @@ namespace RocksDbSharp
         {
             Native.Instance.rocksdb_close(handle);
         }
-
-        IntPtr IRocksDbHandle.Handle { get { return handle; } }
 
         public static RocksDb Open(OptionsHandle options, string path)
         {
@@ -103,7 +101,8 @@ namespace RocksDbSharp
         public Iterator NewIterator(ReadOptions readOptions = null)
         {
             IntPtr iteratorHandle = Native.Instance.rocksdb_create_iterator(handle, (readOptions ?? defaultReadOptions).Handle);
-            return new Iterator(iteratorHandle);
+            // Note: passing in read options here only to ensure that it is not collected before the iterator
+            return new Iterator(iteratorHandle, readOptions);
         }
     }
 }

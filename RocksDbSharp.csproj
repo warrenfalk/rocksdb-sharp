@@ -46,7 +46,6 @@
   <ItemGroup>
     <Compile Include="ColumnFamilyOptions.cs" />
     <Compile Include="DbOptions.cs" />
-    <Compile Include="IRocksDbHandle.cs" />
     <Compile Include="Iterator.cs" />
     <Compile Include="Native.Wrap.cs" />
     <Compile Include="Native.Raw.cs" />

@@ -6,55 +6,54 @@ using System.Threading.Tasks;
 
 namespace RocksDbSharp
 {
-    public class ReadOptions : IDisposable, IRocksDbHandle
+    public class ReadOptions
     {
-        private IntPtr handle;
         private byte[] iterateUpperBound;
 
         public ReadOptions()
         {
-            handle = Native.Instance.rocksdb_readoptions_create();
+            Handle = Native.Instance.rocksdb_readoptions_create();
         }
 
-        public IntPtr Handle { get { return handle; } }
+        public IntPtr Handle { get; protected set; }
 
         public void Dispose()
         {
-            if (handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
-                Native.Instance.rocksdb_readoptions_destroy(handle);
-                handle = IntPtr.Zero;
+                Native.Instance.rocksdb_readoptions_destroy(Handle);
+                Handle = IntPtr.Zero;
             }
         }
 
         public ReadOptions SetVerifyChecksums(bool value)
         {
-            Native.Instance.rocksdb_readoptions_set_verify_checksums(handle, value);
+            Native.Instance.rocksdb_readoptions_set_verify_checksums(Handle, value);
             return this;
         }
 
         public ReadOptions SetFillCache(bool value)
         {
-            Native.Instance.rocksdb_readoptions_set_fill_cache(handle, value);
+            Native.Instance.rocksdb_readoptions_set_fill_cache(Handle, value);
             return this;
         }
 
         public ReadOptions SetSnapshot(IntPtr snapshot)
         {
-            Native.Instance.rocksdb_readoptions_set_snapshot(handle, snapshot);
+            Native.Instance.rocksdb_readoptions_set_snapshot(Handle, snapshot);
             return this;
         }
 
         public unsafe ReadOptions SetIterateUpperBound(byte* key, ulong keylen)
         {
-            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(handle, key, keylen);
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, key, keylen);
             return this;
         }
 
         public ReadOptions SetIterateUpperBound(byte[] key, ulong keyLen)
         {
             iterateUpperBound = key; // necessary because the value will not be copied and so may be gone by the time it is needed
-            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(handle, key, keyLen);
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, key, keyLen);
             return this;
         }
 
@@ -72,13 +71,13 @@ namespace RocksDbSharp
 
         public ReadOptions SetReadTier(int value)
         {
-            Native.Instance.rocksdb_readoptions_set_read_tier(handle, value);
+            Native.Instance.rocksdb_readoptions_set_read_tier(Handle, value);
             return this;
         }
 
         public ReadOptions SetTailing(bool value)
         {
-            Native.Instance.rocksdb_readoptions_set_tailing(handle, value);
+            Native.Instance.rocksdb_readoptions_set_tailing(Handle, value);
             return this;
         }
 
