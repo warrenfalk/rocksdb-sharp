@@ -50,10 +50,11 @@ namespace RocksDbSharp
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             string key,
             string val,
+            ColumnFamilyHandle cf,
             Encoding encoding = null)
         {
             IntPtr errptr;
-            rocksdb_put(db, writeOptions, key, val, out errptr, encoding);
+            rocksdb_put(db, writeOptions, key, val, out errptr, cf, encoding);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -64,10 +65,14 @@ namespace RocksDbSharp
             byte[] key,
             long keyLength,
             byte[] value,
-            long valueLength)
+            long valueLength,
+            ColumnFamilyHandle cf)
         {
             IntPtr errptr;
-            rocksdb_put(db, writeOptions, key, keyLength, value, valueLength, out errptr);
+            if (cf == null)
+                rocksdb_put(db, writeOptions, key, keyLength, value, valueLength, out errptr);
+            else
+                rocksdb_put_cf(db, writeOptions, cf.Handle, key, keyLength, value, valueLength, out errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -77,10 +82,11 @@ namespace RocksDbSharp
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_readoptions_t**/ IntPtr read_options,
             string key,
+            ColumnFamilyHandle cf,
             Encoding encoding = null)
         {
             IntPtr errptr;
-            var result = rocksdb_get(db, read_options, key, out errptr, encoding);
+            var result = rocksdb_get(db, read_options, key, out errptr, cf, encoding);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -91,10 +97,13 @@ namespace RocksDbSharp
             IntPtr read_options,
             byte[] key,
             long keyLength,
-            out long vallen)
+            out long vallen,
+            ColumnFamilyHandle cf)
         {
             IntPtr errptr;
-            var result = rocksdb_get(db, read_options, key, keyLength, out vallen, out errptr);
+            var result = cf == null
+                ? rocksdb_get(db, read_options, key, keyLength, out vallen, out errptr)
+                : rocksdb_get_cf(db, read_options, cf.Handle, key, keyLength, out vallen, out errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -104,10 +113,11 @@ namespace RocksDbSharp
             IntPtr db,
             IntPtr read_options,
             byte[] key,
-            long keyLength)
+            long keyLength,
+            ColumnFamilyHandle cf)
         {
             IntPtr errptr;
-            var result = rocksdb_get(db, read_options, key, keyLength, out errptr);
+            var result = rocksdb_get(db, read_options, key, keyLength, out errptr, cf);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -116,10 +126,11 @@ namespace RocksDbSharp
         public void rocksdb_delete(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
-            /*const*/ string key)
+            /*const*/ string key,
+            ColumnFamilyHandle cf)
         {
             IntPtr errptr;
-            rocksdb_delete(db, writeOptions, key, out errptr);
+            rocksdb_delete(db, writeOptions, key, out errptr, cf);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -176,5 +187,17 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
             return result;
         }
+
+        public void rocksdb_drop_column_family(
+            /*rocksdb_t**/ IntPtr db,
+            /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family_handle
+            )
+        {
+            IntPtr errptr;
+            rocksdb_drop_column_family(db, column_family_handle, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
     }
 }

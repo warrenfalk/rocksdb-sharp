@@ -172,6 +172,11 @@ public unsafe abstract void rocksdb_put_cf(
     /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte* key,
     ulong keylen, /*const*/ byte* val, ulong vallen, out IntPtr errptr);
 
+public abstract void rocksdb_put_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte[] key,
+    long keylen, /*const*/ byte[] val, long vallen, out IntPtr errptr);
+
 public unsafe abstract void rocksdb_delete(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte* key,
     ulong keylen, out IntPtr errptr);
@@ -183,7 +188,12 @@ public abstract void rocksdb_delete(
 public unsafe abstract void rocksdb_delete_cf(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
     /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte* key,
-    ulong keylen, out IntPtr errptr);
+    long keylen, out IntPtr errptr);
+
+public abstract void rocksdb_delete_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte[] key,
+    long keylen, out IntPtr errptr);
 
 public unsafe abstract void rocksdb_merge(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte* key,
@@ -202,7 +212,7 @@ public abstract void rocksdb_write(
    Stores the length of the array in *vallen. */
 public unsafe abstract /* char* */ IntPtr rocksdb_get(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options, /*const*/ byte* key,
-            ulong keylen, /*(size_t*)*/ out ulong vallen, out IntPtr errptr);
+            long keylen, /*(size_t*)*/ out long vallen, out IntPtr errptr);
 
 /* Returns NULL if not found.  A malloc()ed array otherwise.
    Stores the length of the array in *vallen. */
@@ -213,7 +223,12 @@ public unsafe abstract /* char* */ IntPtr rocksdb_get(
 public unsafe abstract /* char* */ IntPtr rocksdb_get_cf(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options,
     /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte* key,
-            ulong keylen, /*(size_t*)*/ ref ulong vallen, out IntPtr errptr);
+            long keylen, /*(size_t*)*/ out long vallen, out IntPtr errptr);
+
+public unsafe abstract /* char* */ IntPtr rocksdb_get_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte[] key,
+            long keylen, /*(size_t*)*/ out long vallen, out IntPtr errptr);
 
 // if values_list[i] == NULL and errs[i] == NULL,
 // then we got status.IsNotFound(), which we will not return.

@@ -92,15 +92,21 @@ namespace RocksDbSharp
             return this;
         }
 
-        public WriteBatch Merge(byte[] key, ulong klen, byte[] val, ulong vlen)
+        public WriteBatch Merge(byte[] key, ulong klen, byte[] val, ulong vlen, ColumnFamilyHandle cf = null)
         {
-            Native.Instance.rocksdb_writebatch_merge(handle, key, klen, val, vlen);
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_merge(handle, key, klen, val, vlen);
+            else
+                Native.Instance.rocksdb_writebatch_merge_cf(handle, cf.Handle, key, klen, val, vlen);
             return this;
         }
 
-        public unsafe void Merge(byte* key, ulong klen, byte* val, ulong vlen)
+        public unsafe void Merge(byte* key, ulong klen, byte* val, ulong vlen, ColumnFamilyHandle cf = null)
         {
-            Native.Instance.rocksdb_writebatch_merge(handle, key, klen, val, vlen);
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_merge(handle, key, klen, val, vlen);
+            else
+                Native.Instance.rocksdb_writebatch_merge_cf(handle, cf.Handle, key, klen, val, vlen);
         }
 
         public WriteBatch MergeCf(IntPtr columnFamily, byte[] key, ulong klen, byte[] val, ulong vlen)

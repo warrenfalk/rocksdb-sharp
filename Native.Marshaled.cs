@@ -35,6 +35,7 @@ namespace RocksDbSharp
             string key,
             string val,
             out IntPtr errptr,
+            ColumnFamilyHandle cf,
             Encoding encoding = null)
         {
             unsafe
@@ -53,7 +54,10 @@ namespace RocksDbSharp
                     byte* bv = bk + bklength;
                     encoding.GetBytes(v, vlength, bv, bvlength);
 
-                    rocksdb_put(db, writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+                    if (cf == null)
+                        rocksdb_put(db, writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+                    else
+                        rocksdb_put_cf(db, writeOptions, cf.Handle, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
 #if DEBUG
                     Zero(bk, bklength);
 #endif
@@ -67,14 +71,15 @@ namespace RocksDbSharp
             /*const rocksdb_readoptions_t**/ IntPtr read_options,
             string key,
             out IntPtr errptr,
+            ColumnFamilyHandle cf,
             Encoding encoding = null)
         {
             if (encoding == null)
                 encoding = Encoding.UTF8;
-            ulong bvlength;
+            long bvlength;
             unsafe
             {
-                fixed (char *k = key)
+                fixed (char* k = key)
                 {
                     int klength = key.Length;
                     int bklength = encoding.GetByteCount(k, klength);
@@ -82,7 +87,9 @@ namespace RocksDbSharp
                     byte* bk = (byte*)buffer.ToPointer();
                     encoding.GetBytes(k, klength, bk, bklength);
 
-                    var resultPtr = rocksdb_get(db, read_options, bk, (ulong)bklength, out bvlength, out errptr);
+                    var resultPtr = cf == null
+                        ? rocksdb_get(db, read_options, bk, bklength, out bvlength, out errptr)
+                        : rocksdb_get_cf(db, read_options, cf.Handle, bk, bklength, out bvlength, out errptr);
 #if DEBUG
                     Zero(bk, bklength);
 #endif
@@ -95,7 +102,7 @@ namespace RocksDbSharp
 
                     byte* bv = (byte*)resultPtr.ToPointer();
                     int vlength = encoding.GetCharCount(bv, (int)bvlength);
-                    fixed (char *v = new char[vlength])
+                    fixed (char* v = new char[vlength])
                     {
                         encoding.GetChars(bv, (int)bvlength, v, vlength);
                         return new string(v, 0, vlength);
@@ -109,10 +116,13 @@ namespace RocksDbSharp
             IntPtr read_options,
             byte[] key,
             long keyLength,
-            out IntPtr errptr)
+            out IntPtr errptr,
+            ColumnFamilyHandle cf)
         {
             long valueLength;
-            var resultPtr = rocksdb_get(db, read_options, key, keyLength, out valueLength, out errptr);
+            var resultPtr = cf == null
+                ? rocksdb_get(db, read_options, key, keyLength, out valueLength, out errptr)
+                : rocksdb_get_cf(db, read_options, cf.Handle, key, keyLength, out valueLength, out errptr);
             if (errptr != IntPtr.Zero)
                 return null;
             if (resultPtr == IntPtr.Zero)
@@ -123,16 +133,19 @@ namespace RocksDbSharp
         }
 
 
-
         public void rocksdb_delete(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             /*const*/ string key,
             out IntPtr errptr,
+            ColumnFamilyHandle cf,
             Encoding encoding = null)
         {
             var bkey = (encoding ?? Encoding.UTF8).GetBytes(key);
-            rocksdb_delete(db, writeOptions, bkey, bkey.LongLength, out errptr);
+            if (cf == null)
+                rocksdb_delete(db, writeOptions, bkey, bkey.LongLength, out errptr);
+            else
+                rocksdb_delete_cf(db, writeOptions, cf.Handle, bkey, bkey.LongLength, out errptr);
         }
 
         public void rocksdb_writebatch_put(IntPtr writeOptions, string key, string val, Encoding encoding)

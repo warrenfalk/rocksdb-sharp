@@ -16,16 +16,43 @@ namespace ColumnFamilyExample
             string path = Environment.ExpandEnvironmentVariables(Path.Combine(temp, "rocksdb_cf_example"));
 
             var options = new DbOptions()
-                .SetCreateIfMissing(true);
+                .SetCreateIfMissing(true)
+                .SetCreateMissingColumnFamilies(true);
 
             var columnFamilies = new ColumnFamilies
             {
-                { "new_cf", new ColumnFamilyOptions() },
+                { "reverse", new ColumnFamilyOptions() },
             };
 
             using (var db = RocksDb.Open(options, path, columnFamilies))
             {
-                var newCf = db.GetColumnFamily("new_cf");
+                var reverse = db.GetColumnFamily("reverse");
+
+                db.Put("one", "uno");
+                db.Put("two", "dos");
+                db.Put("three", "tres");
+
+                db.Put("uno", "one", cf: reverse);
+                db.Put("dos", "two", cf: reverse);
+                db.Put("tres", "three", cf: reverse);
+            }
+
+            using (var db = RocksDb.Open(options, path, columnFamilies))
+            {
+                var reverse = db.GetColumnFamily("reverse");
+
+                string uno = db.Get("one");
+                string one = db.Get("uno", cf: reverse);
+                string nada;
+                nada = db.Get("uno");
+                nada = db.Get("one", cf: reverse);
+            }
+
+            using (var db = RocksDb.Open(options, path, columnFamilies))
+            {
+                db.DropColumnFamily("reverse");
+                var reverse = db.CreateColumnFamily(new ColumnFamilyOptions(), "reverse");
+                var nada = db.Get("uno", cf: reverse);
             }
         }
     }
