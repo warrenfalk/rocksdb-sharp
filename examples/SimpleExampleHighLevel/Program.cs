@@ -59,7 +59,7 @@ namespace SimpleExampleHighLevel
                         using (WriteBatch batch = new WriteBatch()
                             .Put("one", "uno")
                             .Put("two", "deuce")
-                            .Put("two", "doce")
+                            .Put("two", "dos")
                             .Put("three", "tres"))
                         {
                             db.Write(batch);
@@ -76,7 +76,7 @@ namespace SimpleExampleHighLevel
                     }
 
                     var two = db.Get("two");
-                    Debug.Assert(two == "doce");
+                    Debug.Assert(two == "dos");
 
                     {
                         // Iterators
