@@ -8,6 +8,6 @@ namespace RocksDbSharp
 {
     public abstract partial class Native
     {
-        public static Native Instance = NativeImport.Auto.Import<Native>("librocksdb");
+        public static Native Instance = NativeImport.Auto.Import<Native>("librocksdb", true);
     }
 }
