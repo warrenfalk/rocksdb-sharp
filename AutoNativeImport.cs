@@ -63,6 +63,8 @@ namespace NativeImport
             public IntPtr LoadLibrary(string path)
             {
                 IntPtr lib = WinLoadLibrary(path);
+                if (lib == IntPtr.Zero)
+                    throw new DllNotFoundException("LoadLibrary: unable to load library at " + path);
                 return lib;
             }
 
@@ -98,7 +100,7 @@ namespace NativeImport
                 IntPtr lib = dlopen(path, 2);
                 var errPtr = dlerror();
                 if (errPtr != IntPtr.Zero)
-                    throw new Exception("dlopen: " + Marshal.PtrToStringAnsi(errPtr));
+                    throw new DllNotFoundException("dlopen: " + Marshal.PtrToStringAnsi(errPtr));
                 return lib;
             }
 
@@ -122,7 +124,10 @@ namespace NativeImport
         {
             public static Delegate LoadFunc(INativeLibImporter importer, IntPtr libraryHandle, string entryPoint, Type delegateType)
             {
-                return Marshal.GetDelegateForFunctionPointer(importer.GetProcAddress(libraryHandle, entryPoint), delegateType);
+                IntPtr procAddress = importer.GetProcAddress(libraryHandle, entryPoint);
+                if (procAddress == IntPtr.Zero)
+                    throw new EntryPointNotFoundException(string.Format("Unable to get address of {0} ({1})", entryPoint, delegateType));
+                return Marshal.GetDelegateForFunctionPointer(procAddress, delegateType);
             }
         }
 
