@@ -14,7 +14,18 @@ namespace NativeImport
 {
     public static class Auto
     {
-        public static T Import<T>(string name) where T : class
+        /// <summary>
+        /// Imports the library by name (without extensions) locating it based on platform.
+        /// 
+        /// Use <code>suppressUnload</code> to prevent the dll from unloading at finalization,
+        /// which can be useful if you need to call the imported functions in finalizers of
+        /// other instances and can't predict in which order the finalization will occur
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <param name="suppressUnload">true to prevent unloading on finalization</param>
+        /// <returns></returns>
+        public static T Import<T>(string name, bool suppressUnload = false) where T : class
         {
             var subdir = Environment.Is64BitProcess ? "amd64" : "i386";
             var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "native", subdir, name);
@@ -24,14 +35,14 @@ namespace NativeImport
                 case (int)PlatformID.Win32S: // Win16 NTVDM on Win x86?
                 case (int)PlatformID.Win32NT: // Windows NT
                 case (int)PlatformID.WinCE:
-                    return Importers.Import<T>(Importers.Windows, path + ".dll");
+                    return Importers.Import<T>(Importers.Windows, path + ".dll", suppressUnload);
                 case (int)PlatformID.MacOSX:
                 case 128: // Mono Mac
-                    return Importers.Import<T>(Importers.Posix, path + ".dylib");
+                    return Importers.Import<T>(Importers.Posix, path + ".dylib", suppressUnload);
                 case (int)PlatformID.Unix:
-                    return Importers.Import<T>(Importers.Posix, path + ".so");
+                    return Importers.Import<T>(Importers.Posix, path + ".so", suppressUnload);
                 default:
-                    return Importers.Import<T>(Importers.Windows, path);
+                    return Importers.Import<T>(Importers.Windows, path, suppressUnload);
             }
 
         }
@@ -131,7 +142,7 @@ namespace NativeImport
             }
         }
 
-        public static T Import<T>(INativeLibImporter importer, string name) where T : class
+        public static T Import<T>(INativeLibImporter importer, string name, bool suppressUnload) where T : class
         {
             var assemblyName = new AssemblyName("DynamicLink");
             var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
@@ -213,11 +224,14 @@ namespace NativeImport
                 var end = il.DefineLabel();
 
                 il.BeginExceptionBlock();
-                il.Emit(OpCodes.Ldarg_0); // this
-                il.Emit(OpCodes.Ldfld, field_importer); // .importer
-                il.Emit(OpCodes.Ldarg_0); // this
-                il.Emit(OpCodes.Ldfld, field_libraryHandle); // .libraryHandle
-                il.Emit(OpCodes.Callvirt, typeof(INativeLibImporter).GetMethod("FreeLibrary")); // INativeLibImporter::FreeLibrary()
+                if (!suppressUnload)
+                {
+                    il.Emit(OpCodes.Ldarg_0); // this
+                    il.Emit(OpCodes.Ldfld, field_importer); // .importer
+                    il.Emit(OpCodes.Ldarg_0); // this
+                    il.Emit(OpCodes.Ldfld, field_libraryHandle); // .libraryHandle
+                    il.Emit(OpCodes.Callvirt, typeof(INativeLibImporter).GetMethod("FreeLibrary")); // INativeLibImporter::FreeLibrary()
+                }
                 //il.Emit(OpCodes.Leave, end);
                 il.BeginFinallyBlock();
                 il.Emit(OpCodes.Ldarg_0); // this
@@ -258,7 +272,7 @@ namespace NativeImport
 
             var type = typeBuilder.CreateType();
 
-            assemblyBuilder.Save("dynamic.dll");
+            //assemblyBuilder.Save("dynamic.dll");
 
             var construct = type.GetConstructor(new Type[] { typeof(INativeLibImporter), typeof(string) });
             var obj = construct.Invoke(new object[] { importer, name });
