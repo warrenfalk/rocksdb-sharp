@@ -11,6 +11,24 @@ namespace RocksDbSharp
 {
     public abstract partial class Native
     {
+        public string[] rocksdb_list_column_families(
+            /* const rocksdb_options_t* */ IntPtr options,
+            string name
+            )
+        {
+            IntPtr errptr;
+            ulong lencf;
+            var result = rocksdb_list_column_families(options, name, out lencf, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            IntPtr[] ptrs = new IntPtr[lencf];
+            Marshal.Copy(result, ptrs, 0, (int)lencf);
+            string[] strings = new string[lencf];
+            for (ulong i = 0; i < lencf; i++)
+                strings[i] = Marshal.PtrToStringAnsi(ptrs[i]);
+            return strings;
+        }
+
         public void rocksdb_put(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,

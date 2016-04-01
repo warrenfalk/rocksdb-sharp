@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ColumnFamilies.cs" />
+    <Compile Include="ColumnFamilyHandle.cs" />
     <Compile Include="ColumnFamilyOptions.cs" />
     <Compile Include="DbOptions.cs" />
     <Compile Include="Iterator.cs" />
@@ -56,6 +58,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadOptions.cs" />
     <Compile Include="RocksDb.cs" />
+    <Compile Include="RocksDbSharpException.cs" />
     <Compile Include="RocksDbException.cs" />
     <Compile Include="WriteBatch.cs" />
     <Compile Include="WriteOptions.cs" />

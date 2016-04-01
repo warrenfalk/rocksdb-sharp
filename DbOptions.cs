@@ -16,6 +16,8 @@ namespace RocksDbSharp
 
     public class DbOptions : ColumnFamilyOptions
     {
+        internal bool CreateIfMissing { get; set; }
+
         // By default, RocksDB uses only one background thread for flush and
         // compaction. Calling this function will set it up such that total of
         // `total_threads` is used. Good value for `total_threads` is the number of
@@ -31,6 +33,7 @@ namespace RocksDbSharp
         // Default: false
         public DbOptions SetCreateIfMissing(bool value)
         {
+            CreateIfMissing = value; // remember this so that we can change treatment of column families during creation
             Native.Instance.rocksdb_options_set_create_if_missing(Handle, value);
             return this;
         }

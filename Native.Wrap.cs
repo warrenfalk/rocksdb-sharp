@@ -20,6 +20,31 @@ namespace RocksDbSharp
             return result;
         }
 
+        public IntPtr rocksdb_open_for_read_only(
+            /* const rocksdb_options_t* */ IntPtr options,
+            string name,
+            bool error_if_log_file_exists = false)
+        {
+            IntPtr errptr;
+            var result = rocksdb_open_for_read_only(options, name, error_if_log_file_exists, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public IntPtr rocksdb_list_column_families(
+            /* const rocksdb_options_t* */ IntPtr options,
+            string name,
+            out ulong lencf
+            )
+        {
+            IntPtr errptr;
+            var result = rocksdb_list_column_families(options, name, out lencf, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
         public void rocksdb_put(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
@@ -137,6 +162,18 @@ namespace RocksDbSharp
             IntPtr buffer = rocksdb_iter_value(iterator, out length);
             byte[] result = new byte[(int)length];
             Marshal.Copy(buffer, result, 0, (int)length);
+            return result;
+        }
+
+        public IntPtr rocksdb_create_column_family(
+            /*rocksdb_t**/ IntPtr db,
+            /* const rocksdb_options_t* */ IntPtr column_family_options,
+            string column_family_name)
+        {
+            IntPtr errptr;
+            var result = rocksdb_create_column_family(db, column_family_options, column_family_name, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
             return result;
         }
     }
