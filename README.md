@@ -19,7 +19,8 @@ The high level wrapper will be patterned after the RocksJava implementation wher
 ### Example (High Level)
 
 ```csharp
-using (var options = new Options().SetCreateIfMissing(true))
+var options = new Options()
+    .SetCreateIfMissing(true);
 using (var db = RocksDb.Open(options, path))
 {
     // Using strings below, but can also use byte arrays for both keys and values
@@ -40,19 +41,19 @@ On Linux and Mac, the snappy library (libsnappy) must be installed.
 RocksDb is supported only in 64-bit mode. Although I contributed a fix that allows it to compile in 32-bit mode, this is untested and unsupported, may not work at all, and almost certainly will have at least some major issues and should not be attempted in production.
 
 ### Non-stable Native
-The current version of rocksdb that makes this possible is not yet released and so this will currently build straight off the last commit I selected from the rocksdb master branch. Don't use this in production yet.
+The current version of rocksdb that makes this possible is not yet released and so this will currently build straight off the last commit I selected from the rocksdb master branch. Don't use this in production unless you'd be comfortable using the master branch of rocksdb in production
 
 ## Extras
 
-This project also contains a build script for building the rocksdb library on Windows, which is useful on its own.  (It also builds Linux and Mac, but these are natively supported and so are not difficult)
+Windows Build Script: Building rocksdb for Windows is hard; this project contains a build script to make it easy.
 
 ## Building Native Library
 
-This repository includes scripts to enable you to build the native library. For now you must build them yourself but prebuilt binaries are expected to eventually be hosted.
+Pre-built native binaries can be downloaded from the releases page.  You may also build them yourself.
 
 (This is not a native C# library and the difficulty of a potential native C# library almost certainly far exceeds any usefulness of such a thing and so is not planned and will probably never exist).
 
-This is now buildable on Windows thanks to the Bing team at Microsoft who are actively using rocksdb.  Rocksdb-sharp should work on any platform if the native library is available.
+This is now buildable on Windows thanks to the Bing team at Microsoft who are actively using rocksdb.  Rocksdb-sharp should work on any platform provided the native unmanaged library is available.
 
 ### Windows Native Build Instructions
 
