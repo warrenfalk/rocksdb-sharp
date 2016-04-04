@@ -53,31 +53,26 @@ namespace RocksDbSharp
             return this;
         }
 
-        public WriteBatch Put(byte[] key, byte[] val)
+        public WriteBatch Put(byte[] key, byte[] val, ColumnFamilyHandle cf = null)
         {
-            return Put(key, (ulong)key.Length, val, (ulong)val.Length);
+            return Put(key, (ulong)key.Length, val, (ulong)val.Length, cf);
         }
 
-        public WriteBatch Put(byte[] key, ulong klen, byte[] val, ulong vlen)
+        public WriteBatch Put(byte[] key, ulong klen, byte[] val, ulong vlen, ColumnFamilyHandle cf = null)
         {
-            Native.Instance.rocksdb_writebatch_put(handle, key, klen, val, vlen);
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_put(handle, key, klen, val, vlen);
+            else
+                Native.Instance.rocksdb_writebatch_put_cf(handle, cf.Handle, key, klen, val, vlen);
             return this;
         }
 
-        public unsafe void Put(byte* key, ulong klen, byte* val, ulong vlen)
+        public unsafe void Put(byte* key, ulong klen, byte* val, ulong vlen, ColumnFamilyHandle cf = null)
         {
-            Native.Instance.rocksdb_writebatch_put(handle, key, klen, val, vlen);
-        }
-
-        public WriteBatch PutCf(IntPtr columnFamily, byte[] key, ulong klen, byte[] val, ulong vlen)
-        {
-            Native.Instance.rocksdb_writebatch_put_cf(handle, columnFamily, key, klen, val, vlen);
-            return this;
-        }
-
-        public unsafe void PutCf(IntPtr columnFamily, byte* key, ulong klen, byte* val, ulong vlen)
-        {
-            Native.Instance.rocksdb_writebatch_put_cf(handle, columnFamily, key, klen, val, vlen);
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_put(handle, key, klen, val, vlen);
+            else
+                Native.Instance.rocksdb_writebatch_put_cf(handle, cf.Handle, key, klen, val, vlen);
         }
 
         public WriteBatch Putv(int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes)
@@ -132,31 +127,26 @@ namespace RocksDbSharp
             return this;
         }
 
-        public WriteBatch Delete(byte[] key)
+        public WriteBatch Delete(byte[] key, ColumnFamilyHandle cf = null)
         {
-            return Delete(key, (ulong)key.Length);
+            return Delete(key, (ulong)key.Length, cf);
         }
 
-        public WriteBatch Delete(byte[] key, ulong klen)
+        public WriteBatch Delete(byte[] key, ulong klen, ColumnFamilyHandle cf = null)
         {
-            Native.Instance.rocksdb_writebatch_delete(handle, key, klen);
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_delete(handle, key, klen);
+            else
+                Native.Instance.rocksdb_writebatch_delete_cf(handle, cf.Handle, key, klen);
             return this;
         }
 
-        public unsafe void Delete(byte* key, ulong klen)
+        public unsafe void Delete(byte* key, ulong klen, ColumnFamilyHandle cf = null)
         {
-            Native.Instance.rocksdb_writebatch_delete(handle, key, klen);
-        }
-
-        public WriteBatch DeleteCf(IntPtr columnFamily, byte[] key, ulong klen)
-        {
-            Native.Instance.rocksdb_writebatch_delete_cf(handle, columnFamily, key, klen);
-            return this;
-        }
-
-        public unsafe void DeleteCf(IntPtr columnFamily, byte* key, ulong klen)
-        {
-            Native.Instance.rocksdb_writebatch_delete_cf(handle, columnFamily, key, klen);
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_delete(handle, key, klen);
+            else
+                Native.Instance.rocksdb_writebatch_delete_cf(handle, cf.Handle, key, klen);
         }
 
         public WriteBatch Deletev(int numKeys, IntPtr keysList, IntPtr keysListSizes)
