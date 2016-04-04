@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace RocksDbSharp
 {
-    public class ColumnFamilyOptions : OptionsHandle {
+    public class ColumnFamilyOptions : OptionsHandle
+    {
 
 #if ROCKSDB_BLOCK_BASED_TABLE_OPTIONS
         public ColumnFamilyOptions SetBlockBasedTableFactory(BlockBasedTableOptions table_options)
         {
+            References.BlockBasedTableFactory = table_options;
             // Args: table_options
             Native.Instance.rocksdb_options_set_block_based_table_factory(Handle, table_options.Handle);
             return this;
@@ -271,6 +274,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetPrefixExtractor(SliceTransform sliceTransform)
         {
+            References.PrefixExtractor = sliceTransform;
             Native.Instance.rocksdb_options_set_prefix_extractor(Handle, sliceTransform.Handle);
             return this;
         }

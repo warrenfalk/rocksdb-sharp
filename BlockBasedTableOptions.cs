@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Dynamic;
 
 namespace RocksDbSharp
 {
@@ -6,6 +7,12 @@ namespace RocksDbSharp
     public class BlockBasedTableOptions
     {
         public IntPtr Handle { get; protected set; }
+
+        // The following exists only to retain a reference to those types which are used in-place by rocksdb
+        // and not copied (or reference things that are used in-place).  The idea is to have managed references
+        // track the behavior of the unmanaged reference as much as possible.  This prevents access violations
+        // when the garbage collector cleans up the last managed reference
+        internal dynamic References { get; } = new ExpandoObject();
 
         public BlockBasedTableOptions()
         {
@@ -47,6 +54,8 @@ namespace RocksDbSharp
 
         public BlockBasedTableOptions SetFilterPolicy(BloomFilterPolicy filterPolicy)
         {
+            // store a managed reference to prevent garbage collection
+            References.FilterPolicy = filterPolicy;
             Native.Instance.rocksdb_block_based_options_set_filter_policy(Handle, filterPolicy.Handle);
             return this;
         }
