@@ -29,7 +29,7 @@ namespace PrefixExample
                 .SetMinWriteBufferNumberToMerge(minWriteBufferNumberToMerge)
                 .SetMemtablePrefixBloomBits(memtablePrefixBloomBits)
                 .SetMemtablePrefixBloomProbes(memtablePrefixBloomProbes)
-                .SetMemtablePrefixBloomHugePageTlbSize(memtablePrefixBloomHugePageTlbSize) // Not supported in C API?
+                .SetMemtablePrefixBloomHugePageTlbSize(memtablePrefixBloomHugePageTlbSize)
                 .SetPrefixExtractor(SliceTransform.CreateFixedPrefix(8))
                 .SetBlockBasedTableFactory(bbto);
             using (var db = RocksDb.Open(options, path))
