@@ -18,10 +18,11 @@ namespace RocksDbSharp
         // Managed references to unmanaged resources that need to live at least as long as the db
         internal dynamic References { get; } = new ExpandoObject();
 
-        private RocksDb(IntPtr handle, dynamic optionsReferences, Dictionary<string, ColumnFamilyHandle> columnFamilies = null)
+        private RocksDb(IntPtr handle, dynamic optionsReferences, dynamic cfOptionsRefs, Dictionary<string, ColumnFamilyHandle> columnFamilies = null)
         {
             this.handle = handle;
             References.Options = optionsReferences;
+            References.CfOptions = cfOptionsRefs;
             defaultReadOptions = new ReadOptions();
             defaultWriteOptions = new WriteOptions();
             defaultEncoding = Encoding.UTF8;
@@ -41,7 +42,7 @@ namespace RocksDbSharp
         public static RocksDb Open(OptionsHandle options, string path)
         {
             IntPtr db = Native.Instance.rocksdb_open(options.Handle, path);
-            return new RocksDb(db, optionsReferences: null);
+            return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
         }
 
         public static RocksDb Open(DbOptions options, string path, ColumnFamilies columnFamilies)
@@ -54,7 +55,10 @@ namespace RocksDbSharp
             var cfHandleMap = new Dictionary<string, ColumnFamilyHandle>();
             foreach (var pair in cfnames.Zip(cfhandles.Select(cfh => new ColumnFamilyHandle(cfh)), (name, cfh) => new { Name = name, Handle = cfh }))
                 cfHandleMap.Add(pair.Name, pair.Handle);
-            return new RocksDb(db, optionsReferences: options.References, columnFamilies: cfHandleMap);
+            return new RocksDb(db,
+                optionsReferences: options.References,
+                cfOptionsRefs: columnFamilies.Select(cfd => cfd.Options.References).ToArray(),
+                columnFamilies: cfHandleMap);
         }
 
         public string Get(string key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null, Encoding encoding = null)
