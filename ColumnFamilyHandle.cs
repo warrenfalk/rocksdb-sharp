@@ -19,7 +19,9 @@ namespace RocksDbSharp
         {
             if (Handle != IntPtr.Zero)
             {
+#if !NODESTROY
                 Native.Instance.rocksdb_column_family_handle_destroy(Handle);
+#endif
                 Handle = IntPtr.Zero;
             }
         }

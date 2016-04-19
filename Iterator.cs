@@ -32,7 +32,9 @@ namespace RocksDbSharp
         {
             if (handle != IntPtr.Zero)
             {
+#if !NODESTROY
                 Native.Instance.rocksdb_iter_destroy(handle);
+#endif
                 handle = IntPtr.Zero;
             }
         }
