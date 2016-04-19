@@ -80,9 +80,10 @@ namespace SimpleExampleHighLevel
 
                     {
                         // Iterators
-                        var readOpts = new ReadOptions()
-                            .SetIterateUpperBound("t");
-                        using (var iterator = db.NewIterator(readOpts))
+                        using (var iterator = db.NewIterator(
+                            readOptions: new ReadOptions()
+                                .SetIterateUpperBound("t")
+                                ))
                         {
                             iterator.Seek("k");
                             Debug.Assert(iterator.Valid());

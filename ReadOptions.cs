@@ -17,7 +17,7 @@ namespace RocksDbSharp
 
         public IntPtr Handle { get; protected set; }
 
-        public void Dispose()
+        ~ReadOptions()
         {
             if (Handle != IntPtr.Zero)
             {
