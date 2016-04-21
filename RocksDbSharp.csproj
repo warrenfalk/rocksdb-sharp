@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BinaryComparer.cs" />
     <Compile Include="ColumnFamilies.cs" />
     <Compile Include="ColumnFamilyHandle.cs" />
     <Compile Include="ColumnFamilyOptions.cs" />
