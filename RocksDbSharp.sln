@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrefixExample", "examples\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColumnFamilyExample", "examples\ColumnFamilyExample\ColumnFamilyExample.csproj", "{AF539614-596B-4271-B1BC-A96F58B22329}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RocksDbSharpTest", "tests\RocksDbSharpTest\RocksDbSharpTest.csproj", "{044901FD-A7BA-48A9-A5BE-8CB40A13CE02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{AF539614-596B-4271-B1BC-A96F58B22329}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF539614-596B-4271-B1BC-A96F58B22329}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF539614-596B-4271-B1BC-A96F58B22329}.Release|Any CPU.Build.0 = Release|Any CPU
+		{044901FD-A7BA-48A9-A5BE-8CB40A13CE02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{044901FD-A7BA-48A9-A5BE-8CB40A13CE02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{044901FD-A7BA-48A9-A5BE-8CB40A13CE02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{044901FD-A7BA-48A9-A5BE-8CB40A13CE02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
