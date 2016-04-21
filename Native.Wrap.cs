@@ -50,7 +50,7 @@ namespace RocksDbSharp
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             string key,
             string val,
-            ColumnFamilyHandle cf,
+            ColumnFamilyHandle cf = null,
             Encoding encoding = null)
         {
             IntPtr errptr;

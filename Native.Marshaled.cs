@@ -35,7 +35,7 @@ namespace RocksDbSharp
             string key,
             string val,
             out IntPtr errptr,
-            ColumnFamilyHandle cf,
+            ColumnFamilyHandle cf = null,
             Encoding encoding = null)
         {
             unsafe
@@ -71,7 +71,7 @@ namespace RocksDbSharp
             /*const rocksdb_readoptions_t**/ IntPtr read_options,
             string key,
             out IntPtr errptr,
-            ColumnFamilyHandle cf,
+            ColumnFamilyHandle cf = null,
             Encoding encoding = null)
         {
             if (encoding == null)
