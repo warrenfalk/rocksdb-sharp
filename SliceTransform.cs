@@ -29,7 +29,10 @@ namespace RocksDbSharp
             if (Handle != IntPtr.Zero)
             {
 #if !NODESTROY
-                Native.Instance.rocksdb_slicetransform_destroy(Handle);
+                // Commented out until a solution is found to rocksdb issue #1095 (https://github.com/facebook/rocksdb/issues/1095)
+                // If you create one of these, use it in an Option which will destroy it when finished
+                // Otherwise don't create one or it will leak
+                //Native.Instance.rocksdb_slicetransform_destroy(Handle);
 #endif
                 Handle = IntPtr.Zero;
             }
