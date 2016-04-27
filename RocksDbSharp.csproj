@@ -82,11 +82,10 @@
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
+    <Error
+        Text="The RocksDbSharp native binaries could not be found.  Run the download script (download-native.cmd or download-native.sh in the RocksDbSharp project folder)"
+        Condition="!Exists('native\amd64\librocksdb.dll')"
+        />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
