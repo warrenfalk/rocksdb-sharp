@@ -110,6 +110,12 @@ namespace RocksDbSharp
             return this;
         }
 
+        public BlockBasedTableOptions SetPinL0FilterAndIndexBlocksInCache(bool pinL0FilterAndIndexBlocksInCache)
+        {
+            Native.Instance.rocksdb_block_based_options_set_pin_l0_filter_and_index_blocks_in_cache(Handle, pinL0FilterAndIndexBlocksInCache);
+            return this;
+        }
+
         public BlockBasedTableOptions SetSkipTableBuilderFlush(bool skipTableBuilderFlush)
         {
             Native.Instance.rocksdb_block_based_options_set_skip_table_builder_flush(Handle, skipTableBuilderFlush);

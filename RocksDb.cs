@@ -138,6 +138,12 @@ namespace RocksDbSharp
             return new Iterator(iteratorHandle, readOptions);
         }
 
+        public Iterator[] NewIterators(ColumnFamilyHandle[] cfs, ReadOptions[] readOptions)
+        {
+            throw new NotImplementedException("TODO: Implement NewIterators()");
+            // See rocksdb_create_iterators
+        }
+
         public ColumnFamilyHandle CreateColumnFamily(ColumnFamilyOptions cfOptions, string name)
         {
             var cfh = Native.Instance.rocksdb_create_column_family(handle, cfOptions.Handle, name);

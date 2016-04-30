@@ -433,6 +433,24 @@ namespace RocksDbSharp
         }
 
         /// <summary>
+        /// Amount of data to build up in memtables across all column
+        /// families before writing to disk.
+        ///
+        /// This is distinct from write_buffer_size, which enforces a limit
+        /// for a single memtable.
+        ///
+        /// This feature is disabled by default. Specify a non-zero value
+        /// to enable it.
+        ///
+        /// Default: 0 (disabled)
+        /// </summary>
+        public DbOptions SetDbWriteBufferSize(ulong size)
+        {
+            Native.Instance.rocksdb_options_set_db_write_buffer_size(Handle, size);
+            return this;
+        }
+
+        /// <summary>
         /// Specify the file access pattern once a compaction is started.
         /// It will be applied to all input files of a compaction.
         /// Default: NORMAL

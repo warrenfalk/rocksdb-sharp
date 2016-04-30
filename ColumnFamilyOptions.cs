@@ -129,6 +129,22 @@ namespace RocksDbSharp
         }
 
         /// <summary>
+        /// If non-zero, we perform bigger reads when doing compaction. If you're
+        /// running RocksDB on spinning disks, you should set this to at least 2MB.
+        /// That way RocksDB's compaction is doing sequential instead of random reads.
+        ///
+        /// When non-zero, we also force new_table_reader_for_compaction_inputs to
+        /// true.
+        ///
+        /// Default: 0
+        //// </summary>
+        public ColumnFamilyOptions SetCompactionReadaheadSize(ulong size)
+        {
+            Native.Instance.rocksdb_options_compaction_readahead_size(Handle, size);
+            return this;
+        }
+
+        /// <summary>
         /// Comparator used to define the order of keys in the table.
         /// Default: a comparator that uses lexicographic byte-wise ordering
         ///
@@ -228,9 +244,9 @@ namespace RocksDbSharp
         /// <summary>
         /// different options for compression algorithms
         /// </summary>
-        public ColumnFamilyOptions SetCompressionOptions(int p1, int p2, int p3)
+        public ColumnFamilyOptions SetCompressionOptions(int p1, int p2, int p3, int p4)
         {
-            Native.Instance.rocksdb_options_set_compression_options(Handle, p1, p2, p3);
+            Native.Instance.rocksdb_options_set_compression_options(Handle, p1, p2, p3, p4);
             return this;
         }
 
