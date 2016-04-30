@@ -201,7 +201,8 @@ else
 	echo "Assuming a posix-like environment"
 	if [ "$(uname)" == "Darwin" ]; then
 		echo "Mac (Darwin) detected"
-		CFLAGS=
+		CFLAGS=-I/usr/local/include
+		LDFLAGS="-L/usr/local/Cellar/snappy/1.1.3/lib -L/usr/local/lib"
 		LIBEXT=.dylib
 	else
 		CFLAGS=-static-libstdc++
@@ -230,6 +231,8 @@ else
 	(cd rocksdb && {
 		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocksdb_sharp"
 
+		export CFLAGS
+		export LDFLAGS
 		(. ./build_tools/build_detect_platform detected~; {
 			grep detected~ -e '-DSNAPPY' &> /dev/null || fail "failed to detect snappy, install libsnappy-dev"
 			grep detected~ -e '-DZLIB' &> /dev/null || fail "failed to detect zlib, install libzlib-dev"
