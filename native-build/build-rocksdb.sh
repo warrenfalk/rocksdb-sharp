@@ -193,6 +193,7 @@ if [[ $OSINFO == *"MSYS"* ]]; then
 		cmd //c "msbuild build/rocksdb.sln /p:Configuration=Release /m:$CONCURRENCY" || fail "Rocksdb release build failed"
 		git checkout -- thirdparty.inc
 		mkdir -p ../../native/amd64 && cp -v ./build/Release/rocksdb.dll ../../native/amd64/librocksdb.dll
+		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -v ./build/Release/rocksdb.dll ../../native-${ROCKSDBVERSION}/amd64/librocksdb.dll
 	}) || fail "rocksdb build failed"
 elif [[ $OSDETECT == *"Darwin"* ]]; then
 	fail "Mac OSX build is not yet operational"
