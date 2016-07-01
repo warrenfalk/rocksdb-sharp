@@ -8,8 +8,7 @@ using System.Text;
 namespace RocksDbSharp
 {
     public class RocksDb : IDisposable
-    {
-        private IntPtr handle;
+    {        
         private ReadOptions defaultReadOptions;
         private WriteOptions defaultWriteOptions;
         private Encoding defaultEncoding;
@@ -18,9 +17,11 @@ namespace RocksDbSharp
         // Managed references to unmanaged resources that need to live at least as long as the db
         internal dynamic References { get; } = new ExpandoObject();
 
+        public IntPtr Handle { get; protected set; }
+
         private RocksDb(IntPtr handle, dynamic optionsReferences, dynamic cfOptionsRefs, Dictionary<string, ColumnFamilyHandle> columnFamilies = null)
         {
-            this.handle = handle;
+            this.Handle = handle;
             References.Options = optionsReferences;
             References.CfOptions = cfOptionsRefs;
             defaultReadOptions = new ReadOptions();
@@ -36,7 +37,7 @@ namespace RocksDbSharp
                 foreach (var cfh in columnFamilies.Values)
                     cfh.Dispose();
             }
-            Native.Instance.rocksdb_close(handle);
+            Native.Instance.rocksdb_close(Handle);
         }
 
         public static RocksDb Open(OptionsHandle options, string path)
@@ -63,7 +64,7 @@ namespace RocksDbSharp
 
         public string Get(string key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null, Encoding encoding = null)
         {
-            return Native.Instance.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, cf, encoding ?? defaultEncoding);
+            return Native.Instance.rocksdb_get(Handle, (readOptions ?? defaultReadOptions).Handle, key, cf, encoding ?? defaultEncoding);
         }
 
         public byte[] Get(byte[] key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
@@ -73,7 +74,7 @@ namespace RocksDbSharp
 
         public byte[] Get(byte[] key, long keyLength, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
-            return Native.Instance.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, keyLength, cf);
+            return Native.Instance.rocksdb_get(Handle, (readOptions ?? defaultReadOptions).Handle, key, keyLength, cf);
         }
 
         public long Get(byte[] key, byte[] buffer, long offset, long length, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
@@ -86,7 +87,7 @@ namespace RocksDbSharp
             unsafe
             {
                 long valLength;
-                var ptr = Native.Instance.rocksdb_get(handle, (readOptions ?? defaultReadOptions).Handle, key, keyLength, out valLength, cf);
+                var ptr = Native.Instance.rocksdb_get(Handle, (readOptions ?? defaultReadOptions).Handle, key, keyLength, out valLength, cf);
                 valLength = Math.Min(length, valLength);
                 Marshal.Copy(ptr, buffer, (int)offset, (int)valLength);
                 Native.Instance.rocksdb_free(ptr);
@@ -96,12 +97,12 @@ namespace RocksDbSharp
 
         public void Write(WriteBatch writeBatch, WriteOptions writeOptions = null)
         {
-            Native.Instance.rocksdb_write(handle, (writeOptions ?? defaultWriteOptions).Handle, writeBatch.Handle);
+            Native.Instance.rocksdb_write(Handle, (writeOptions ?? defaultWriteOptions).Handle, writeBatch.Handle);
         }
 
         public void Remove(string key, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
         {
-            Native.Instance.rocksdb_delete(handle, (writeOptions ?? defaultWriteOptions).Handle, key, cf);
+            Native.Instance.rocksdb_delete(Handle, (writeOptions ?? defaultWriteOptions).Handle, key, cf);
         }
 
         public void Remove(byte[] key, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
@@ -111,12 +112,12 @@ namespace RocksDbSharp
 
         public void Remove(byte[] key, long keyLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
         {
-            Native.Instance.rocksdb_delete(handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength);
+            Native.Instance.rocksdb_delete(Handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength);
         }
 
         public void Put(string key, string value, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null, Encoding encoding = null)
         {
-            Native.Instance.rocksdb_put(handle, (writeOptions ?? defaultWriteOptions).Handle, key, value, cf, encoding ?? defaultEncoding);
+            Native.Instance.rocksdb_put(Handle, (writeOptions ?? defaultWriteOptions).Handle, key, value, cf, encoding ?? defaultEncoding);
         }
 
         public void Put(byte[] key, byte[] value, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
@@ -126,28 +127,28 @@ namespace RocksDbSharp
 
         public void Put(byte[] key, long keyLength, byte[] value, long valueLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
         {
-            Native.Instance.rocksdb_put(handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength, value, valueLength, cf);
+            Native.Instance.rocksdb_put(Handle, (writeOptions ?? defaultWriteOptions).Handle, key, keyLength, value, valueLength, cf);
         }
 
         public Iterator NewIterator(ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
             IntPtr iteratorHandle = cf == null
-                ? Native.Instance.rocksdb_create_iterator(handle, (readOptions ?? defaultReadOptions).Handle)
-                : Native.Instance.rocksdb_create_iterator_cf(handle, (readOptions ?? defaultReadOptions).Handle, cf.Handle);
+                ? Native.Instance.rocksdb_create_iterator(Handle, (readOptions ?? defaultReadOptions).Handle)
+                : Native.Instance.rocksdb_create_iterator_cf(Handle, (readOptions ?? defaultReadOptions).Handle, cf.Handle);
             // Note: passing in read options here only to ensure that it is not collected before the iterator
             return new Iterator(iteratorHandle, readOptions);
         }
 
         public ColumnFamilyHandle CreateColumnFamily(ColumnFamilyOptions cfOptions, string name)
         {
-            var cfh = Native.Instance.rocksdb_create_column_family(handle, cfOptions.Handle, name);
+            var cfh = Native.Instance.rocksdb_create_column_family(Handle, cfOptions.Handle, name);
             return new ColumnFamilyHandle(cfh);
         }
 
         public void DropColumnFamily(string name)
         {
             var cf = GetColumnFamily(name);
-            Native.Instance.rocksdb_drop_column_family(handle, cf.Handle);
+            Native.Instance.rocksdb_drop_column_family(Handle, cf.Handle);
             columnFamilies.Remove(name);
         }
         
