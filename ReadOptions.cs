@@ -83,5 +83,10 @@ namespace RocksDbSharp
             return this;
         }
 
+        public ReadOptions SetReadaheadSize(ulong size)
+        {
+            Native.Instance.rocksdb_readoptions_set_readahead_size(Handle, size);
+            return this;
+        }
     }
 }

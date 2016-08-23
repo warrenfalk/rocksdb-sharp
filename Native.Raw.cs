@@ -3,12 +3,12 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version 21441c0
-    https://github.com/facebook/rocksdb/blob/21441c0/include/rocksdb/c.h
+    In particular, it was originally derived from version a683d4ab
+    https://github.com/facebook/rocksdb/blob/a683d4ab/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
     Changes to c.h should be incorporated here.  View those changes with:
-    cd native-build/rocksdb && git diff 21441c0 HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace 21441c0 with whatever HEAD is
+    cd native-build/rocksdb && git diff a683d4ab HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace a683d4ab with whatever HEAD is
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
@@ -711,6 +711,8 @@ public abstract void rocksdb_options_set_inplace_update_support(
             /* rocksdb_options_t* */ IntPtr options, bool value);
 public abstract void rocksdb_options_set_inplace_update_num_locks(
             /* rocksdb_options_t* */ IntPtr options, ulong value);
+public abstract void rocksdb_options_set_report_bg_io_stats(
+            /* rocksdb_options_t* */ IntPtr options, int value);
 
 }
 public enum CompressionTypeEnum {
@@ -864,6 +866,8 @@ public abstract void rocksdb_readoptions_set_read_tier(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, int value);
 public abstract void rocksdb_readoptions_set_tailing(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, bool value);
+public abstract void rocksdb_readoptions_set_readahead_size(
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*(size_t)*/ ulong size);
 
 #endif
 #endregion
@@ -900,6 +904,8 @@ public abstract void rocksdb_flushoptions_set_wait(
 public abstract /* rocksdb_cache_t* */ IntPtr rocksdb_cache_create_lru(
     size_t capacity);
 public abstract void rocksdb_cache_destroy(rocksdb_cache_t* cache);
+public abstract void rocksdb_cache_set_capacity(
+    rocksdb_cache_t* cache, size_t capacity);
 
 #endif
 #endregion
@@ -991,6 +997,15 @@ public abstract void rocksdb_livefiles_destroy(
 public abstract void rocksdb_get_options_from_string(
     /* const rocksdb_options_t* */ IntPtr base_options, const char* opts_str,
     /* rocksdb_options_t* */ IntPtr new_options, out IntPtr errptr);
+public abstract void rocksdb_delete_file_in_range(
+    /* rocksdb_t* */ IntPtr db, const char* start_key, size_t start_key_len,
+    const char* limit_key, size_t limit_key_len, char** errptr);
+
+public abstract void rocksdb_delete_file_in_range_cf(
+    /* rocksdb_t* */ IntPtr db, rocksdb_column_family_handle_t* column_family,
+    const char* start_key, size_t start_key_len, const char* limit_key,
+    size_t limit_key_len, char** errptr);
+
 
 #endif
 #endregion

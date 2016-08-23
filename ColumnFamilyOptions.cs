@@ -821,6 +821,18 @@ namespace RocksDbSharp
         }
 
         /// <summary>
+        /// Measure IO stats in compactions and flushes, if true.
+        /// Default: false 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public ColumnFamilyOptions SetReportBgIoStats(bool value)
+        {
+            Native.Instance.rocksdb_options_set_report_bg_io_stats(Handle, value ? 0 : 1);
+            return this;
+        }
+
+        /// <summary>
         /// Compress blocks using the specified compression algorithm.  This
         /// parameter can be changed dynamically.
         ///
