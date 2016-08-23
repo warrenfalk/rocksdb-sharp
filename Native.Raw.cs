@@ -3,12 +3,12 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version a683d4ab
-    https://github.com/facebook/rocksdb/blob/a683d4ab/include/rocksdb/c.h
+    In particular, it was originally derived from version e70aabc3
+    https://github.com/facebook/rocksdb/blob/e70aabc3/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
     Changes to c.h should be incorporated here.  View those changes with:
-    cd native-build/rocksdb && git diff a683d4ab HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace a683d4ab with whatever HEAD is
+    cd native-build/rocksdb && git diff e70aabc3 HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace e70aabc3 with whatever HEAD is
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).

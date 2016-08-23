@@ -3,7 +3,7 @@
 # You therefore should install git bash, Visual Studio 2015, and cmake
 # Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
 
-ROCKSDBVERSION=a683d4ab
+ROCKSDBVERSION=e70aabc3
 GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 
