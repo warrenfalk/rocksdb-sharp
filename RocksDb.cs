@@ -169,5 +169,15 @@ namespace RocksDbSharp
                 throw new RocksDbSharpException("Database not opened for column families");
             return columnFamilies[name];
         }
+
+        public string GetProperty(string propertyName)
+        {
+            return Native.Instance.rocksdb_property_value_string(Handle, propertyName);
+        }
+
+        public string GetProperty(string propertyName, ColumnFamilyHandle cf)
+        {
+            return Native.Instance.rocksdb_property_value_cf_string(Handle, cf.Handle, propertyName);
+        }
     }
 }

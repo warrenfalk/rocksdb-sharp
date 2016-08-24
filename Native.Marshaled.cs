@@ -305,5 +305,16 @@ namespace RocksDbSharp
             // rocksdb_free(resultPtr);
             return (int)size;
         }
+
+        public string rocksdb_property_value_string(IntPtr db, string propname)
+        {
+            return MarshalNullTermAsciiStr(rocksdb_property_value(db, propname));
+        }
+
+        public string rocksdb_property_value_cf_string(IntPtr db, IntPtr column_family, string propname)
+        {
+            return MarshalNullTermAsciiStr(rocksdb_property_value_cf(db, column_family, propname));
+        }
+
     }
 }
