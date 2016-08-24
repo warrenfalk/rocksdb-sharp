@@ -449,7 +449,7 @@ public abstract void rocksdb_writebatch_iterate(
     //void (*deleted)(void*, const char* k, /*(size_t)*/ ulong klen)
     WriteBatchIterateDeleteCallback deleted);
 public abstract /* const char* */ IntPtr rocksdb_writebatch_data(
-    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(size_t*)*/ ulong size);
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(size_t*)*/ out ulong size);
 #endif
 #endregion
 

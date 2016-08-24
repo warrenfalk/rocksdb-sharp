@@ -277,5 +277,33 @@ namespace RocksDbSharp
                 }
             }
         }
+
+        public byte[] rocksdb_writebatch_data(IntPtr wbHandle)
+        {
+            ulong size;
+            var resultPtr = rocksdb_writebatch_data(wbHandle, out size);
+            var data = new byte[size];
+            Marshal.Copy(resultPtr, data, 0, (int)size);
+            // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
+            // rocksdb_free(resultPtr);
+            return data;
+        }
+
+        public int rocksdb_writebatch_data(IntPtr wbHandle, byte[] buffer, int offset, int length)
+        {
+            ulong size;
+            var resultPtr = rocksdb_writebatch_data(wbHandle, out size);
+            bool fits = (int)size <= length;
+            if (!fits)
+            {
+                // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
+                // rocksdb_free(resultPtr);
+                return -1;
+            }
+            Marshal.Copy(resultPtr, buffer, offset, (int)size);
+            // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
+            // rocksdb_free(resultPtr);
+            return (int)size;
+        }
     }
 }

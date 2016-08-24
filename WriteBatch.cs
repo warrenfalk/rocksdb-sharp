@@ -13,8 +13,8 @@ namespace RocksDbSharp
         {
         }
 
-        public WriteBatch(byte[] rep, long size)
-            : this(Native.Instance.rocksdb_writebatch_create_from(rep, size))
+        public WriteBatch(byte[] rep, long size = -1)
+            : this(Native.Instance.rocksdb_writebatch_create_from(rep, size < 0 ? rep.Length : size))
         {
         }
 
@@ -175,9 +175,29 @@ namespace RocksDbSharp
             return this;
         }
 
-        public IntPtr Data(ulong size)
+        /// <summary>
+        /// Get the write batch as bytes
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToBytes()
         {
-            return Native.Instance.rocksdb_writebatch_data(handle, size);
+            return Native.Instance.rocksdb_writebatch_data(handle);
+        }
+
+        /// <summary>
+        /// Get the write batch as bytes
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="size"></param>
+        /// <returns>null if size was not large enough to hold the data</returns>
+        public byte[] ToBytes(byte[] buffer, int offset = 0, int size = -1)
+        {
+            if (size < 0)
+                size = buffer.Length;
+            if (Native.Instance.rocksdb_writebatch_data(handle, buffer, 0, size) > 0)
+                return buffer;
+            return null;
         }
     }
 }
