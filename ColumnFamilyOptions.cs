@@ -205,9 +205,10 @@ namespace RocksDbSharp
         /// and L4 using compression_per_level[3]. Compaction for each level can
         /// change when data grows.
         /// </summary>
-        public ColumnFamilyOptions SetCompressionPerLevel(int[] levelValues, ulong numLevels)
+        public ColumnFamilyOptions SetCompressionPerLevel(CompressionTypeEnum[] levelValues, ulong numLevels)
         {
-            Native.Instance.rocksdb_options_set_compression_per_level(Handle, levelValues, numLevels);
+            var values = levelValues.Select(x => (int) x).ToArray();
+            Native.Instance.rocksdb_options_set_compression_per_level(Handle, values, numLevels);
             return this;
         }
 
