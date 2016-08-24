@@ -14,8 +14,6 @@ providing direct access to the C API functions (low level)
 plus some helper wrappers on those to aid in marshaling and exception handling (mid level) 
 plus an idiomatic C# class hierarchy for ease of use (high level).
 
-The high level wrapper will be patterned after the RocksJava implementation where possible and appropriate.
-
 ### Example (High Level)
 
 ```csharp
@@ -39,9 +37,6 @@ On Linux and Mac, the snappy library (libsnappy) must be installed.
 
 ### 64-bit only
 RocksDb is supported only in 64-bit mode. Although I contributed a fix that allows it to compile in 32-bit mode, this is untested and unsupported, may not work at all, and almost certainly will have at least some major issues and should not be attempted in production.
-
-### Non-stable Native
-The current version of rocksdb that makes this possible is not yet released and so this will currently build straight off the last commit I selected from the rocksdb master branch. Don't use this in production unless you'd be comfortable using the master branch of rocksdb in production
 
 ## Extras
 
@@ -80,7 +75,7 @@ This will create a librocksdb.dll and copy it to the where the .sln file is expe
 1. ```cd native-build```
 2. ```./build-rocksdb.sh```
 
-Note: the Mono environment that is most used on a Mac is 32-bit, but Rocksdb is 64-bit only. Although a change I contributed now allows RocksDb to compile in 32 bit, it is not supported and may not work.  You should definitely only run 64-bit Mono to use RocksDb with Mono on Mac.
+Note: On a Mac, the Mono environment that is most used is 32-bit, but Rocksdb is 64-bit only. Although a change I contributed now allows RocksDb to compile in 32 bit, it is not supported and may not work.  You should definitely only run 64-bit Mono to use RocksDb with Mono on Mac.
 
 ## TODO
 
