@@ -23,6 +23,7 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
             IntPtr[] ptrs = new IntPtr[lencf];
             Marshal.Copy(result, ptrs, 0, (int)lencf);
+            rocksdb_free(result);
             string[] strings = new string[lencf];
             for (ulong i = 0; i < lencf; i++)
                 strings[i] = Marshal.PtrToStringAnsi(ptrs[i]);
@@ -105,6 +106,7 @@ namespace RocksDbSharp
                     fixed (char* v = new char[vlength])
                     {
                         encoding.GetChars(bv, (int)bvlength, v, vlength);
+                        rocksdb_free(resultPtr);
                         return new string(v, 0, vlength);
                     }
                 }
@@ -129,6 +131,7 @@ namespace RocksDbSharp
                 return null;
             var result = new byte[valueLength];
             Marshal.Copy(resultPtr, result, 0, (int)valueLength);
+            rocksdb_free(resultPtr);
             return result;
         }
 
@@ -228,6 +231,7 @@ namespace RocksDbSharp
                 fixed (char* k = new char[klength])
                 {
                     encoding.GetChars(bk, (int)bklength, k, klength);
+                    rocksdb_free(resultPtr);
                     return new string(k, 0, klength);
                 }
             }
@@ -249,6 +253,7 @@ namespace RocksDbSharp
                 fixed (char* v = new char[vlength])
                 {
                     encoding.GetChars(bv, (int)bvlength, v, vlength);
+                    rocksdb_free(resultPtr);
                     return new string(v, 0, vlength);
                 }
             }

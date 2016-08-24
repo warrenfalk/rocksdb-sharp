@@ -164,6 +164,7 @@ namespace RocksDbSharp
             IntPtr buffer = rocksdb_iter_key(iterator, out length);
             byte[] result = new byte[(int)length];
             Marshal.Copy(buffer, result, 0, (int)length);
+            rocksdb_free(buffer);
             return result;
         }
 
@@ -173,6 +174,7 @@ namespace RocksDbSharp
             IntPtr buffer = rocksdb_iter_value(iterator, out length);
             byte[] result = new byte[(int)length];
             Marshal.Copy(buffer, result, 0, (int)length);
+            rocksdb_free(buffer);
             return result;
         }
 
