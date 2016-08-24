@@ -11,6 +11,20 @@ namespace RocksDbSharp
 {
     public abstract partial class Native
     {
+        private unsafe string MarshalNullTermAsciiStr(IntPtr nullTermStr)
+        {
+            byte* bv = (byte*)nullTermStr.ToPointer();
+            byte* n = bv;
+            while (*n != 0) n++;
+            var vlength = n - bv;
+            fixed (char* v = new char[vlength])
+            {
+                Encoding.ASCII.GetChars(bv, (int)vlength, v, (int)vlength);
+                Native.Instance.rocksdb_free(nullTermStr);
+                return new string(v, 0, (int)vlength);
+            }
+        }
+
         public string[] rocksdb_list_column_families(
             /* const rocksdb_options_t* */ IntPtr options,
             string name
