@@ -127,16 +127,24 @@ namespace RocksDbSharp
             return this;
         }
 
+        /// <summary>
+        /// Enables statistics so that you can call GetStatisticsString() later
+        /// </summary>
+        /// <returns></returns>
         public DbOptions EnableStatistics()
         {
             Native.Instance.rocksdb_options_enable_statistics(Handle);
             return this;
         }
 
-        public DbOptions StatisticsGetString()
+        /// <summary>
+        /// Constructs and returns a string containing statistics if statistics have been enabled
+        /// through EnableStatistics()
+        /// </summary>
+        /// <returns></returns>
+        public string GetStatisticsString()
         {
-            Native.Instance.rocksdb_options_statistics_get_string(Handle);
-            return this;
+            return Native.Instance.rocksdb_options_statistics_get_string_marshaled(Handle);
         }
 
         /// <summary>

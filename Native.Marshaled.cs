@@ -165,6 +165,11 @@ namespace RocksDbSharp
                 rocksdb_delete_cf(db, writeOptions, cf.Handle, bkey, bkey.LongLength, out errptr);
         }
 
+        public string rocksdb_options_statistics_get_string_marshaled(IntPtr opts)
+        {
+            return MarshalNullTermAsciiStr(rocksdb_options_statistics_get_string(opts));
+        }
+
         public void rocksdb_writebatch_put(IntPtr writeOptions, string key, string val, Encoding encoding)
         {
             unsafe
