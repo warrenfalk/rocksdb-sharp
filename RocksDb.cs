@@ -145,6 +145,12 @@ namespace RocksDbSharp
             // See rocksdb_create_iterators
         }
 
+        public SnapShot CreateSnapshot()
+        {
+            IntPtr snapshotHandle = Native.Instance.rocksdb_create_snapshot(Handle);
+            return new SnapShot(Handle, snapshotHandle);
+        }
+
         public ColumnFamilyHandle CreateColumnFamily(ColumnFamilyOptions cfOptions, string name)
         {
             var cfh = Native.Instance.rocksdb_create_column_family(Handle, cfOptions.Handle, name);

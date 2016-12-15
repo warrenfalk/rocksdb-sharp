@@ -40,9 +40,9 @@ namespace RocksDbSharp
             return this;
         }
 
-        public ReadOptions SetSnapshot(IntPtr snapshot)
+        public ReadOptions SetSnapshot(SnapShot snapshot)
         {
-            Native.Instance.rocksdb_readoptions_set_snapshot(Handle, snapshot);
+            Native.Instance.rocksdb_readoptions_set_snapshot(Handle, snapshot.snapshot_handle);
             return this;
         }
 
