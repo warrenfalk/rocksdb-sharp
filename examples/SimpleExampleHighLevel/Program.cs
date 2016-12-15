@@ -111,6 +111,24 @@ namespace SimpleExampleHighLevel
                         }
                     }
 
+                    {
+                        // Snapshots
+                        using (var snapshot = db.CreateSnapshot())
+                        {
+                            var before = db.Get("one");
+                            db.Put("one", "1");
+
+                            var useSnapshot = new ReadOptions()
+                                .SetSnapshot(snapshot);
+
+                            // the database value was written
+                            Debug.Assert(db.Get("one") == "1");
+                            // but the snapshot still sees the old version
+                            var after = db.Get("one", readOptions: useSnapshot);
+                            Debug.Assert(after == before);
+                        }
+                    }
+
                     var two = db.Get("two");
                     Debug.Assert(two == "dos");
 
