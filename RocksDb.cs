@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -145,10 +145,10 @@ namespace RocksDbSharp
             // See rocksdb_create_iterators
         }
 
-        public SnapShot CreateSnapshot()
+        public Snapshot CreateSnapshot()
         {
             IntPtr snapshotHandle = Native.Instance.rocksdb_create_snapshot(Handle);
-            return new SnapShot(Handle, snapshotHandle);
+            return new Snapshot(Handle, snapshotHandle);
         }
 
         public ColumnFamilyHandle CreateColumnFamily(ColumnFamilyOptions cfOptions, string name)
