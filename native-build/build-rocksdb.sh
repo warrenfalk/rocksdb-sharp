@@ -2,8 +2,21 @@
 # This is designed to be able to be run from git bash on Windows
 # You therefore should install git bash, Visual Studio 2015, and cmake
 # Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
+# 
+# Instructions for upgrading rocksdb version
+# 1. Fetch the desired version locally with something like:
+#    cd native-build/rocksdb
+#    git fetch https://github.com/facebook/rocksdb.git v4.13
+#    git checkout FETCH_HEAD
+#    git push -f warrenfalk HEAD:rocksdb_sharp
+# 2. Get the hash of the commit for the version and replace below
+# 3. Also see instructions for modifying Native.Raw.cs with updates to c.h since current revisions
+# 4. Push the desired version to the rocksdb_sharp branch at https://github.com/warrenfalk/rocksdb
+# 5. Run this script to build (see README.md for more info)
+#
+# 6. Search through code for old hash and old version number and replace
 
-ROCKSDBVERSION=e70aabc3
+ROCKSDBVERSION=0a49cbee
 GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 
@@ -42,7 +55,7 @@ checkout() {
 BASEDIR=$(dirname "$0")
 OSINFO=$(uname)
 
-if [[ $OSINFO == *"MSYS"* ]]; then
+if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 	echo "Detected Windows (MSYS)..."
 	# Make sure git is installed
 	hash git 2> /dev/null || { fail "Build requires git"; }
@@ -81,9 +94,17 @@ if [[ $OSINFO == *"MSYS"* ]]; then
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
 		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocksdb_sharp"
+
 		git checkout -- thirdparty.inc
 		patch -N < ../rocksdb.thirdparty.inc.patch || warn "Patching of thirdparty.inc failed"
 		rm -f thirdparty.inc.rej thirdparty.inc.orig
+
+		# The following was necessary to get it to stop trying to build the tools
+		# which doesn't work because of relative paths to GFLAGS library
+		git checkout -- CMakeLists.txt
+		patch -N < ../rocksdb.nobuildtools.patch || warn "Patching of CMakeLists.txt failed"
+		rm -f CMakeLists.txt.rej CMakeLists.txt.orig
+
 		mkdir -p build
 		(cd build && {
 			cmake -G "Visual Studio 14 2015 Win64" -DOPTDBG=1 -DGFLAGS=1 -DSNAPPY=1 .. || fail "Running cmake failed"

@@ -128,6 +128,18 @@ namespace RocksDbSharp
         }
 
         /// <summary>
+        /// Recovery mode to control the consistency while replaying WAL
+        /// Default: kPointInTimeRecovery
+        /// </summary>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public DbOptions SetWalRecoveryMode(WalRecoveryMode mode)
+        {
+            Native.Instance.rocksdb_options_set_wal_recovery_mode(Handle, mode);
+            return this;
+        }
+
+        /// <summary>
         /// Enables statistics so that you can call GetStatisticsString() later
         /// </summary>
         /// <returns></returns>

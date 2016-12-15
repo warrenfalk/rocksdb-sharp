@@ -36,7 +36,7 @@ namespace PrefixExample
                     //.SetMinWriteBufferNumberToMerge(minWriteBufferNumberToMerge)
                     .SetMemtablePrefixBloomBits(10000000)
                     .SetMemtablePrefixBloomProbes(10)
-                    .SetMemtablePrefixBloomHugePageTlbSize(2 * 1024 * 1024)
+                    .SetMemtableHugePageSize(2 * 1024 * 1024)
                     .SetPrefixExtractor(SliceTransform.CreateFixedPrefix((ulong)8))
                     .SetBlockBasedTableFactory(bbto)
                 },

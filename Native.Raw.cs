@@ -3,12 +3,16 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version e70aabc3
-    https://github.com/facebook/rocksdb/blob/e70aabc3/include/rocksdb/c.h
+    In particular, it was originally derived from version 0a49cbee
+    https://github.com/facebook/rocksdb/blob/0a49cbee/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
-    Changes to c.h should be incorporated here.  View those changes with:
-    cd native-build/rocksdb && git diff e70aabc3 HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace e70aabc3 with whatever HEAD is
+    Changes to c.h should be incorporated here.  View those changes by going to the native rocksdb
+    source and fetching the desired version like this:
+    cd native-build/rocksdb
+    git fetch https://github.com/facebook/rocksdb.git v4.13
+    git checkout FETCH_HEAD
+    git diff 0a49cbee HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace 0a49cbee with whatever HEAD is
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
@@ -590,9 +594,6 @@ public abstract void rocksdb_options_set_target_file_size_multiplier(
 public abstract void rocksdb_options_set_max_bytes_for_level_base(
             /* rocksdb_options_t* */ IntPtr options, ulong value);
 public abstract void rocksdb_options_set_max_bytes_for_level_multiplier(/* rocksdb_options_t* */ IntPtr options, int value);
-public abstract void rocksdb_options_set_expanded_compaction_factor(
-    /* rocksdb_options_t* */ IntPtr options, int value);
-public abstract void rocksdb_options_set_max_grandparent_overlap_factor(/* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_max_bytes_for_level_multiplier_additional(
             /* rocksdb_options_t* */ IntPtr options, /*(int*)*/ int[] level_values, ulong num_levels);
 public abstract void rocksdb_options_enable_statistics(
@@ -678,12 +679,14 @@ public abstract void rocksdb_options_set_disable_auto_compactions(
     /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_delete_obsolete_files_period_micros(/* rocksdb_options_t* */ IntPtr options,
             ulong value);
-public abstract void rocksdb_options_set_source_compaction_factor(
-    /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_prepare_for_bulk_load(
     /* rocksdb_options_t* */ IntPtr options);
 public abstract void rocksdb_options_set_memtable_vector_rep(
     /* rocksdb_options_t* */ IntPtr options);
+public abstract void rocksdb_options_set_memtable_prefix_bloom_size_ratio(
+    /* rocksdb_options_t* */ IntPtr options, double ratio);
+public abstract void rocksdb_options_set_max_compaction_bytes(
+    /* rocksdb_options_t* */ IntPtr options, /* uint64_t */ ulong bytes);
 public abstract void rocksdb_options_set_hash_skip_list_rep(
             /* rocksdb_options_t* */ IntPtr options, ulong p1, int p2, int p3);
 public abstract void rocksdb_options_set_hash_link_list_rep(
@@ -698,7 +701,7 @@ public abstract void rocksdb_options_set_memtable_prefix_bloom_bits(
             /* rocksdb_options_t* */ IntPtr options, uint value);
 public abstract void rocksdb_options_set_memtable_prefix_bloom_probes(/* rocksdb_options_t* */ IntPtr options, int value);
 
-public abstract void rocksdb_options_set_memtable_prefix_bloom_huge_page_tlb_size(
+public abstract void rocksdb_options_set_memtable_huge_page_size(
     /* rocksdb_options_t* */ IntPtr options, /*(size_t)*/ ulong size);
 
 public abstract void rocksdb_options_set_max_successive_merges(
@@ -715,6 +718,17 @@ public abstract void rocksdb_options_set_report_bg_io_stats(
             /* rocksdb_options_t* */ IntPtr options, int value);
 
 }
+public enum WalRecoveryMode {  
+  rocksdb_tolerate_corrupted_tail_records_recovery = 0,
+  rocksdb_absolute_consistency_recovery = 1,
+  rocksdb_point_in_time_recovery = 2,
+  rocksdb_skip_any_corrupted_records_recovery = 3
+}
+public abstract partial class Native {
+public abstract void rocksdb_options_set_wal_recovery_mode(
+    /* rocksdb_options_t* */ IntPtr options, WalRecoveryMode mode);
+}
+
 public enum CompressionTypeEnum {
   rocksdb_no_compression = 0,
   rocksdb_snappy_compression = 1,
@@ -754,6 +768,8 @@ public abstract /* rocksdb_compactionfilter_t* */ IntPtr rocksdb_compactionfilte
                             size_t* new_value_length,
                             unsigned char* value_changed),
     const char* (*name)(void*));
+public abstract void rocksdb_compactionfilter_set_ignore_snapshots(
+    rocksdb_compactionfilter_t*, unsigned char);
 public abstract void rocksdb_compactionfilter_destroy(
     rocksdb_compactionfilter_t*);
 

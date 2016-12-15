@@ -415,32 +415,6 @@ namespace RocksDbSharp
         }
 
         /// <summary>
-        /// Maximum number of bytes in all compacted files.  We avoid expanding
-        /// the lower level file set of a compaction if it would make the
-        /// total compaction cover more than
-        /// (expanded_compaction_factor * targetFileSizeLevel()) many bytes.
-        ///
-        /// Dynamically changeable through SetOptions() API
-        /// </summary>
-        public ColumnFamilyOptions SetExpandedCompactionFactor(int value)
-        {
-            Native.Instance.rocksdb_options_set_expanded_compaction_factor(Handle, value);
-            return this;
-        }
-
-        /// <summary>
-        /// Control maximum bytes of overlaps in grandparent (i.e., level+2) before we
-        /// stop building a single file in a level->level+1 compaction.
-        ///
-        /// Dynamically changeable through SetOptions() API
-        /// </summary>
-        public ColumnFamilyOptions SetMaxGrandparentOverlapFactor(int value)
-        {
-            Native.Instance.rocksdb_options_set_max_grandparent_overlap_factor(Handle, value);
-            return this;
-        }
-
-        /// <summary>
         /// Different max-size multipliers for different levels.
         /// These are multiplied by max_bytes_for_level_multiplier to arrive
         /// at the max-size of each level.
@@ -649,26 +623,21 @@ namespace RocksDbSharp
             return this;
         }
 
-        /// <summary>
-        /// Maximum number of bytes in all source files to be compacted in a
-        /// single compaction run. We avoid picking too many files in the
-        /// source level so that we do not exceed the total source bytes
-        /// for compaction to exceed
-        /// (source_compaction_factor * targetFileSizeLevel()) many bytes.
-        /// Default:1, i.e. pick maxfilesize amount of data as the source of
-        /// a compaction.
-        ///
-        /// Dynamically changeable through SetOptions() API
-        /// </summary>
-        public ColumnFamilyOptions SetSourceCompactionFactor(int value)
-        {
-            Native.Instance.rocksdb_options_set_source_compaction_factor(Handle, value);
-            return this;
-        }
-
         public ColumnFamilyOptions SetMemtableVectorRep()
         {
             Native.Instance.rocksdb_options_set_memtable_vector_rep(Handle);
+            return this;
+        }
+
+        public ColumnFamilyOptions SetMemtablePrefixBloomSizeRatio(double ratio)
+        {
+            Native.Instance.rocksdb_options_set_memtable_prefix_bloom_size_ratio(Handle, ratio);
+            return this;
+        }
+
+        public ColumnFamilyOptions SetMaxCompactionBytes(ulong bytes)
+        {
+            Native.Instance.rocksdb_options_set_max_compaction_bytes(Handle, bytes);
             return this;
         }
 
@@ -891,9 +860,9 @@ namespace RocksDbSharp
         ///
         /// Dynamically changeable through SetOptions() API
         /// </summary>
-        public ColumnFamilyOptions SetMemtablePrefixBloomHugePageTlbSize(ulong size)
+        public ColumnFamilyOptions SetMemtableHugePageSize(ulong size)
         {
-            Native.Instance.rocksdb_options_set_memtable_prefix_bloom_huge_page_tlb_size(Handle, size);
+            Native.Instance.rocksdb_options_set_memtable_huge_page_size(Handle, size);
             return this;
         }
 
