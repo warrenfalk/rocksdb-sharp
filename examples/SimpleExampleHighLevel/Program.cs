@@ -22,40 +22,6 @@ namespace SimpleExampleHighLevel
             {
                 try
                 {
-                    var rand = new Random(100);
-                    var rand2 = new Random(100);
-                    for (int k = 0; k < 1000000; k++)
-                    {
-                        for (int i = 0; i < 1000; i++)
-                        {
-                            var key = new byte[18];
-                            var value = new byte[128];
-                            rand.NextBytes(key);
-                            rand.NextBytes(value);
-                            byte[] write;
-                            using (var wb = new WriteBatch())
-                            {
-                                wb.Put(key, value);
-                                write = wb.ToBytes();
-                            }
-
-                            using (var wb = new WriteBatch(write))
-                            {
-                                db.Write(wb);
-                            }
-                        }
-                        for (int i = 0; i < 1000; i++)
-                        {
-                            var key = new byte[18];
-                            var value = new byte[128];
-                            rand2.NextBytes(key);
-                            rand2.NextBytes(value);
-                            var value2 = db.Get(key);
-                        }
-                        Console.WriteLine("{0}k", k);
-                        //Console.WriteLine(options.GetStatisticsString());
-                        Console.WriteLine(db.GetProperty("rocksdb.cur-size-all-mem-tables"));
-                    }
                     {
                         // With strings
                         string value = db.Get("key");
