@@ -2,7 +2,7 @@
 # This is designed to be able to be run from git bash on Windows
 # You therefore should install git bash, Visual Studio 2015, and cmake
 # Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
-# 
+#
 # Instructions for upgrading rocksdb version
 # 1. Fetch the desired version locally with something like:
 #    cd native-build/rocksdb
@@ -17,6 +17,8 @@
 # 6. Search through code for old hash and old version number and replace
 
 ROCKSDBVERSION=0a49cbee
+ROCKSDBVNUM=4.13.4
+ROCKSDBSHARPVNUM=4.13.0
 GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 
@@ -274,3 +276,8 @@ else
 
 	}) || fail "rocksdb build failed"
 fi
+
+
+echo -n ${ROCKSDBSHARPVNUM} > ${BASEDIR}/../version
+echo -n ${ROCKSDBVNUM} > ${BASEDIR}/../rocksdbversion
+
