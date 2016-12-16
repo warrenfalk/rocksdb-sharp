@@ -111,7 +111,7 @@ namespace SimpleExampleHighLevel
                             iterator.Next();
                             Debug.Assert(iterator.Valid());
                             Debug.Assert(iterator.StringKey() == "one");
-                            Debug.Assert(iterator.StringValue() == "uno");
+                            Debug.Assert(iterator.StringValue() == "1");
                             iterator.Next();
                             Debug.Assert(!iterator.Valid());
                         }
