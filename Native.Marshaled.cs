@@ -250,7 +250,7 @@ namespace RocksDbSharp
                 fixed (char* k = new char[klength])
                 {
                     encoding.GetChars(bk, (int)bklength, k, klength);
-                    rocksdb_free(resultPtr);
+                    //rocksdb_free(resultPtr);
                     return new string(k, 0, klength);
                 }
             }
@@ -272,7 +272,7 @@ namespace RocksDbSharp
                 fixed (char* v = new char[vlength])
                 {
                     encoding.GetChars(bv, (int)bvlength, v, vlength);
-                    rocksdb_free(resultPtr);
+                    //rocksdb_free(resultPtr);
                     return new string(v, 0, vlength);
                 }
             }
