@@ -34,8 +34,6 @@ namespace PrefixExample
                     //.SetWriteBufferSize(writeBufferSize)
                     //.SetMaxWriteBufferNumber(maxWriteBufferNumber)
                     //.SetMinWriteBufferNumberToMerge(minWriteBufferNumberToMerge)
-                    .SetMemtablePrefixBloomBits(10000000)
-                    .SetMemtablePrefixBloomProbes(10)
                     .SetMemtableHugePageSize(2 * 1024 * 1024)
                     .SetPrefixExtractor(SliceTransform.CreateFixedPrefix((ulong)8))
                     .SetBlockBasedTableFactory(bbto)

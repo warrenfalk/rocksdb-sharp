@@ -580,22 +580,6 @@ namespace RocksDbSharp
         }
 
         /// <summary>
-        /// Use KeyMayExist API to filter deletes when this is true.
-        /// If KeyMayExist returns false, i.e. the key definitely does not exist, then
-        /// the delete is a noop. KeyMayExist only incurs in-memory look up.
-        /// This optimization avoids writing the delete to storage when appropriate.
-        ///
-        /// Default: false
-        ///
-        /// Dynamically changeable through SetOptions() API
-        /// </summary>
-        public ColumnFamilyOptions SetFilterDeletes(bool value)
-        {
-            Native.Instance.rocksdb_options_set_filter_deletes(Handle, value);
-            return this;
-        }
-
-        /// <summary>
         /// An iteration->Next() sequentially skips over keys with the same
         /// user-key unless this option is set. This number specifies the number
         /// of keys (with the same userkey) that will be sequentially
@@ -685,29 +669,6 @@ namespace RocksDbSharp
         public ColumnFamilyOptions SetMinLevelToCompress(int level)
         {
             Native.Instance.rocksdb_options_set_min_level_to_compress(Handle, level);
-            return this;
-        }
-
-        /// <summary>
-        /// if prefix_extractor is set and bloom_bits is not 0, create prefix bloom
-        /// for memtable
-        ///
-        /// Dynamically changeable through SetOptions() API
-        /// </summary>
-        public ColumnFamilyOptions SetMemtablePrefixBloomBits(uint value)
-        {
-            Native.Instance.rocksdb_options_set_memtable_prefix_bloom_bits(Handle, value);
-            return this;
-        }
-
-        /// <summary>
-        /// number of hash probes per key
-        ///
-        /// Dynamically changeable through SetOptions() API
-        /// </summary>
-        public ColumnFamilyOptions SetMemtablePrefixBloomProbes(int value)
-        {
-            Native.Instance.rocksdb_options_set_memtable_prefix_bloom_probes(Handle, value);
             return this;
         }
 

@@ -669,8 +669,9 @@ public abstract void rocksdb_options_set_bytes_per_sync(
             /* rocksdb_options_t* */ IntPtr options, ulong value);
 public abstract void rocksdb_options_set_verify_checksums_in_compaction(/* rocksdb_options_t* */ IntPtr options,
             bool value);
-public abstract void rocksdb_options_set_filter_deletes(
-            /* rocksdb_options_t* */ IntPtr options, bool value);
+// Not actually in library
+//public abstract void rocksdb_options_set_filter_deletes(
+//            /* rocksdb_options_t* */ IntPtr options, bool value);
 public abstract void rocksdb_options_set_max_sequential_skip_in_iterations(/* rocksdb_options_t* */ IntPtr options,
             ulong value);
 public abstract void rocksdb_options_set_disable_data_sync(
@@ -696,10 +697,11 @@ public abstract void rocksdb_options_set_plain_table_factory(
 
 public abstract void rocksdb_options_set_min_level_to_compress(
     /* rocksdb_options_t* */ IntPtr opt, int level);
-
-public abstract void rocksdb_options_set_memtable_prefix_bloom_bits(
-            /* rocksdb_options_t* */ IntPtr options, uint value);
-public abstract void rocksdb_options_set_memtable_prefix_bloom_probes(/* rocksdb_options_t* */ IntPtr options, int value);
+// Not actually in library
+//public abstract void rocksdb_options_set_memtable_prefix_bloom_bits(
+//            /* rocksdb_options_t* */ IntPtr options, uint value);
+// Not actually in library
+//public abstract void rocksdb_options_set_memtable_prefix_bloom_probes(/* rocksdb_options_t* */ IntPtr options, int value);
 
 public abstract void rocksdb_options_set_memtable_huge_page_size(
     /* rocksdb_options_t* */ IntPtr options, /*(size_t)*/ ulong size);
