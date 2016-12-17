@@ -1,0 +1,36 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <!--
+    Note: this is the way we want to do it, but xbuild is broken and they don't expect to fix it
+
+    <NativeLibs Include="$(MSBuildThisFileDirectory)native\**\*.*" />
+    <None Include="@(NativeLibs)">
+      <Link>native\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
+    So this is how we actually do it
+    -->
+    <None Include="$(MSBuildThisFileDirectory)native\amd64\rocksdb.dll">
+      <Link>native\amd64\rocksdb.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)native\amd64\librocksdb.so">
+      <Link>native\amd64\librocksdb.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)native\amd64\librocksdb.dylib">
+      <Link>native\amd64\librocksdb.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)native\i386\librocksdb.so">
+      <Link>native\i386\librocksdb.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)native\i386\librocksdb.dylib">
+      <Link>native\i386\librocksdb.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
+  </ItemGroup>
+</Project>

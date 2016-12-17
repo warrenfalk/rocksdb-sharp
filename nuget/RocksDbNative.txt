@@ -1,0 +1,4 @@
+The native rocksdb binaries will be included in the build output directory.
+
+This file can be deleted.  It is added by NuGet because at least one reference or file must be added to
+stop NuGet from failing.

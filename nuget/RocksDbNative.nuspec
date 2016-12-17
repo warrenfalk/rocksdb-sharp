@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>RocksDbNative</id>
+    <version>4.13.4</version>
+    <title>RocksDbNative</title>
+    <authors>Warren Falk</authors>
+    <owners>Warren Falk</owners>
+    <licenseUrl>https://raw.githubusercontent.com/warrenfalk/rocksdb-sharp/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/warrenfalk/rocksdb-sharp</projectUrl>
+    <iconUrl>http://rocksdb.org/static/logo.svg</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Native RocksDb Binaries (Install RocksDbSharp package for managed wraper)</description>
+    <releaseNotes>.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>rocksdb leveldb embedded database</tags>
+  </metadata>
+  <files>
+    <file src="..\native\**" target="build\native" />
+    <file src="RocksDbNative.targets" target="build" />
+    <file src="RocksDbNative.txt" target="content" />
+  </files>
+</package>
