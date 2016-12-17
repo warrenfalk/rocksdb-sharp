@@ -63,7 +63,7 @@ This is now buildable on Windows thanks to the Bing team at Microsoft who are ac
 3. cd to the ```native-build``` folder within the repository
 4. execute ```./build-rocksdb.sh```
 
-This will create a librocksdb.dll and copy it to the where the .sln file is expecting it to be.  (If you only need to run this in Windows, you can remove the references to the other two platform binaries from the .sln)
+This will create a rocksdb.dll and copy it to the where the .sln file is expecting it to be.  (If you only need to run this in Windows, you can remove the references to the other two platform binaries from the .sln)
 
 ### Linux Native Build Instructions
 
@@ -75,7 +75,7 @@ This will create a librocksdb.dll and copy it to the where the .sln file is expe
 1. ```cd native-build```
 2. ```./build-rocksdb.sh```
 
-Note: On a Mac, the Mono environment that is most used is 32-bit, but Rocksdb is 64-bit only. Although a change I contributed now allows RocksDb to compile in 32 bit, it is not supported and may not work.  You should definitely only run 64-bit Mono to use RocksDb with Mono on Mac.
+Note: On a Mac, although a change I contributed now allows RocksDb to compile in 32 bit, it is not supported and may not work.  You should definitely only run 64-bit Mono to use RocksDb with Mono on Mac.
 
 ## TODO
 

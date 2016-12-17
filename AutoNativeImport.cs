@@ -25,26 +25,23 @@ namespace NativeImport
         /// <param name="name"></param>
         /// <param name="suppressUnload">true to prevent unloading on finalization</param>
         /// <returns></returns>
-        public static T Import<T>(string name, bool suppressUnload = false) where T : class
+        public static T Import<T>(string name, string version, bool suppressUnload = false) where T : class
         {
-            var subdir = Environment.Is64BitProcess ? "amd64" : "i386";
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "native", subdir, name);
             switch ((int)Environment.OSVersion.Platform)
             {
                 case (int)PlatformID.Win32Windows: // Win9x supported?
                 case (int)PlatformID.Win32S: // Win16 NTVDM on Win x86?
                 case (int)PlatformID.Win32NT: // Windows NT
                 case (int)PlatformID.WinCE:
-                    return Importers.Import<T>(Importers.Windows, path + ".dll", suppressUnload);
+                    return Importers.Import<T>(Importers.Windows, name, version, suppressUnload);
                 case (int)PlatformID.MacOSX:
                 case 128: // Mono Mac
-                    return Importers.Import<T>(Importers.Posix, path + ".dylib", suppressUnload);
+                    return Importers.Import<T>(Importers.Posix, name, version, suppressUnload);
                 case (int)PlatformID.Unix:
-                    return Importers.Import<T>(Importers.Posix, path + ".so", suppressUnload);
+                    return Importers.Import<T>(Importers.Posix, name, version, suppressUnload);
                 default:
-                    return Importers.Import<T>(Importers.Windows, path, suppressUnload);
+                    return Importers.Import<T>(Importers.Windows, name, version, suppressUnload);
             }
-
         }
     }
 
@@ -53,6 +50,7 @@ namespace NativeImport
         IntPtr LoadLibrary(string name);
         IntPtr GetProcAddress(IntPtr lib, string entryPoint);
         void FreeLibrary(IntPtr lib);
+        string Translate(string name);
     }
 
     public static class Importers
@@ -89,22 +87,59 @@ namespace NativeImport
             {
                 WinFreeLibrary(lib);
             }
+
+            public string Translate(string name)
+            {
+                return name + ".dll";
+            }
         }
 
         private class PosixImporter : INativeLibImporter
         {
-            [DllImport("libdl.so")]
+            public string LibraryExtension { get; }
+
+            [DllImport("libdl")]
             private static extern IntPtr dlopen(String fileName, int flags);
 
-            [DllImport("libdl.so")]
+            [DllImport("libdl")]
             private static extern IntPtr dlsym(IntPtr handle, String symbol);
 
-            [DllImport("libdl.so")]
+            [DllImport("libdl")]
             private static extern int dlclose(IntPtr handle);
 
-            [DllImport("libdl.so")]
+            [DllImport("libdl")]
             private static extern IntPtr dlerror();
 
+            [DllImport("libc")]
+            private static extern int uname(IntPtr buf);
+
+            public PosixImporter()
+            {
+                var platform = GetPlatform();
+                if (platform.StartsWith("Darwin"))
+                    LibraryExtension = "dylib";
+                else
+                    LibraryExtension = "so";
+            }
+
+            static string GetPlatform()
+            {
+                IntPtr buf = IntPtr.Zero;
+                try
+                {
+                    buf = Marshal.AllocHGlobal(8192);
+                    return (0 == uname(buf)) ? Marshal.PtrToStringAnsi(buf) : "Unknown";
+                }
+                catch
+                {
+                    return "Unknown";
+                }
+                finally
+                {
+                    if (buf != IntPtr.Zero)
+                        Marshal.FreeHGlobal(buf);
+                }
+            }
             public IntPtr LoadLibrary(string path)
             {
                 dlerror();
@@ -129,6 +164,11 @@ namespace NativeImport
             {
                 dlclose(lib);
             }
+
+            public string Translate(string name)
+            {
+                return "lib" + name + "." + LibraryExtension;
+            }
         }
 
         public static class U
@@ -142,8 +182,10 @@ namespace NativeImport
             }
         }
 
-        public static T Import<T>(INativeLibImporter importer, string name, bool suppressUnload) where T : class
+        public static T Import<T>(INativeLibImporter importer, string libName, string version, bool suppressUnload) where T : class
         {
+            var subdir = Environment.Is64BitProcess ? "amd64" : "i386";
+
             var assemblyName = new AssemblyName("DynamicLink");
             var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule("DynLinkModule", "dynamic.dll");
@@ -274,10 +316,40 @@ namespace NativeImport
 
             //assemblyBuilder.Save("dynamic.dll");
 
-            var construct = type.GetConstructor(new Type[] { typeof(INativeLibImporter), typeof(string) });
-            var obj = construct.Invoke(new object[] { importer, name });
-            var t = obj as T;
-            return t;
+            var versionParts = version.Split('.');
+            var names = versionParts.Select((p, i) => libName + "-" + string.Join(".", versionParts.Take(i + 1)))
+                .Reverse()
+                .Concat(Enumerable.Repeat(libName, 1));
+
+            // try to load locally
+            var paths = new[]
+            {
+                Path.Combine("native", subdir),
+                "native",
+                subdir,
+                "",
+            };
+
+            var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var search = paths.SelectMany(path => names.Select(n => Path.Combine(basePath, path, importer.Translate(n))))
+                .Concat(names.Select(n => importer.Translate(n)))
+                .ToArray();
+
+            foreach (var spec in search)
+            {
+                try
+                {
+                    var construct = type.GetConstructor(new Type[] { typeof(INativeLibImporter), typeof(string) });
+                    var obj = construct.Invoke(new object[] { importer, spec });
+                    var t = obj as T;
+                    return t;
+                }
+                catch (Exception e)
+                {
+                }
+            }
+
+            throw new DllNotFoundException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:" + string.Join("\n", search));
         }
 
         private static string GetMethodSig(MethodInfo m)

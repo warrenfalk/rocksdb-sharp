@@ -23,7 +23,7 @@ if [ ! -f ../native-${REVISION}/amd64/librocksdb.dylib ]; then
 	${ROCKSDB_MAC_COPY} ${ROCKSDB_MAC}/native-${REVISION}/ ../
 fi
 
-if [ ! -f ../native-${REVISION}/amd64/librocksdb.dll ]; then
+if [ ! -f ../native-${REVISION}/amd64/rocksdb.dll ]; then
 	${ROCKSDB_WINDOWS_COPY} ${ROCKSDB_WINDOWS}/native-${REVISION}/ ../
 fi
 

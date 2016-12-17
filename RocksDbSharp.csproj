@@ -70,24 +70,26 @@
     <Compile Include="AutoNativeImport.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="native\i386\librocksdb.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <None Include="native\i386\librocksdb.so" />
     <None Include="README.md" />
     <None Include="LICENSE" />
-    <Content Include="native\amd64\librocksdb.dll">
+    <None Include="native\amd64\rocksdb.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="native\amd64\librocksdb.dylib">
+    </None>
+    <None Include="native\amd64\librocksdb.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="native\amd64\librocksdb.so">
+    </None>
+    <None Include="native\amd64\librocksdb.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
+    <None Include="native\i386\librocksdb.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="native\i386\librocksdb.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="BeforeBuild">
-    <Error Text="The RocksDbSharp native binaries could not be found.  Run the download script (download-native.cmd or download-native.sh in the RocksDbSharp project folder)" Condition="!Exists('native\amd64\librocksdb.dll')" />
+    <Error Text="The RocksDbSharp native binaries could not be found.  Run the download script (download-native.cmd or download-native.sh in the RocksDbSharp project folder)" Condition="!Exists('native\amd64\rocksdb.dll')" />
   </Target>
 </Project>
