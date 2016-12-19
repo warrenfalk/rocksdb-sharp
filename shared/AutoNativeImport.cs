@@ -64,10 +64,7 @@ namespace NativeImport
 
             public IntPtr LoadLibrary(string path)
             {
-                IntPtr lib = WinLoadLibrary(path);
-                if (lib == IntPtr.Zero)
-                    throw new NativeLoadException("LoadLibrary: unable to load library at " + path, null);
-                return lib;
+                return WinLoadLibrary(path);
             }
 
             public IntPtr GetProcAddress(IntPtr lib, string entryPoint)
@@ -136,10 +133,12 @@ namespace NativeImport
             public IntPtr LoadLibrary(string path)
             {
                 dlerror();
-                IntPtr lib = dlopen(path, 2);
+                var lib = dlopen(path, 2);
+                /*
                 var errPtr = dlerror();
                 if (errPtr != IntPtr.Zero)
                     throw new NativeLoadException("dlopen: " + Marshal.PtrToStringAnsi(errPtr), null);
+                */
                 return lib;
             }
 
@@ -224,10 +223,10 @@ namespace NativeImport
 
             // Create the constructor which will initialize the importer and library handle
             // and also use the importer to populate each of the delegate fields
-            ConstructorBuilder constructor = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, new Type[] { typeof(INativeLibImporter), typeof(string) });
+            ConstructorBuilder constructor = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, new Type[] { typeof(INativeLibImporter), typeof(IntPtr) });
 
             {
-                var baseConstructor = typeof(T).GetTypeInfo().GetConstructor(new Type[0]);
+                var baseConstructor = typeof(T).GetTypeInfo().GetConstructors().Where(con => con.GetParameters().Length == 0).First();
                 ILGenerator il = constructor.GetILGenerator();
 
                 // Call base constructor
@@ -241,9 +240,7 @@ namespace NativeImport
 
                 // Load and store library handle
                 il.Emit(OpCodes.Ldarg_0); // this
-                il.Emit(OpCodes.Ldarg_1); // importer
-                il.Emit(OpCodes.Ldarg_2); // name
-                il.Emit(OpCodes.Callvirt, typeof(INativeLibImporter).GetTypeInfo().GetMethod("LoadLibrary"));
+                il.Emit(OpCodes.Ldarg_2); // library handle
                 il.Emit(OpCodes.Stfld, field_libraryHandle);
 
                 // Initialize each delegate field
@@ -349,16 +346,13 @@ namespace NativeImport
 
             foreach (var spec in search)
             {
-                try
-                {
-                    var construct = type.GetConstructor(new Type[] { typeof(INativeLibImporter), typeof(string) });
-                    var obj = construct.Invoke(new object[] { importer, spec });
-                    var t = obj as T;
-                    return t;
-                }
-                catch (Exception)
-                {
-                }
+                var construct = type.GetConstructor(new Type[] { typeof(INativeLibImporter), typeof(IntPtr) });
+                var lib = importer.LoadLibrary(spec);
+                if (lib == IntPtr.Zero)
+                    continue;
+                var obj = construct.Invoke(new object[] { importer, lib });
+                var t = obj as T;
+                return t;
             }
 
             throw new NativeLoadException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:" + string.Join("\n", search), null);
