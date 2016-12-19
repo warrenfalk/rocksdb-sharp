@@ -335,9 +335,16 @@ namespace NativeImport
                 "",
             };
 
-            var basePath = Path.GetDirectoryName(typeof(PosixImporter).GetTypeInfo().Assembly.Location);
-            var search = paths.SelectMany(path => names.Select(n => Path.Combine(basePath, path, importer.Translate(n))))
-                .Concat(names.Select(n => importer.Translate(n)))
+            var basePaths = new string[] {
+                Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),
+                Path.GetDirectoryName(typeof(PosixImporter).GetTypeInfo().Assembly.Location),
+            };
+            var search = basePaths
+                .Distinct()
+                .SelectMany(basePath =>
+                    paths.SelectMany(path => names.Select(n => Path.Combine(basePath, path, importer.Translate(n))))
+                    .Concat(names.Select(n => importer.Translate(n)))
+                )
                 .ToArray();
 
             foreach (var spec in search)
