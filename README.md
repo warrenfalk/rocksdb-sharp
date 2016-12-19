@@ -80,5 +80,4 @@ Note: On a Mac, although a change I contributed now allows RocksDb to compile in
 ## TODO
 
   * Many of the C-API functions imports are still under development.
-  * Eventually this will be made availabe by NuGet.
   

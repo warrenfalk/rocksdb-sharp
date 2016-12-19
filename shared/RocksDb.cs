@@ -69,7 +69,7 @@ namespace RocksDbSharp
 
         public byte[] Get(byte[] key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
-            return Get(key, key.LongLength, cf, readOptions);
+            return Get(key, key.GetLongLength(0), cf, readOptions);
         }
 
         public byte[] Get(byte[] key, long keyLength, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
@@ -79,7 +79,7 @@ namespace RocksDbSharp
 
         public long Get(byte[] key, byte[] buffer, long offset, long length, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
-            return Get(key, key.LongLength, buffer, offset, length, cf, readOptions);
+            return Get(key, key.GetLongLength(0), buffer, offset, length, cf, readOptions);
         }
 
         public long Get(byte[] key, long keyLength, byte[] buffer, long offset, long length, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
@@ -122,7 +122,7 @@ namespace RocksDbSharp
 
         public void Put(byte[] key, byte[] value, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
         {
-            Put(key, key.LongLength, value, value.LongLength, cf, writeOptions);
+            Put(key, key.GetLongLength(0), value, value.GetLongLength(0), cf, writeOptions);
         }
 
         public void Put(byte[] key, long keyLength, byte[] value, long valueLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)

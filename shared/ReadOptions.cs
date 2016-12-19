@@ -62,7 +62,7 @@ namespace RocksDbSharp
         public ReadOptions SetIterateUpperBound(byte[] key)
         {
             iterateUpperBound = key; // necessary because the value will not be copied and so may be gone by the time it is needed
-            return SetIterateUpperBound(key, (ulong)key.LongLength);
+            return SetIterateUpperBound(key, (ulong)key.GetLongLength(0));
         }
 
         public unsafe ReadOptions SetIterateUpperBound(string stringKey, Encoding encoding = null)

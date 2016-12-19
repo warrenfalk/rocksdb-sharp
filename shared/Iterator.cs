@@ -64,7 +64,7 @@ namespace RocksDbSharp
 
         public Iterator Seek(byte[] key)
         {
-            return Seek(key, (ulong)key.LongLength);
+            return Seek(key, (ulong)key.GetLongLength(0));
         }
 
         public Iterator Seek(byte[] key, ulong klen)

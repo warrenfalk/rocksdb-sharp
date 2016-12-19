@@ -54,9 +54,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\RocksDbSharp.csproj">
+    <ProjectReference Include="..\..\net45\RocksDbSharpNet45.csproj">
       <Project>{5103223c-2f0a-4683-a9bc-3c692749e12b}</Project>
-      <Name>RocksDbSharp</Name>
+      <Name>RocksDbSharpNet45</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

@@ -1,0 +1,7 @@
+Make sure version number is propagated everywhere
+Make sure correct native binaries are downloaded
+Do a batch build, rebuild all
+Open a powershell, go to the nuget folder and run:
+nuget pack RocksDbSharp.nuspec ; nuget pack RocksDbNative.nuspec
+Verify that both of these work, if possible, by copying them to the local nuget source and then installing them in a test project
+Go to nuget and upload through the interface

@@ -16,7 +16,9 @@
     <tags>rocksdb leveldb embedded database</tags>
   </metadata>
   <files>
-    <file src="..\bin\Release\RocksDbSharp.dll" target="lib\net40" />
-    <file src="..\bin\Release\RocksDbSharp.pdb" target="lib\net40" />
+    <file src="..\net45\bin\Release\RocksDbSharp.dll" target="lib\net45" />
+    <file src="..\net45\bin\Release\RocksDbSharp.pdb" target="lib\net45" />
+    <file src="..\netcoreapp1.0\bin\Release\netstandard1.6\RocksDbSharp.dll" target="lib\netcoreapp1.0" />
+    <file src="..\netcoreapp1.0\bin\Release\netstandard1.6\RocksDbSharp.pdb" target="lib\netcoreapp1.0" />
   </files>
 </package>

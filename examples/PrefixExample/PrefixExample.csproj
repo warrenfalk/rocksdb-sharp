@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -36,11 +36,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\..\RocksDbSharp.csproj">
-      <Project>{5103223C-2F0A-4683-A9BC-3C692749E12B}</Project>
-      <Name>RocksDbSharp</Name>
+    <ProjectReference Include="..\..\net45\RocksDbSharpNet45.csproj">
+      <Project>{5103223c-2f0a-4683-a9bc-3c692749e12b}</Project>
+      <Name>RocksDbSharpNet45</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

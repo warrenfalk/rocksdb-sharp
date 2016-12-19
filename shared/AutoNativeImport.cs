@@ -27,21 +27,14 @@ namespace NativeImport
         /// <returns></returns>
         public static T Import<T>(string name, string version, bool suppressUnload = false) where T : class
         {
-            switch ((int)Environment.OSVersion.Platform)
-            {
-                case (int)PlatformID.Win32Windows: // Win9x supported?
-                case (int)PlatformID.Win32S: // Win16 NTVDM on Win x86?
-                case (int)PlatformID.Win32NT: // Windows NT
-                case (int)PlatformID.WinCE:
-                    return Importers.Import<T>(Importers.Windows, name, version, suppressUnload);
-                case (int)PlatformID.MacOSX:
-                case 128: // Mono Mac
-                    return Importers.Import<T>(Importers.Posix, name, version, suppressUnload);
-                case (int)PlatformID.Unix:
-                    return Importers.Import<T>(Importers.Posix, name, version, suppressUnload);
-                default:
-                    return Importers.Import<T>(Importers.Windows, name, version, suppressUnload);
-            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return Importers.Import<T>(Importers.Windows, name, version, suppressUnload);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return Importers.Import<T>(Importers.Posix, name, version, suppressUnload);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return Importers.Import<T>(Importers.Posix, name, version, suppressUnload);
+            else
+                return Importers.Import<T>(Importers.Windows, name, version, suppressUnload);
         }
     }
 
@@ -73,7 +66,7 @@ namespace NativeImport
             {
                 IntPtr lib = WinLoadLibrary(path);
                 if (lib == IntPtr.Zero)
-                    throw new DllNotFoundException("LoadLibrary: unable to load library at " + path);
+                    throw new NativeLoadException("LoadLibrary: unable to load library at " + path, null);
                 return lib;
             }
 
@@ -146,7 +139,7 @@ namespace NativeImport
                 IntPtr lib = dlopen(path, 2);
                 var errPtr = dlerror();
                 if (errPtr != IntPtr.Zero)
-                    throw new DllNotFoundException("dlopen: " + Marshal.PtrToStringAnsi(errPtr));
+                    throw new NativeLoadException("dlopen: " + Marshal.PtrToStringAnsi(errPtr), null);
                 return lib;
             }
 
@@ -156,7 +149,7 @@ namespace NativeImport
                 IntPtr address = dlsym(lib, entryPoint);
                 var errPtr = dlerror();
                 if (errPtr != IntPtr.Zero)
-                    throw new Exception("dlsym: " + Marshal.PtrToStringAnsi(errPtr));
+                    throw new NativeLoadException("dlsym: " + Marshal.PtrToStringAnsi(errPtr), null);
                 return address;
             }
 
@@ -177,25 +170,38 @@ namespace NativeImport
             {
                 IntPtr procAddress = importer.GetProcAddress(libraryHandle, entryPoint);
                 if (procAddress == IntPtr.Zero)
-                    throw new EntryPointNotFoundException(string.Format("Unable to get address of {0} ({1})", entryPoint, delegateType));
+                    throw new NativeLoadException(string.Format("Unable to get address of {0} ({1})", entryPoint, delegateType), null);
                 return Marshal.GetDelegateForFunctionPointer(procAddress, delegateType);
+            }
+        }
+
+        public static string GetArchName(Architecture arch)
+        {
+            switch (arch)
+            {
+                case Architecture.X86:
+                    return "i386";
+                case Architecture.X64:
+                    return "amd64";
+                default:
+                    return arch.ToString().ToLower();
             }
         }
 
         public static T Import<T>(INativeLibImporter importer, string libName, string version, bool suppressUnload) where T : class
         {
-            var subdir = Environment.Is64BitProcess ? "amd64" : "i386";
+            var subdir = GetArchName(RuntimeInformation.ProcessArchitecture);
 
             var assemblyName = new AssemblyName("DynamicLink");
-            var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
-            var moduleBuilder = assemblyBuilder.DefineDynamicModule("DynLinkModule", "dynamic.dll");
+            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.Run);
+            var moduleBuilder = assemblyBuilder.DefineDynamicModule("DynLinkModule");
             string typeName = typeof(T).Name + "_impl";
             var typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout, typeof(T));
 
             FieldBuilder field_importer = typeBuilder.DefineField("importer", typeof(INativeLibImporter), FieldAttributes.Private | FieldAttributes.InitOnly);
             FieldBuilder field_libraryHandle = typeBuilder.DefineField("libraryHandle", typeof(IntPtr), FieldAttributes.Private | FieldAttributes.InitOnly);
 
-            var methods = typeof(T).GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(m => m.IsAbstract && !m.IsGenericMethod).ToArray();
+            var methods = typeof(T).GetTypeInfo().GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(m => m.IsAbstract && !m.IsGenericMethod).ToArray();
 
             // Define delegate types for each of the method signatures
             var delegateMap = new Dictionary<string, Type>();
@@ -204,8 +210,8 @@ namespace NativeImport
                 var sig = GetMethodSig(method);
                 if (delegateMap.ContainsKey(sig))
                     continue;
-                var delegateType = CreateDelegateType(moduleBuilder, method);
-                delegateMap.Add(sig, delegateType);
+                var delegateTypeInfo = CreateDelegateType(moduleBuilder, method);
+                delegateMap.Add(sig, delegateTypeInfo.AsType());
             }
 
             // Define one field for each method to hold a delegate
@@ -219,8 +225,9 @@ namespace NativeImport
             // Create the constructor which will initialize the importer and library handle
             // and also use the importer to populate each of the delegate fields
             ConstructorBuilder constructor = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, new Type[] { typeof(INativeLibImporter), typeof(string) });
+
             {
-                var baseConstructor = typeof(T).GetConstructor(BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Instance, null, new Type[0], null);
+                var baseConstructor = typeof(T).GetTypeInfo().GetConstructor(new Type[0]);
                 ILGenerator il = constructor.GetILGenerator();
 
                 // Call base constructor
@@ -236,7 +243,7 @@ namespace NativeImport
                 il.Emit(OpCodes.Ldarg_0); // this
                 il.Emit(OpCodes.Ldarg_1); // importer
                 il.Emit(OpCodes.Ldarg_2); // name
-                il.Emit(OpCodes.Callvirt, typeof(INativeLibImporter).GetMethod("LoadLibrary"));
+                il.Emit(OpCodes.Callvirt, typeof(INativeLibImporter).GetTypeInfo().GetMethod("LoadLibrary"));
                 il.Emit(OpCodes.Stfld, field_libraryHandle);
 
                 // Initialize each delegate field
@@ -248,8 +255,8 @@ namespace NativeImport
                     il.Emit(OpCodes.Ldfld, field_libraryHandle);
                     il.Emit(OpCodes.Ldstr, delegates[i].MethodInfo.Name); // use method name from original class as entry point
                     il.Emit(OpCodes.Ldtoken, delegates[i].DelegateType); // the delegate type
-                    il.Emit(OpCodes.Call, typeof(System.Type).GetMethod("GetTypeFromHandle")); // typeof()
-                    il.Emit(OpCodes.Call, typeof(U).GetMethod("LoadFunc")); // U.LoadFunc()
+                    il.Emit(OpCodes.Call, typeof(System.Type).GetTypeInfo().GetMethod("GetTypeFromHandle")); // typeof()
+                    il.Emit(OpCodes.Call, typeof(U).GetTypeInfo().GetMethod("LoadFunc")); // U.LoadFunc()
                     il.Emit(OpCodes.Isinst, delegates[i].DelegateType); // as <delegate type>
                     il.Emit(OpCodes.Stfld, fields[i]);
                 }
@@ -261,7 +268,7 @@ namespace NativeImport
             // Create destructor
             var destructor = typeBuilder.DefineMethod("Finalize", MethodAttributes.Family | MethodAttributes.Virtual | MethodAttributes.HideBySig);
             {
-                var baseDestructor = typeof(T).GetMethod("Finalize", BindingFlags.NonPublic | BindingFlags.Instance);
+                var baseDestructor = typeof(T).GetTypeInfo().GetMethod("Finalize", BindingFlags.NonPublic | BindingFlags.Instance);
                 var il = destructor.GetILGenerator();
                 var end = il.DefineLabel();
 
@@ -272,7 +279,7 @@ namespace NativeImport
                     il.Emit(OpCodes.Ldfld, field_importer); // .importer
                     il.Emit(OpCodes.Ldarg_0); // this
                     il.Emit(OpCodes.Ldfld, field_libraryHandle); // .libraryHandle
-                    il.Emit(OpCodes.Callvirt, typeof(INativeLibImporter).GetMethod("FreeLibrary")); // INativeLibImporter::FreeLibrary()
+                    il.Emit(OpCodes.Callvirt, typeof(INativeLibImporter).GetTypeInfo().GetMethod("FreeLibrary")); // INativeLibImporter::FreeLibrary()
                 }
                 //il.Emit(OpCodes.Leave, end);
                 il.BeginFinallyBlock();
@@ -308,13 +315,11 @@ namespace NativeImport
                 for (short argNum = 4; argNum <= args.Length; argNum++)
                     il.Emit(OpCodes.Ldarg_S, argNum);
                 il.Emit(OpCodes.Tailcall);
-                il.Emit(OpCodes.Callvirt, delegates[i].DelegateType.GetMethod("Invoke"));
+                il.Emit(OpCodes.Callvirt, delegates[i].DelegateType.GetTypeInfo().GetMethod("Invoke"));
                 il.Emit(OpCodes.Ret);
             }
 
-            var type = typeBuilder.CreateType();
-
-            //assemblyBuilder.Save("dynamic.dll");
+            var type = typeBuilder.CreateTypeInfo();
 
             var versionParts = version.Split('.');
             var names = versionParts.Select((p, i) => libName + "-" + string.Join(".", versionParts.Take(i + 1)))
@@ -330,7 +335,7 @@ namespace NativeImport
                 "",
             };
 
-            var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var basePath = Path.GetDirectoryName(typeof(PosixImporter).GetTypeInfo().Assembly.Location);
             var search = paths.SelectMany(path => names.Select(n => Path.Combine(basePath, path, importer.Translate(n))))
                 .Concat(names.Select(n => importer.Translate(n)))
                 .ToArray();
@@ -344,12 +349,12 @@ namespace NativeImport
                     var t = obj as T;
                     return t;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
             }
 
-            throw new DllNotFoundException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:" + string.Join("\n", search));
+            throw new NativeLoadException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:" + string.Join("\n", search), null);
         }
 
         private static string GetMethodSig(MethodInfo m)
@@ -357,7 +362,7 @@ namespace NativeImport
             return string.Join("_", Enumerable.Repeat(m.ReturnType.Name, 1).Concat(m.GetParameters().Select(p => p.ParameterType.Name)));
         }
 
-        private static Type CreateDelegateType(ModuleBuilder moduleBuilder, MethodInfo methodTemplate)
+        private static TypeInfo CreateDelegateType(ModuleBuilder moduleBuilder, MethodInfo methodTemplate)
         {
             var sig = GetMethodSig(methodTemplate);
             var typeBuilder = moduleBuilder.DefineType(sig, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.Sealed, typeof(System.MulticastDelegate));
@@ -368,11 +373,17 @@ namespace NativeImport
             var methodBuilder = typeBuilder.DefineMethod("Invoke", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual, methodTemplate.ReturnType, parameters);
             methodBuilder.SetImplementationFlags(MethodImplAttributes.Runtime | MethodImplAttributes.Managed);
 
-            return typeBuilder.CreateType();
+            return typeBuilder.CreateTypeInfo();
         }
 
     }
 
-
+    public class NativeLoadException : Exception
+    {
+        public NativeLoadException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+    }
 }
 
