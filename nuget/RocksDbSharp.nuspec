@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>RocksDbSharp</id>
-    <version>4.13.1</version>
+    <version>4.13.2</version>
     <title>RocksDbSharp</title>
     <authors>Warren Falk</authors>
     <owners>Warren Falk</owners>
@@ -11,7 +11,7 @@
     <iconUrl>http://rocksdb.org/static/logo.svg</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)</description>
-    <releaseNotes>.Net Bindings for RocksDb</releaseNotes>
+    <releaseNotes>Support netcoreapp1.0</releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>rocksdb leveldb embedded database</tags>
   </metadata>
