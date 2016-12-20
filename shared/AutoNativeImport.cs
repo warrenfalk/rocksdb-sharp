@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Reflection.Emit;
 using System.Collections.Generic;
 using System.Linq;
+using Transitional;
 
 namespace NativeImport
 {
@@ -192,7 +193,7 @@ namespace NativeImport
             var subdir = GetArchName(RuntimeInformation.ProcessArchitecture);
 
             var assemblyName = new AssemblyName("DynamicLink");
-            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.Run);
+            var assemblyBuilder = CurrentFramework.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.Run);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule("DynLinkModule");
             string typeName = typeof(T).Name + "_impl";
             var typeBuilder = moduleBuilder.DefineType(typeName, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout, typeof(T));

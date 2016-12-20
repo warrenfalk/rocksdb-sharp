@@ -29,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RocksDbSharpException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SliceTransform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Snapshot.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transitional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WriteBatch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WriteOptions.cs" />
   </ItemGroup>

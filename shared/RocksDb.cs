@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Transitional;
 
 namespace RocksDbSharp
 {

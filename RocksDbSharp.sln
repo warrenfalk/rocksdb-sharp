@@ -19,10 +19,13 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RocksDbSharp", "shared\Rock
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RocksDbSharpCore", "netcoreapp1.0\RocksDbSharpCore.xproj", "{84475E5D-3CC1-44A2-AEE9-ED2757869019}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RocksDbSharpNet40", "net40\RocksDbSharpNet40.csproj", "{C6B7B557-2090-4AED-9E5B-82933C4DCC19}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		shared\RocksDbSharp.projitems*{45107cce-783a-4b27-a525-3e41502ea713}*SharedItemsImports = 13
 		shared\RocksDbSharp.projitems*{5103223c-2f0a-4683-a9bc-3c692749e12b}*SharedItemsImports = 4
+		shared\RocksDbSharp.projitems*{c6b7b557-2090-4aed-9e5b-82933c4dcc19}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +60,10 @@ Global
 		{84475E5D-3CC1-44A2-AEE9-ED2757869019}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84475E5D-3CC1-44A2-AEE9-ED2757869019}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84475E5D-3CC1-44A2-AEE9-ED2757869019}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6B7B557-2090-4AED-9E5B-82933C4DCC19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6B7B557-2090-4AED-9E5B-82933C4DCC19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6B7B557-2090-4AED-9E5B-82933C4DCC19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6B7B557-2090-4AED-9E5B-82933C4DCC19}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

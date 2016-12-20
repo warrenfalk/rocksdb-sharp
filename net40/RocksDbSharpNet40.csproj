@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{5103223C-2F0A-4683-A9BC-3C692749E12B}</ProjectGuid>
+    <ProjectGuid>{C6B7B557-2090-4AED-9E5B-82933C4DCC19}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RocksDbSharp</RootNamespace>
     <AssemblyName>RocksDbSharp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TargetFrameworkProfile />
@@ -19,22 +19,20 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM;ROCKSDB_ITERATOR;NET45;NET4</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM;ROCKSDB_ITERATOR;NET40;NET4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM;ROCKSDB_ITERATOR;NET45;NET4</DefineConstants>
+    <DefineConstants>TRACE;ROCKSDB_DB_OPERATIONS;ROCKSDB_OPTIONS;ROCKSDB_WRITE_OPTIONS;ROCKSDB_READ_OPTIONS;ROCKSDB_WRITE_BATCH;ROCKSDB_BLOCK_BASED_TABLE_OPTIONS;ROCKSDB_FILTER_POLICY;ROCKSDB_SLICETRANSFORM;ROCKSDB_ITERATOR;NET40;NET4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
