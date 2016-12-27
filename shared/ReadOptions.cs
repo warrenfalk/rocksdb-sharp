@@ -8,7 +8,9 @@ namespace RocksDbSharp
 {
     public class ReadOptions
     {
+        #pragma warning disable CS0414
         private byte[] iterateUpperBound;
+        #pragma warning restore CS0414
 
         public ReadOptions()
         {

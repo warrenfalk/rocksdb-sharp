@@ -293,7 +293,6 @@ namespace RocksDbSharp
             return this;
         }
 
-        private string dbLogDir;
         /// <summary>
         /// This specifies the info LOG dir.
         /// If it is empty, the log files will be in the same dir as data.
@@ -303,12 +302,10 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetDbLogDir(string value)
         {
-            dbLogDir = value;
             Native.Instance.rocksdb_options_set_db_log_dir(Handle, value);
             return this;
         }
 
-        private string walDir;
         /// <summary>
         /// This specifies the absolute dir path for write-ahead logs (WAL).
         /// If it is empty, the log files will be in the same dir as data,
@@ -319,7 +316,6 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetWalDir(string value)
         {
-            walDir = value;
             Native.Instance.rocksdb_options_set_wal_dir(Handle, value);
             return this;
         }

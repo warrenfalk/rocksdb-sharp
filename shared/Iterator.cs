@@ -10,7 +10,9 @@ namespace RocksDbSharp
     public class Iterator : IDisposable
     {
         private IntPtr handle;
+        #pragma warning disable CS0414
         private ReadOptions readOptions;
+        #pragma warning restore CS0414
 
         internal Iterator(IntPtr handle)
         {
