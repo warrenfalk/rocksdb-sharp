@@ -53,6 +53,14 @@ namespace ColumnFamilyExample
                 db.DropColumnFamily("reverse");
                 var reverse = db.CreateColumnFamily(new ColumnFamilyOptions(), "reverse");
                 var nada = db.Get("uno", cf: reverse);
+                db.Put("red", "rouge", cf: reverse);
+            }
+
+            using (var db = RocksDb.Open(options, path, columnFamilies))
+            {
+                var reverse = db.GetColumnFamily("reverse");
+                var nada = db.Get("uno", cf: reverse);
+                var rouge = db.Get("red", cf: reverse);
             }
         }
     }

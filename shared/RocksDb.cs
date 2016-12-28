@@ -13,14 +13,14 @@ namespace RocksDbSharp
         private ReadOptions defaultReadOptions;
         private WriteOptions defaultWriteOptions;
         private Encoding defaultEncoding;
-        private Dictionary<string, ColumnFamilyHandle> columnFamilies;
+        private Dictionary<string, ColumnFamilyHandleInternal> columnFamilies;
 
         // Managed references to unmanaged resources that need to live at least as long as the db
         internal dynamic References { get; } = new ExpandoObject();
 
         public IntPtr Handle { get; protected set; }
 
-        private RocksDb(IntPtr handle, dynamic optionsReferences, dynamic cfOptionsRefs, Dictionary<string, ColumnFamilyHandle> columnFamilies = null)
+        private RocksDb(IntPtr handle, dynamic optionsReferences, dynamic cfOptionsRefs, Dictionary<string, ColumnFamilyHandleInternal> columnFamilies = null)
         {
             this.Handle = handle;
             References.Options = optionsReferences;
@@ -54,8 +54,8 @@ namespace RocksDbSharp
             IntPtr[] cfhandles = new IntPtr[cfnames.Length];
             IntPtr errptr;
             IntPtr db = Native.Instance.rocksdb_open_column_families(options.Handle, path, cfnames.Length, cfnames, cfoptions, cfhandles, out errptr);
-            var cfHandleMap = new Dictionary<string, ColumnFamilyHandle>();
-            foreach (var pair in cfnames.Zip(cfhandles.Select(cfh => new ColumnFamilyHandle(cfh)), (name, cfh) => new { Name = name, Handle = cfh }))
+            var cfHandleMap = new Dictionary<string, ColumnFamilyHandleInternal>();
+            foreach (var pair in cfnames.Zip(cfhandles.Select(cfh => new ColumnFamilyHandleInternal(cfh)), (name, cfh) => new { Name = name, Handle = cfh }))
                 cfHandleMap.Add(pair.Name, pair.Handle);
             return new RocksDb(db,
                 optionsReferences: options.References,
@@ -155,7 +155,9 @@ namespace RocksDbSharp
         public ColumnFamilyHandle CreateColumnFamily(ColumnFamilyOptions cfOptions, string name)
         {
             var cfh = Native.Instance.rocksdb_create_column_family(Handle, cfOptions.Handle, name);
-            return new ColumnFamilyHandle(cfh);
+            var cfhw = new ColumnFamilyHandleInternal(cfh);
+            columnFamilies.Add(name, cfhw);
+            return cfhw;
         }
 
         public void DropColumnFamily(string name)

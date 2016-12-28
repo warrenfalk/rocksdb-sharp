@@ -6,9 +6,14 @@ using System.Threading.Tasks;
 
 namespace RocksDbSharp
 {
-    public class ColumnFamilyHandle : IDisposable
+    public interface ColumnFamilyHandle
     {
-        public ColumnFamilyHandle(IntPtr handle)
+        IntPtr Handle { get; }
+    }
+
+    class ColumnFamilyHandleInternal : ColumnFamilyHandle, IDisposable
+    {
+        public ColumnFamilyHandleInternal(IntPtr handle)
         {
             this.Handle = handle;
         }
