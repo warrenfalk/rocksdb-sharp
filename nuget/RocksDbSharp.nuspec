@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>RocksDbSharp</id>
-    <version>4.13.2</version>
+    <version>4.13.2.1</version>
     <title>RocksDbSharp</title>
     <authors>Warren Falk</authors>
     <owners>Warren Falk</owners>
@@ -11,13 +11,16 @@
     <iconUrl>http://rocksdb.org/static/logo.svg</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)</description>
-    <releaseNotes>Support netcoreapp1.0</releaseNotes>
+    <releaseNotes>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)
+        New in this version: Support net40</releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>rocksdb leveldb embedded database</tags>
   </metadata>
   <files>
     <file src="..\net45\bin\Release\RocksDbSharp.dll" target="lib\net45" />
     <file src="..\net45\bin\Release\RocksDbSharp.pdb" target="lib\net45" />
+    <file src="..\net40\bin\Release\RocksDbSharp.dll" target="lib\net40" />
+    <file src="..\net40\bin\Release\RocksDbSharp.pdb" target="lib\net40" />
     <file src="..\netcoreapp1.0\bin\Release\netstandard1.6\RocksDbSharp.dll" target="lib\netcoreapp1.0" />
     <file src="..\netcoreapp1.0\bin\Release\netstandard1.6\RocksDbSharp.pdb" target="lib\netcoreapp1.0" />
   </files>
