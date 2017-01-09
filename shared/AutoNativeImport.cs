@@ -334,10 +334,11 @@ namespace NativeImport
             };
 
             var basePaths = new string[] {
-                Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),
+                Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location),
                 Path.GetDirectoryName(typeof(PosixImporter).GetTypeInfo().Assembly.Location),
             };
             var search = basePaths
+                .Where(p => p != null)
                 .Distinct()
                 .SelectMany(basePath =>
                     paths.SelectMany(path => names.Select(n => Path.Combine(basePath, path, importer.Translate(n))))
