@@ -11,7 +11,7 @@ namespace RocksDbSharpTest
         [TestMethod]
         public void TestCompare()
         {
-            var comparer = new BinaryComparer();
+            var comparer = BinaryComparer.Default;
 
             var forward = StringComparer.OrdinalIgnoreCase.Compare("a", "b");
             var backward = -forward;

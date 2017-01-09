@@ -8,6 +8,8 @@ namespace RocksDbSharp
     // TODO: consider somehow reusing the actual unmanaged comparer
     public class BinaryComparer : IEqualityComparer<byte[]>, IComparer<byte[]>
     {
+        public static BinaryComparer Default { get; } = new BinaryComparer();
+
         public int Compare(byte[] a1, byte[] a2)
         {
             int length = Math.Min(a1.Length, a2.Length);
