@@ -62,6 +62,11 @@ namespace ColumnFamilyExample
                 var nada = db.Get("uno", cf: reverse);
                 var rouge = db.Get("red", cf: reverse);
             }
+
+            using (var db = RocksDb.OpenReadOnly(options, path, columnFamilies, false))
+            {
+                string uno = db.Get("one");
+            }
         }
     }
 }
