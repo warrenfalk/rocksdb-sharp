@@ -47,13 +47,33 @@ namespace RocksDbSharp
             return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
         }
 
+        public static RocksDb OpenReadOnly(OptionsHandle options, string path, bool errorIfLogFileExists)
+        {
+            IntPtr db = Native.Instance.rocksdb_open_for_read_only(options.Handle, path, errorIfLogFileExists);
+            return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
+        }
+
         public static RocksDb Open(DbOptions options, string path, ColumnFamilies columnFamilies)
         {
-            string[] cfnames = columnFamilies.Select(cfd => cfd.Name).ToArray();
-            IntPtr[] cfoptions = columnFamilies.Select(cfd => cfd.Options.Handle).ToArray();
+            string[] cfnames = columnFamilies.Names.ToArray();
+            IntPtr[] cfoptions = columnFamilies.OptionHandles.ToArray();
             IntPtr[] cfhandles = new IntPtr[cfnames.Length];
-            IntPtr errptr;
-            IntPtr db = Native.Instance.rocksdb_open_column_families(options.Handle, path, cfnames.Length, cfnames, cfoptions, cfhandles, out errptr);
+            IntPtr db = Native.Instance.rocksdb_open_column_families(options.Handle, path, cfnames.Length, cfnames, cfoptions, cfhandles);
+            var cfHandleMap = new Dictionary<string, ColumnFamilyHandleInternal>();
+            foreach (var pair in cfnames.Zip(cfhandles.Select(cfh => new ColumnFamilyHandleInternal(cfh)), (name, cfh) => new { Name = name, Handle = cfh }))
+                cfHandleMap.Add(pair.Name, pair.Handle);
+            return new RocksDb(db,
+                optionsReferences: options.References,
+                cfOptionsRefs: columnFamilies.Select(cfd => cfd.Options.References).ToArray(),
+                columnFamilies: cfHandleMap);
+        }
+
+        public static RocksDb OpenReadOnly(DbOptions options, string path, ColumnFamilies columnFamilies, bool errIfLogFileExists)
+        {
+            string[] cfnames = columnFamilies.Names.ToArray();
+            IntPtr[] cfoptions = columnFamilies.OptionHandles.ToArray();
+            IntPtr[] cfhandles = new IntPtr[cfnames.Length];
+            IntPtr db = Native.Instance.rocksdb_open_for_read_only_column_families(options.Handle, path, cfnames.Length, cfnames, cfoptions, cfhandles, errIfLogFileExists);
             var cfHandleMap = new Dictionary<string, ColumnFamilyHandleInternal>();
             foreach (var pair in cfnames.Zip(cfhandles.Select(cfh => new ColumnFamilyHandleInternal(cfh)), (name, cfh) => new { Name = name, Handle = cfh }))
                 cfHandleMap.Add(pair.Name, pair.Handle);

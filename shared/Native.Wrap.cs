@@ -32,6 +32,37 @@ namespace RocksDbSharp
             return result;
         }
 
+        public IntPtr rocksdb_open_column_families(
+            /* const rocksdb_options_t* */ IntPtr options,
+            string name,
+            int num_column_families,
+            string[] column_family_names,
+            IntPtr[] column_family_options,
+            IntPtr[] column_family_handles)
+        {
+            IntPtr errptr;
+            var result = rocksdb_open_column_families(options, name, num_column_families, column_family_names, column_family_options, column_family_handles, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public IntPtr rocksdb_open_for_read_only_column_families(
+            /* const rocksdb_options_t* */ IntPtr options,
+            string name,
+            int num_column_families,
+            string[] column_family_names,
+            IntPtr[] column_family_options,
+            IntPtr[] column_family_handles,
+            bool error_if_log_file_exists)
+        {
+            IntPtr errptr;
+            var result = rocksdb_open_for_read_only_column_families(options, name, num_column_families, column_family_names, column_family_options, column_family_handles, error_if_log_file_exists, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
         public IntPtr rocksdb_list_column_families(
             /* const rocksdb_options_t* */ IntPtr options,
             string name,

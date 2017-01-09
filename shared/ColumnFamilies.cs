@@ -30,6 +30,10 @@ namespace RocksDbSharp
             descriptors.Add(new Descriptor(DefaultName, options ?? new ColumnFamilyOptions()));
         }
 
+        public IEnumerable<string> Names => this.Select(cfd => cfd.Name);
+
+        public IEnumerable<IntPtr> OptionHandles => this.Select(cfd => cfd.Options.Handle);
+
         public void Add(Descriptor descriptor)
         {
             if (descriptor.Name == DefaultName)

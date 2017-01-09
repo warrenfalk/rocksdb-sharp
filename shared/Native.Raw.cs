@@ -144,9 +144,9 @@ public abstract /* rocksdb_t* */ IntPtr rocksdb_open_column_families(
 
 public abstract /* rocksdb_t* */ IntPtr rocksdb_open_for_read_only_column_families(
     /* const rocksdb_options_t* */ IntPtr options, string name, int num_column_families,
-    /*(const char**)*/ IntPtr column_family_names,
-    /*(const rocksdb_options_t**)*/ IntPtr column_family_options,
-    /*(rocksdb_column_family_handle_t**)*/ IntPtr column_family_handles,
+    /*(const char**)*/ string[] column_family_names,
+    /*(const rocksdb_options_t**)*/ IntPtr[] column_family_options,
+    /*(rocksdb_column_family_handle_t**)*/ IntPtr[] column_family_handles,
     bool error_if_log_file_exist, out IntPtr errptr);
 
 public abstract /* char** */ IntPtr rocksdb_list_column_families(
