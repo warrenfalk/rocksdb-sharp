@@ -1,4 +1,4 @@
-﻿# rocksdb-sharp
+# rocksdb-sharp
 
 ## RocksDb for C# #
 RocksDB is a key-value database with a log-structured-merge design, optimized for flash and RAM storage,
@@ -28,6 +28,21 @@ using (var db = RocksDb.Open(options, path))
     db.Remove("key");
 }
 ```
+### Usage
+
+#### Using NuGet:
+
+```
+install-package RocksDbSharp
+```
+
+This will install the managed library which will use the unmanaged library installed on
+the machine at runtime.  If you do not want to install the managed library, you can
+include it by additionally installing the "RocksDbNative" package.
+
+```
+install-package RocksDbNative
+```
 
 ### Requirements
 
@@ -35,7 +50,7 @@ On Linux and Mac, the snappy library (libsnappy) must be installed.
 
 ## Caveats and Warnings:
 
-### 64-bit only
+### 64-bit only (Especially on Windows)
 RocksDb is supported only in 64-bit mode. Although I contributed a fix that allows it to compile in 32-bit mode, this is untested and unsupported, may not work at all, and almost certainly will have at least some major issues and should not be attempted in production.
 
 ## Extras
@@ -46,7 +61,7 @@ Windows Build Script: Building rocksdb for Windows is hard; this project contain
 
 Pre-built native binaries can be downloaded from the releases page.  You may also build them yourself.
 
-(This is not a native C# library and the difficulty of a potential native C# library almost certainly far exceeds any usefulness of such a thing and so is not planned and will probably never exist).
+(This is only a high level (and low level) wrapper on the unmanaged library and is not a managed C# port of the rocksdb database. The difficulty of a potential managed port library almost certainly far exceeds any usefulness of such a thing and so is not planned and will probably never exist).
 
 This is now buildable on Windows thanks to the Bing team at Microsoft who are actively using rocksdb.  Rocksdb-sharp should work on any platform provided the native unmanaged library is available.
 
@@ -79,5 +94,5 @@ Note: On a Mac, although a change I contributed now allows RocksDb to compile in
 
 ## TODO
 
-  * Many of the C-API functions imports are still under development.
+  * Many of the less-commonly-used C-API functions imports are yet to be included.
   
