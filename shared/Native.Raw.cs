@@ -3,16 +3,17 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version 0a49cbee
-    https://github.com/facebook/rocksdb/blob/0a49cbee/include/rocksdb/c.h
+    In particular, it was originally derived from version 7a5cf2db
+    https://github.com/facebook/rocksdb/blob/7a5cf2db/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
     Changes to c.h should be incorporated here.  View those changes by going to the native rocksdb
     source and fetching the desired version like this:
     cd native-build/rocksdb
-    git fetch https://github.com/facebook/rocksdb.git v4.13
+    git fetch https://github.com/warrenfalk/rocksdb.git rocksdb_sharp
+    git fetch https://github.com/facebook/rocksdb.git v5.0.1
     git checkout FETCH_HEAD
-    git diff 0a49cbee HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace 0a49cbee with whatever HEAD is
+    git diff 7a5cf2db HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace 7a5cf2db with whatever HEAD is
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
@@ -80,6 +81,10 @@ typedef struct rocksdb_writeoptions_t    rocksdb_writeoptions_t;
 typedef struct rocksdb_universal_compaction_options_t rocksdb_universal_compaction_options_t;
 typedef struct rocksdb_livefiles_t     rocksdb_livefiles_t;
 typedef struct rocksdb_column_family_handle_t rocksdb_column_family_handle_t;
+typedef struct rocksdb_envoptions_t      rocksdb_envoptions_t;
+typedef struct rocksdb_ingestexternalfileoptions_t rocksdb_ingestexternalfileoptions_t;
+typedef struct rocksdb_sstfilewriter_t   rocksdb_sstfilewriter_t;
+typedef struct rocksdb_ratelimiter_t     rocksdb_ratelimiter_t;
 
 #endif
 #endregion
@@ -354,6 +359,12 @@ public unsafe abstract void rocksdb_iter_seek(/*(rocksdb_iterator_t*)*/ IntPtr i
                                                   /*(const char*)*/ byte* k, /*(size_t)*/ ulong klen);
 public abstract void rocksdb_iter_seek(/*(rocksdb_iterator_t*)*/ IntPtr iter,
                                                   /*(const char*)*/ byte[] k, /*(size_t)*/ ulong klen);
+public unsafe abstract void rocksdb_iter_seek_for_prev(/*(rocksdb_iterator_t*)*/ IntPtr iter,
+                                                /*(const char*)*/ byte* k,
+                                                /*(size_t)*/ ulong klen);
+public abstract void rocksdb_iter_seek_for_prev(/*(rocksdb_iterator_t*)*/ IntPtr iter,
+                                                /*(const char*)*/ byte[] k,
+                                                /*(size_t)*/ ulong klen);
 public abstract void rocksdb_iter_next(/*(rocksdb_iterator_t*)*/ IntPtr iter);
 public abstract void rocksdb_iter_prev(/*(rocksdb_iterator_t*)*/ IntPtr iter);
 public abstract /* const char* */ IntPtr rocksdb_iter_key(
@@ -593,7 +604,10 @@ public abstract void rocksdb_options_set_target_file_size_multiplier(
     /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_max_bytes_for_level_base(
             /* rocksdb_options_t* */ IntPtr options, ulong value);
-public abstract void rocksdb_options_set_max_bytes_for_level_multiplier(/* rocksdb_options_t* */ IntPtr options, int value);
+public abstract void
+rocksdb_options_set_level_compaction_dynamic_level_bytes(/* rocksdb_options_t* */ IntPtr options,
+                                                         bool value);
+public abstract void rocksdb_options_set_max_bytes_for_level_multiplier(/* rocksdb_options_t* */ IntPtr options, double value);
 public abstract void rocksdb_options_set_max_bytes_for_level_multiplier_additional(
             /* rocksdb_options_t* */ IntPtr options, /*(int*)*/ int[] level_values, ulong num_levels);
 public abstract void rocksdb_options_enable_statistics(
@@ -609,6 +623,8 @@ public abstract void rocksdb_options_set_min_write_buffer_number_to_merge(/* roc
 public abstract void rocksdb_options_set_max_write_buffer_number_to_maintain(/* rocksdb_options_t* */ IntPtr options,
                                                         int value);
 public abstract void rocksdb_options_set_max_background_compactions(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+public abstract void rocksdb_options_set_base_background_compactions(
     /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_max_background_flushes(
     /* rocksdb_options_t* */ IntPtr options, int value);
@@ -667,11 +683,14 @@ public abstract void rocksdb_options_set_use_adaptive_mutex(
             /* rocksdb_options_t* */ IntPtr options, bool value);
 public abstract void rocksdb_options_set_bytes_per_sync(
             /* rocksdb_options_t* */ IntPtr options, ulong value);
+public abstract void
+rocksdb_options_set_allow_concurrent_memtable_write(/* rocksdb_options_t* */ IntPtr options,
+                                                    bool value);
+public abstract void
+rocksdb_options_set_enable_write_thread_adaptive_yield(/* rocksdb_options_t* */ IntPtr options,
+                                                       bool value);
 public abstract void rocksdb_options_set_verify_checksums_in_compaction(/* rocksdb_options_t* */ IntPtr options,
             bool value);
-// Not actually in library
-//public abstract void rocksdb_options_set_filter_deletes(
-//            /* rocksdb_options_t* */ IntPtr options, bool value);
 public abstract void rocksdb_options_set_max_sequential_skip_in_iterations(/* rocksdb_options_t* */ IntPtr options,
             ulong value);
 public abstract void rocksdb_options_set_disable_data_sync(
@@ -697,11 +716,6 @@ public abstract void rocksdb_options_set_plain_table_factory(
 
 public abstract void rocksdb_options_set_min_level_to_compress(
     /* rocksdb_options_t* */ IntPtr opt, int level);
-// Not actually in library
-//public abstract void rocksdb_options_set_memtable_prefix_bloom_bits(
-//            /* rocksdb_options_t* */ IntPtr options, uint value);
-// Not actually in library
-//public abstract void rocksdb_options_set_memtable_prefix_bloom_probes(/* rocksdb_options_t* */ IntPtr options, int value);
 
 public abstract void rocksdb_options_set_memtable_huge_page_size(
     /* rocksdb_options_t* */ IntPtr options, /*(size_t)*/ ulong size);
@@ -755,6 +769,17 @@ public abstract void rocksdb_options_set_universal_compaction_options(
             /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_universal_compaction_options_t*)*/ IntPtr universal_compaction_options);
 public abstract void rocksdb_options_set_fifo_compaction_options(
             /* rocksdb_options_t* */ IntPtr opt, /*(rocksdb_fifo_compaction_options_t*)*/ IntPtr fifo_compaction_options);
+#endif
+#endregion
+#region Rate Limiter
+#if ROCKSDB_RATE_LIMITER
+public abstract void rocksdb_options_set_ratelimiter(
+    /* rocksdb_options_t* */ IntPtr opt, rocksdb_ratelimiter_t* limiter);
+
+/* RateLimiter */
+public abstract rocksdb_ratelimiter_t* rocksdb_ratelimiter_create(
+    int64_t rate_bytes_per_sec, int64_t refill_period_us, int32_t fairness);
+public abstract void rocksdb_ratelimiter_destroy(rocksdb_ratelimiter_t*);
 #endif
 #endregion
 
@@ -940,6 +965,60 @@ public abstract void rocksdb_env_join_all_threads(
     rocksdb_env_t* env);
 public abstract void rocksdb_env_destroy(rocksdb_env_t*);
 
+extern ROCKSDB_LIBRARY_API rocksdb_envoptions_t* rocksdb_envoptions_create();
+extern ROCKSDB_LIBRARY_API void rocksdb_envoptions_destroy(
+    rocksdb_envoptions_t* opt);
+#endif
+#endregion
+
+#region SstFile
+#if ROCKSDB_SSTFILE
+
+/* SstFile */
+
+extern ROCKSDB_LIBRARY_API rocksdb_sstfilewriter_t*
+rocksdb_sstfilewriter_create(const rocksdb_envoptions_t* env,
+                             const rocksdb_options_t* io_options);
+extern ROCKSDB_LIBRARY_API rocksdb_sstfilewriter_t*
+rocksdb_sstfilewriter_create_with_comparator(
+    const rocksdb_envoptions_t* env, const rocksdb_options_t* io_options,
+    const rocksdb_comparator_t* comparator);
+extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_open(
+    rocksdb_sstfilewriter_t* writer, const char* name, char** errptr);
+extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_add(
+    rocksdb_sstfilewriter_t* writer, const char* key, size_t keylen,
+    const char* val, size_t vallen, char** errptr);
+extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_finish(
+    rocksdb_sstfilewriter_t* writer, char** errptr);
+extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_destroy(
+    rocksdb_sstfilewriter_t* writer);
+
+extern ROCKSDB_LIBRARY_API rocksdb_ingestexternalfileoptions_t*
+rocksdb_ingestexternalfileoptions_create();
+extern ROCKSDB_LIBRARY_API void
+rocksdb_ingestexternalfileoptions_set_move_files(
+    rocksdb_ingestexternalfileoptions_t* opt, unsigned char move_files);
+extern ROCKSDB_LIBRARY_API void
+rocksdb_ingestexternalfileoptions_set_snapshot_consistency(
+    rocksdb_ingestexternalfileoptions_t* opt,
+    unsigned char snapshot_consistency);
+extern ROCKSDB_LIBRARY_API void
+rocksdb_ingestexternalfileoptions_set_allow_global_seqno(
+    rocksdb_ingestexternalfileoptions_t* opt, unsigned char allow_global_seqno);
+extern ROCKSDB_LIBRARY_API void
+rocksdb_ingestexternalfileoptions_set_allow_blocking_flush(
+    rocksdb_ingestexternalfileoptions_t* opt,
+    unsigned char allow_blocking_flush);
+extern ROCKSDB_LIBRARY_API void rocksdb_ingestexternalfileoptions_destroy(
+    rocksdb_ingestexternalfileoptions_t* opt);
+
+extern ROCKSDB_LIBRARY_API void rocksdb_ingest_external_file(
+    rocksdb_t* db, const char* const* file_list, const size_t list_len,
+    const rocksdb_ingestexternalfileoptions_t* opt, char** errptr);
+extern ROCKSDB_LIBRARY_API void rocksdb_ingest_external_file_cf(
+    rocksdb_t* db, rocksdb_column_family_handle_t* handle,
+    const char* const* file_list, const size_t list_len,
+    const rocksdb_ingestexternalfileoptions_t* opt, char** errptr);
 #endif
 #endregion
 

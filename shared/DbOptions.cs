@@ -179,6 +179,19 @@ namespace RocksDbSharp
         }
 
         /// <summary>
+        /// Suggested number of concurrent background compaction jobs, submitted to
+        /// the default LOW priority thread pool.
+        ///
+        /// Default: 1
+        /// </summary>
+        /// <returns></returns>
+        public DbOptions SetBaseBackgroundCompactions(int value)
+        {
+            Native.Instance.rocksdb_options_set_base_background_compactions(Handle, value);
+            return this;
+        }
+
+        /// <summary>
         /// Maximum number of concurrent background memtable flush jobs, submitted to
         /// the HIGH priority thread pool.
         ///
@@ -507,6 +520,38 @@ namespace RocksDbSharp
         public DbOptions SetBytesPerSync(ulong value)
         {
             Native.Instance.rocksdb_options_set_bytes_per_sync(Handle, value);
+            return this;
+        }
+
+        /// <summary>
+        /// If true, allow multi-writers to update mem tables in parallel.
+        /// Only some memtable_factory-s support concurrent writes; currently it
+        /// is implemented only for SkipListFactory.  Concurrent memtable writes
+        /// are not compatible with inplace_update_support or filter_deletes.
+        /// It is strongly recommended to set enable_write_thread_adaptive_yield
+        /// if you are going to use this feature.
+        ///
+        /// Default: true
+        /// </summary>
+        /// <returns></returns>
+        public DbOptions SetAllowConcurrentMemtableWrite(bool value)
+        {
+            Native.Instance.rocksdb_options_set_allow_concurrent_memtable_write(Handle, value);
+            return this;
+        }
+
+        /// <summary>
+        /// If true, threads synchronizing with the write batch group leader will
+        /// wait for up to write_thread_max_yield_usec before blocking on a mutex.
+        /// This can substantially improve throughput for concurrent workloads,
+        /// regardless of whether allow_concurrent_memtable_write is enabled.
+        ///
+        /// Default: true
+        /// </summary>
+        /// <returns></returns>
+        public DbOptions SetEnableWriteThreadAdaptiveYield(bool value)
+        {
+            Native.Instance.rocksdb_options_set_enable_write_thread_adaptive_yield(Handle, value);
             return this;
         }
 

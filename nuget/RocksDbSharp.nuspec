@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>RocksDbSharp</id>
-    <version>4.13.2.2</version>
+    <version>5.0.1.0</version>
     <title>RocksDbSharp</title>
     <authors>Warren Falk</authors>
     <owners>Warren Falk</owners>

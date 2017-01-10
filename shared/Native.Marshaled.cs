@@ -224,6 +224,32 @@ namespace RocksDbSharp
             }
         }
 
+        public void rocksdb_iter_seek_for_prev(
+            IntPtr iter,
+            string key,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key)
+                {
+                    int klength = key.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    rocksdb_iter_seek_for_prev(iter, bk, (ulong)bklength);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
 #if DEBUG
         // Zero out memory before freeing it when in debug mode so that we see problems
         // resulting from the contents still being used on the native side

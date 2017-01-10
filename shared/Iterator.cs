@@ -82,6 +82,30 @@ namespace RocksDbSharp
             return this;
         }
 
+        public unsafe Iterator SeekForPrev(byte* key, ulong klen)
+        {
+            Native.Instance.rocksdb_iter_seek_for_prev(handle, key, klen);
+            return this;
+        }
+
+        public Iterator SeekForPrev(byte[] key)
+        {
+            SeekForPrev(key, (ulong)key.Length);
+            return this;
+        }
+
+        public Iterator SeekForPrev(byte[] key, ulong klen)
+        {
+            Native.Instance.rocksdb_iter_seek_for_prev(handle, key, klen);
+            return this;
+        }
+
+        public Iterator SeekForPrev(string key)
+        {
+            Native.Instance.rocksdb_iter_seek_for_prev(handle, key);
+            return this;
+        }
+
         public Iterator Next()
         {
             Native.Instance.rocksdb_iter_next(handle);
