@@ -3,17 +3,17 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version 7a5cf2db
-    https://github.com/facebook/rocksdb/blob/7a5cf2db/include/rocksdb/c.h
+    In particular, it was originally derived from version 462c21dd
+    https://github.com/facebook/rocksdb/blob/462c21dd/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
     Changes to c.h should be incorporated here.  View those changes by going to the native rocksdb
     source and fetching the desired version like this:
     cd native-build/rocksdb
     git fetch https://github.com/warrenfalk/rocksdb.git rocksdb_sharp
-    git fetch https://github.com/facebook/rocksdb.git v5.0.1
+    git fetch https://github.com/facebook/rocksdb.git v5.1.4
     git checkout FETCH_HEAD
-    git diff 7a5cf2db HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace 7a5cf2db with whatever HEAD is
+    git diff 462c21dd HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace 462c21dd with whatever HEAD is
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
@@ -66,6 +66,7 @@ typedef struct rocksdb_iterator_t        rocksdb_iterator_t;
 typedef struct rocksdb_logger_t          rocksdb_logger_t;
 typedef struct rocksdb_mergeoperator_t   rocksdb_mergeoperator_t;
 typedef struct rocksdb_options_t         rocksdb_options_t;
+typedef struct rocksdb_compactoptions_t rocksdb_compactoptions_t;
 typedef struct rocksdb_block_based_table_options_t
     rocksdb_block_based_table_options_t;
 typedef struct rocksdb_cuckoo_table_options_t
@@ -317,6 +318,15 @@ public unsafe abstract void rocksdb_compact_range_cf(
     /*(const char*)*/ byte* start_key, ulong start_key_len, /*(const char*)*/ byte* limit_key,
     ulong limit_key_len);
 
+public unsafe abstract void rocksdb_compact_range_opt(
+    /*(rocksdb_t*)*/ IntPtr db, /*(rocksdb_compactoptions_t*)*/ IntPtr opt, /*(const char*)*/ byte* start_key,
+    /*(size_t)*/ ulong start_key_len, /*(const char*)*/ byte* limit_key, /*(size_t)*/ ulong limit_key_len);
+
+public unsafe abstract void rocksdb_compact_range_cf_opt(
+    /*(rocksdb_t*)*/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*(rocksdb_compactoptions_t*)*/ IntPtr opt, /*(const char*)*/ byte* start_key, /*(size_t)*/ ulong start_key_len,
+    /*(const char*)*/ byte* limit_key, /*(size_t)*/ ulong limit_key_len);
+
 public abstract void rocksdb_delete_file(/*rocksdb_t**/ IntPtr db,
                                                     string name);
 
@@ -455,6 +465,29 @@ public abstract void rocksdb_writebatch_deletev(
 public abstract void rocksdb_writebatch_deletev_cf(
     /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
     int num_keys, /*(const char* const*)*/ IntPtr keys_list, /*(const size_t*)*/ IntPtr keys_list_sizes);
+public abstract void rocksdb_writebatch_delete_range(
+    /*(rocksdb_writebatch_t*)*/ IntPtr b, /*(const char*)*/ byte[] start_key, /*(size_t)*/ ulong start_key_len,
+    /*(const char*)*/ byte[] end_key, /*(size_t)*/ ulong end_key_len);
+public unsafe abstract void rocksdb_writebatch_delete_range(
+    /*(rocksdb_writebatch_t*)*/ IntPtr b, /*(const char*)*/ byte* start_key, /*(size_t)*/ ulong start_key_len,
+    /*(const char*)*/ byte* end_key, /*(size_t)*/ ulong end_key_len);
+public abstract void rocksdb_writebatch_delete_range_cf(
+    /*(rocksdb_writebatch_t*)*/ IntPtr b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*(const char*)*/ byte[] start_key, /*(size_t)*/ ulong start_key_len, /*(const char*)*/ byte[] end_key,
+    /*(size_t)*/ ulong end_key_len);
+public unsafe abstract void rocksdb_writebatch_delete_range_cf(
+    /*(rocksdb_writebatch_t*)*/ IntPtr b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*(const char*)*/ byte* start_key, /*(size_t)*/ ulong start_key_len, /*(const char*)*/ byte* end_key,
+    /*(size_t)*/ ulong end_key_len);
+public unsafe abstract void rocksdb_writebatch_delete_rangev(
+    /*(rocksdb_writebatch_t*)*/ IntPtr b, int num_keys, /*(const char* const*)*/ IntPtr start_keys_list,
+    /*(const size_t)*/ IntPtr start_keys_list_sizes, /*(const char* const*)*/ IntPtr end_keys_list,
+    /*(const size_t)*/ IntPtr end_keys_list_sizes);
+public unsafe abstract void rocksdb_writebatch_delete_rangev_cf(
+    /*(rocksdb_writebatch_t*)*/ IntPtr b, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    int num_keys, /*(const char* const*)*/ IntPtr start_keys_list,
+    /*(const size_t)*/ IntPtr start_keys_list_sizes, /*(const char* const*)*/ IntPtr end_keys_list,
+    /*(const size_t)*/ IntPtr end_keys_list_sizes);
 public abstract void rocksdb_writebatch_put_log_data(
     /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, byte[] blob, ulong len);
 public abstract void rocksdb_writebatch_iterate(
@@ -664,12 +697,14 @@ public abstract void rocksdb_options_set_manifest_preallocation_size(
             /* rocksdb_options_t* */ IntPtr options, ulong value);
 public abstract void rocksdb_options_set_purge_redundant_kvs_while_flush(/* rocksdb_options_t* */ IntPtr options,
             bool value);
-public abstract void rocksdb_options_set_allow_os_buffer(
-            /* rocksdb_options_t* */ IntPtr options, bool value);
 public abstract void rocksdb_options_set_allow_mmap_reads(
             /* rocksdb_options_t* */ IntPtr options, bool value);
 public abstract void rocksdb_options_set_allow_mmap_writes(
             /* rocksdb_options_t* */ IntPtr options, bool value);
+public abstract void rocksdb_options_set_use_direct_reads(
+    /*(rocksdb_options_t*)*/ IntPtr options, /*(unsigned char)*/ bool enable);
+public abstract void rocksdb_options_set_use_direct_writes(
+    /*(rocksdb_options_t*)*/ IntPtr options, /*(unsigned char)*/ bool enable);
 public abstract void rocksdb_options_set_is_fd_close_on_exec(
             /* rocksdb_options_t* */ IntPtr options, bool value);
 public abstract void rocksdb_options_set_skip_log_error_on_recovery(
@@ -911,6 +946,10 @@ public abstract void rocksdb_readoptions_set_tailing(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, bool value);
 public abstract void rocksdb_readoptions_set_readahead_size(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*(size_t)*/ ulong size);
+public abstract void rocksdb_readoptions_set_pin_data(
+    /*(rocksdb_readoptions_t*)*/ IntPtr options, /*(unsigned char)*/ bool enable);
+public abstract void rocksdb_readoptions_set_total_order_seek(
+    /*(rocksdb_readoptions_t*)*/ IntPtr options, /*(unsigned char)*/ bool enable);
 
 #endif
 #endregion
@@ -926,6 +965,22 @@ public abstract void rocksdb_writeoptions_set_sync(
 public abstract void rocksdb_writeoptions_disable_WAL(
     /*(rocksdb_writeoptions_t*)*/ IntPtr write_options, int disable);
 
+#endif
+#endregion
+
+#region Compact range options
+#if ROCKSDB_COMPACT_RANGE_OPTIONS
+public abstract rocksdb_compactoptions_t*
+rocksdb_compactoptions_create();
+public abstract void rocksdb_compactoptions_destroy(
+    /*(rocksdb_compactoptions_t*)*/ IntPtr options);
+public abstract void
+rocksdb_compactoptions_set_exclusive_manual_compaction(
+    /*(rocksdb_compactoptions_t*)*/ IntPtr options, /*(unsigned char)*/ bool value);
+public abstract void rocksdb_compactoptions_set_change_level(
+    /*(rocksdb_compactoptions_t*)*/ IntPtr options, /*(unsigned char)*/ bool value);
+public abstract void rocksdb_compactoptions_set_target_level(
+    /*(rocksdb_compactoptions_t*)*/ IntPtr options, int value);
 #endif
 #endregion
 
@@ -949,6 +1004,10 @@ public abstract /* rocksdb_cache_t* */ IntPtr rocksdb_cache_create_lru(
 public abstract void rocksdb_cache_destroy(rocksdb_cache_t* cache);
 public abstract void rocksdb_cache_set_capacity(
     rocksdb_cache_t* cache, size_t capacity);
+public abstract /*(size_t)*/ ulong
+rocksdb_cache_get_usage(/*(rocksdb_cache_t*)*/ IntPtr cache);
+public abstract /*(size_t)*/ ulong
+rocksdb_cache_get_pinned_usage(/*(rocksdb_cache_t*)*/ IntPtr cache);
 
 #endif
 #endregion

@@ -91,5 +91,17 @@ namespace RocksDbSharp
             Native.Instance.rocksdb_readoptions_set_readahead_size(Handle, size);
             return this;
         }
+
+        public ReadOptions SetPinData(bool enable)
+        {
+            Native.Instance.rocksdb_readoptions_set_pin_data(Handle, enable);
+            return this;
+        }
+
+        public ReadOptions SetTotalOrderSeek(bool enable)
+        {
+            Native.Instance.rocksdb_readoptions_set_total_order_seek(Handle, enable);
+            return this;
+        }
     }
 }

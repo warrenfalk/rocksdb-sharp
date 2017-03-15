@@ -386,32 +386,6 @@ namespace RocksDbSharp
         }
 
         /// <summary>
-        /// Hint the OS that it should not buffer disk I/O. Enabling this
-        /// parameter may improve performance but increases pressure on the
-        /// system cache.
-        ///
-        /// The exact behavior of this parameter is platform dependent.
-        ///
-        /// On POSIX systems, after RocksDB reads data from disk it will
-        /// mark the pages as "unneeded". The operating system may - or may not
-        /// - evict these pages from memory, reducing pressure on the system
-        /// cache. If the disk block is requested again this can result in
-        /// additional disk I/O.
-        ///
-        /// On WINDOWS system, files will be opened in "unbuffered I/O" mode
-        /// which means that data read from the disk will not be cached or
-        /// bufferized. The hardware buffer of the devices may however still
-        /// be used. Memory mapped files are not impacted by this parameter.
-        ///
-        /// Default: true
-        /// </summary>
-        public DbOptions SetAllowOsBuffer(bool value)
-        {
-            Native.Instance.rocksdb_options_set_allow_os_buffer(Handle, value);
-            return this;
-        }
-
-        /// <summary>
         /// Allow the OS to mmap file for reading sst tables. Default: false
         /// </summary>
         public DbOptions SetAllowMmapReads(bool value)
@@ -428,6 +402,40 @@ namespace RocksDbSharp
         public DbOptions SetAllowMmapWrites(bool value)
         {
             Native.Instance.rocksdb_options_set_allow_mmap_writes(Handle, value);
+            return this;
+        }
+
+        /// <summary>
+        /// Enable direct I/O mode for read/write
+        /// they may or may not improve performance depending on the use case
+        ///
+        /// Files will be opened in "direct I/O" mode
+        /// which means that data r/w from the disk will not be cached or
+        /// bufferized. The hardware buffer of the devices may however still
+        /// be used. Memory mapped files are not impacted by these parameters.
+        /// Use O_DIRECT for reading file
+        /// Default: false
+        /// </summary>
+        public DbOptions SetUseDirectReads(bool value)
+        {
+            Native.Instance.rocksdb_options_set_use_direct_reads(Handle, value);
+            return this;
+        }
+
+        /// <summary>
+        /// Enable direct I/O mode for read/write
+        /// they may or may not improve performance depending on the use case
+        ///
+        /// Files will be opened in "direct I/O" mode
+        /// which means that data r/w from the disk will not be cached or
+        /// bufferized. The hardware buffer of the devices may however still
+        /// be used. Memory mapped files are not impacted by these parameters.
+        /// Use O_DIRECT for writing file
+        /// Default: false
+        /// </summary>
+        public DbOptions SetUseDirectWrites(bool value)
+        {
+            Native.Instance.rocksdb_options_set_use_direct_writes(Handle, value);
             return this;
         }
 

@@ -12,13 +12,12 @@
 # 2. Get the hash of the commit for the version and replace below
 # 3. Also see instructions for modifying Native.Raw.cs with updates to c.h since current revisions
 # 4. Push the desired version to the rocksdb_sharp branch at https://github.com/warrenfalk/rocksdb
-# 5. Run this script to build (see README.md for more info)
-#
-# 6. Search through code for old hash and old version number and replace
+# 5. Search through code for old hash and old version number and replace
+# 6. Run this script to build (see README.md for more info)
 
-ROCKSDBVERSION=7a5cf2db
-ROCKSDBVNUM=5.0.1
-ROCKSDBSHARPVNUM=5.0.1.0
+ROCKSDBVERSION=462c21dd
+ROCKSDBVNUM=5.1.4
+ROCKSDBSHARPVNUM=5.1.4.0
 GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 

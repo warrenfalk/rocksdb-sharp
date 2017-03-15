@@ -151,16 +151,37 @@ namespace RocksDbSharp
                 Native.Instance.rocksdb_writebatch_delete_cf(handle, cf.Handle, key, klen);
         }
 
-        public WriteBatch Deletev(int numKeys, IntPtr keysList, IntPtr keysListSizes)
+        public unsafe void Deletev(int numKeys, IntPtr keysList, IntPtr keysListSizes, ColumnFamilyHandle cf = null)
         {
-            Native.Instance.rocksdb_writebatch_deletev(handle, numKeys, keysList, keysListSizes);
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_deletev(handle, numKeys, keysList, keysListSizes);
+            else
+                Native.Instance.rocksdb_writebatch_deletev_cf(handle, cf.Handle, numKeys, keysList, keysListSizes);
+        }
+
+        public WriteBatch DeleteRange(byte[] startKey, ulong sklen, byte[] endKey, ulong eklen, ColumnFamilyHandle cf = null)
+        {
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_delete_range(handle, startKey, sklen, endKey, eklen);
+            else
+                Native.Instance.rocksdb_writebatch_delete_range_cf(handle, cf.Handle, startKey, sklen, endKey, eklen);
             return this;
         }
 
-        public WriteBatch DeletevCf(IntPtr columnFamily, int numKeys, IntPtr keysList, IntPtr keysListSizes)
+        public unsafe void DeleteRange(byte* startKey, ulong sklen, byte* endKey, ulong eklen, ColumnFamilyHandle cf = null)
         {
-            Native.Instance.rocksdb_writebatch_deletev_cf(handle, columnFamily, numKeys, keysList, keysListSizes);
-            return this;
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_delete_range(handle, startKey, sklen, endKey, eklen);
+            else
+                Native.Instance.rocksdb_writebatch_delete_range_cf(handle, cf.Handle, startKey, sklen, endKey, eklen);
+        }
+
+        public unsafe void DeleteRangev(int numKeys, IntPtr startKeysList, IntPtr startKeysListSizes, IntPtr endKeysList, IntPtr endKeysListSizes, ColumnFamilyHandle cf = null)
+        {
+            if (cf == null)
+                Native.Instance.rocksdb_writebatch_delete_rangev(handle, numKeys, startKeysList, startKeysListSizes, endKeysList, endKeysListSizes);
+            else
+                Native.Instance.rocksdb_writebatch_delete_rangev_cf(handle, cf.Handle, numKeys, startKeysList, startKeysListSizes, endKeysList, endKeysListSizes);
         }
 
         public WriteBatch PutLogData(byte[] blob, ulong len)
