@@ -116,16 +116,20 @@ namespace RocksDbSharp
                     if (resultPtr == IntPtr.Zero)
                         return null;
 
-                    byte* bv = (byte*)resultPtr.ToPointer();
-                    int vlength = encoding.GetCharCount(bv, (int)bvlength);
-                    fixed (char* v = new char[vlength])
-                    {
-                        encoding.GetChars(bv, (int)bvlength, v, vlength);
-                        rocksdb_free(resultPtr);
-                        return new string(v, 0, vlength);
-                    }
+                    return MarshalAndFreeRocksDbString(resultPtr, bvlength, encoding);
                 }
             }
+        }
+
+        private unsafe string MarshalAndFreeRocksDbString(IntPtr resultPtr, long resultLength, Encoding encoding)
+        {
+            var result = CurrentFramework.CreateString((sbyte*)resultPtr.ToPointer(), 0, (int)resultLength, encoding);
+            rocksdb_free(resultPtr);
+            return result;
+        }
+        private unsafe string MarshalString(IntPtr resultPtr, long resultLength, Encoding encoding)
+        {
+            return CurrentFramework.CreateString((sbyte*)resultPtr.ToPointer(), 0, (int)resultLength, encoding);
         }
 
         public byte[] rocksdb_get(
@@ -272,14 +276,7 @@ namespace RocksDbSharp
             {
                 var resultPtr = rocksdb_iter_key(iter, out bklength);
 
-                byte* bk = (byte*)resultPtr.ToPointer();
-                int klength = encoding.GetCharCount(bk, (int)bklength);
-                fixed (char* k = new char[klength])
-                {
-                    encoding.GetChars(bk, (int)bklength, k, klength);
-                    //rocksdb_free(resultPtr);
-                    return new string(k, 0, klength);
-                }
+                return MarshalString(resultPtr, (long)bklength, encoding);
             }
         }
 
@@ -294,14 +291,7 @@ namespace RocksDbSharp
             {
                 var resultPtr = rocksdb_iter_value(iter, out bvlength);
 
-                byte* bv = (byte*)resultPtr.ToPointer();
-                int vlength = encoding.GetCharCount(bv, (int)bvlength);
-                fixed (char* v = new char[vlength])
-                {
-                    encoding.GetChars(bv, (int)bvlength, v, vlength);
-                    //rocksdb_free(resultPtr);
-                    return new string(v, 0, vlength);
-                }
+                return MarshalString(resultPtr, (long)bvlength, encoding);
             }
         }
 

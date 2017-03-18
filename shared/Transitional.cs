@@ -52,6 +52,20 @@ namespace Transitional
 #else
             => AssemblyBuilder.DefineDynamicAssembly(name, access);
 #endif
+
+        public static unsafe string CreateString(sbyte* value, int startIndex, int length, System.Text.Encoding enc)
+#if NETCORE1
+        {           
+            int vlength = enc.GetCharCount((byte*)value, length);
+            fixed (char* v = new char[vlength])
+            {
+                enc.GetChars((byte*)value, length, v, vlength);
+                return new string(v, 0, vlength);
+            }
+        }
+#else
+            => new string(value, startIndex, length, enc);
+#endif
     }
 
     internal static class TransitionalExtensions
