@@ -116,6 +116,16 @@ namespace RocksDbSharp
             }
         }
 
+        public KeyValuePair<byte[],byte[]>[] MultiGet(byte[][] keys, ColumnFamilyHandle[] cf = null, ReadOptions readOptions = null)
+        {
+            return Native.Instance.rocksdb_multi_get(Handle, (readOptions ?? defaultReadOptions).Handle, keys);
+        }
+
+        public KeyValuePair<string, string>[] MultiGet(string[] keys, ColumnFamilyHandle[] cf = null, ReadOptions readOptions = null)
+        {
+            return Native.Instance.rocksdb_multi_get(Handle, (readOptions ?? defaultReadOptions).Handle, keys);
+        }
+
         public void Write(WriteBatch writeBatch, WriteOptions writeOptions = null)
         {
             Native.Instance.rocksdb_write(Handle, (writeOptions ?? defaultWriteOptions).Handle, writeBatch.Handle);

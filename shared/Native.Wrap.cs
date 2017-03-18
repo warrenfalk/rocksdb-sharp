@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -144,13 +145,46 @@ namespace RocksDbSharp
             IntPtr db,
             IntPtr read_options,
             byte[] key,
-            long keyLength,
-            ColumnFamilyHandle cf)
+            long keyLength = 0,
+            ColumnFamilyHandle cf = null)
         {
             IntPtr errptr;
-            var result = rocksdb_get(db, read_options, key, keyLength, out errptr, cf);
+            var result = rocksdb_get(db, read_options, key, keyLength == 0 ? key.Length : keyLength, out errptr, cf);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public KeyValuePair<string, string>[] rocksdb_multi_get(
+            IntPtr db,
+            IntPtr read_options,
+            string[] keys,
+            ColumnFamilyHandle[] cf = null,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            IntPtr[] errptrs = new IntPtr[keys.Length];
+            var result = rocksdb_multi_get(db, read_options, keys, cf: cf, errptrs: errptrs, encoding: encoding);
+            foreach (var errptr in errptrs)
+                if (errptr != IntPtr.Zero)
+                    throw new RocksDbException(errptr);
+            return result;
+        }
+
+
+        public KeyValuePair<byte[], byte[]>[] rocksdb_multi_get(
+            IntPtr db,
+            IntPtr read_options,
+            byte[][] keys,
+            ulong[] keyLengths = null,
+            ColumnFamilyHandle[] cf = null)
+        {
+            IntPtr[] errptrs = new IntPtr[keys.Length];
+            var result = rocksdb_multi_get(db, read_options, keys, keyLengths: keyLengths, cf: cf, errptrs: errptrs);
+            foreach (var errptr in errptrs)
+                if (errptr != IntPtr.Zero)
+                    throw new RocksDbException(errptr);
             return result;
         }
 

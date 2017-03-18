@@ -269,6 +269,18 @@ public abstract void rocksdb_multi_get_cf(
             /*(const size_t*)*/ IntPtr keys_list_sizes, /*(char**)*/ IntPtr values_list,
             /*(size_t*)*/ IntPtr values_list_sizes, /*(char**)*/ IntPtr errList);
 
+public abstract void rocksdb_multi_get(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options, ulong num_keys,
+    /*const char* const**/ IntPtr[] keys_list, /*const size_t**/ ulong[] keys_list_sizes,
+            /*(char**)*/ IntPtr[] values_list, /*size_t**/ ulong[] values_list_sizes, /*(char**)*/ IntPtr[] errlist);
+
+public abstract void rocksdb_multi_get_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options,
+            /*(const rocksdb_column_family_handle_t* const*)*/ IntPtr[] column_families,
+            ulong num_keys, /*(const char* const*)*/ IntPtr[] keys_list,
+            /*(const size_t*)*/ ulong[] keys_list_sizes, /*(char**)*/ IntPtr[] values_list,
+            /*(size_t*)*/ ulong[] values_list_sizes, /*(char**)*/ IntPtr[] errList);
+
 public abstract /* rocksdb_iterator_t* */ IntPtr rocksdb_create_iterator(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_readoptions_t**/ IntPtr read_options);
 

@@ -4,6 +4,7 @@
     See Native.Raw.cs for more information.
 */
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using Transitional;
@@ -138,7 +139,7 @@ namespace RocksDbSharp
             byte[] key,
             long keyLength,
             out IntPtr errptr,
-            ColumnFamilyHandle cf)
+            ColumnFamilyHandle cf = null)
         {
             long valueLength;
             var resultPtr = cf == null
@@ -154,6 +155,168 @@ namespace RocksDbSharp
             return result;
         }
 
+        /// <summary>
+        /// Executes a multi_get with automatic marshalling
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="read_options"></param>
+        /// <param name="keys"></param>
+        /// <param name="numKeys">when non-zero, specifies the number of keys in the array to fetch</param>
+        /// <param name="keyLengths">when non-null specifies the lengths of each key to fetch</param>
+        /// <param name="errptrs">when non-null, must be an array that will be populated with error codes</param>
+        /// <param name="values">when non-null is a pre-allocated array to put the resulting values in</param>
+        /// <param name="cf"></param>
+        /// <returns></returns>
+        public unsafe KeyValuePair<byte[], byte[]>[] rocksdb_multi_get(
+            IntPtr db,
+            IntPtr read_options,
+            byte[][] keys,
+            IntPtr[] errptrs,
+            ulong numKeys = 0,
+            ulong[] keyLengths = null,
+            KeyValuePair<byte[], byte[]>[] values = null,
+            ColumnFamilyHandle[] cf = null)
+        {
+            int count = numKeys == 0 ? keys.Length : (int)numKeys;
+            GCHandle[] pinned = new GCHandle[count];
+            IntPtr[] keyPtrs = new IntPtr[count];
+            IntPtr[] valuePtrs = new IntPtr[count];
+            ulong[] valueLengths = new ulong[count];
+
+            if (values == null)
+                values = new KeyValuePair<byte[], byte[]>[count];
+            if (errptrs == null)
+                errptrs = new IntPtr[count];
+            if (keyLengths == null)
+            {
+                keyLengths = new ulong[count];
+                for (int i = 0; i < count; i++)
+                    keyLengths[i] = (ulong)keys[i].Length;
+            }
+
+            // first we have to pin and take the address of each key
+            for (int i = 0; i < count; i++)
+            {
+                var gch = GCHandle.Alloc(keys[i], GCHandleType.Pinned);
+                pinned[i] = gch;
+                keyPtrs[i] = gch.AddrOfPinnedObject();
+            }
+            if (cf == null)
+            {
+                rocksdb_multi_get(db, read_options, (ulong)count, keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
+            }
+            else
+            {
+                IntPtr[] cfhs = new IntPtr[cf.Length];
+                for (int i = 0; i < count; i++)
+                    cfhs[i] = cf[i].Handle;
+                rocksdb_multi_get_cf(db, read_options, cfhs, (ulong)count, keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
+            }
+            // unpin the keys
+            foreach (var gch in pinned)
+                gch.Free();
+
+            // now marshal all of the values
+            for (int i = 0; i < count; i++)
+            {
+                var valuePtr = valuePtrs[i];
+                if (valuePtr != IntPtr.Zero)
+                {
+                    var valueLength = valueLengths[i];
+                    byte[] value = new byte[valueLength];
+                    Marshal.Copy(valuePtr, value, 0, (int)valueLength);
+                    values[i] = new KeyValuePair<byte[], byte[]>(keys[i], value);
+                    rocksdb_free(valuePtr);
+                }
+                else
+                {
+                    values[i] = new KeyValuePair<byte[], byte[]>(keys[i], null);
+                }
+            }
+            return values;
+        }
+        /// <summary>
+        /// Executes a multi_get with automatic marshalling
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="read_options"></param>
+        /// <param name="keys"></param>
+        /// <param name="numKeys">when non-zero, specifies the number of keys in the array to fetch</param>
+        /// <param name="keyLengths">when non-null specifies the lengths of each key to fetch</param>
+        /// <param name="errptrs">when non-null, must be an array that will be populated with error codes</param>
+        /// <param name="values">when non-null is a pre-allocated array to put the resulting values in</param>
+        /// <param name="cf"></param>
+        /// <returns></returns>
+        public unsafe KeyValuePair<string, string>[] rocksdb_multi_get(
+            IntPtr db,
+            IntPtr read_options,
+            string[] keys,
+            IntPtr[] errptrs,
+            ulong numKeys = 0,
+            KeyValuePair<string, string>[] values = null,
+            ColumnFamilyHandle[] cf = null,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            int count = numKeys == 0 ? keys.Length : (int)numKeys;
+            IntPtr[] keyPtrs = new IntPtr[count];
+            var keyLengths = new ulong[count];
+            IntPtr[] valuePtrs = new IntPtr[count];
+            ulong[] valueLengths = new ulong[count];
+
+            if (values == null)
+                values = new KeyValuePair<string, string>[count];
+            if (errptrs == null)
+                errptrs = new IntPtr[count];
+
+            // first we have to encode each key
+            for (int i = 0; i < count; i++)
+            {
+                var key = keys[i];
+                fixed (char* k = key)
+                {
+                    var klength = key.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    var bk = Marshal.AllocHGlobal(bklength);
+                    encoding.GetBytes(k, klength, (byte*)bk.ToPointer(), bklength);
+                    keyPtrs[i] = bk;
+                    keyLengths[i] = (ulong)bklength;
+                }
+            }
+            if (cf == null)
+            {
+                rocksdb_multi_get(db, read_options, (ulong)count, keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
+            }
+            else
+            {
+                IntPtr[] cfhs = new IntPtr[cf.Length];
+                for (int i = 0; i < count; i++)
+                    cfhs[i] = cf[i].Handle;
+                rocksdb_multi_get_cf(db, read_options, cfhs, (ulong)count, keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
+            }
+            // free the buffers allocated for each encoded key
+            foreach (var keyPtr in keyPtrs)
+                Marshal.FreeHGlobal(keyPtr);
+
+            // now marshal all of the values
+            for (int i = 0; i < count; i++)
+            {
+                var resultPtr = valuePtrs[i];
+                if (resultPtr != IntPtr.Zero)
+                {
+                    var bv = (sbyte*)resultPtr.ToPointer();
+                    var bvLength = valueLengths[i];
+                    values[i] = new KeyValuePair<string, string>(keys[i], CurrentFramework.CreateString(bv, 0, (int)bvLength, encoding));
+                    rocksdb_free(resultPtr);
+                }
+                else
+                {
+                    values[i] = new KeyValuePair<string, string>(keys[i], null);
+                }
+            }
+            return values;
+        }
 
         public void rocksdb_delete(
             /*rocksdb_t**/ IntPtr db,

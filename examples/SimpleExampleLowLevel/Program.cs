@@ -11,6 +11,9 @@ using RocksDbSharp;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace SimpleExampleLowLevel
 {
@@ -77,6 +80,58 @@ namespace SimpleExampleLowLevel
             Native.Instance.rocksdb_readoptions_destroy(readoptions);
             Native.Instance.rocksdb_options_destroy(options);
             Native.Instance.rocksdb_backup_engine_close(be);
+            Native.Instance.rocksdb_close(db);
+
+            OtherExamples();
+        }
+
+        static void OtherExamples()
+        {
+            MultiGetExample();
+        }
+
+        static void MultiGetExample()
+        {
+            // Multiget
+            IntPtr db;
+            IntPtr options = Native.Instance.rocksdb_options_create();
+            int cpus = Environment.ProcessorCount;
+            Native.Instance.rocksdb_options_increase_parallelism(options, cpus);
+            Native.Instance.rocksdb_options_optimize_level_style_compaction(options, 0);
+            // create the DB if it's not already present
+            Native.Instance.rocksdb_options_set_create_if_missing(options, true);
+
+            // open DB
+            IntPtr err = IntPtr.Zero;
+            db = Native.Instance.rocksdb_open(options, DBPath, out err);
+            Debug.Assert(err == IntPtr.Zero);
+
+            // Put key-value
+            IntPtr writeoptions = Native.Instance.rocksdb_writeoptions_create();
+            Native.Instance.rocksdb_put(db, writeoptions, "one", "uno", out err);
+            Debug.Assert(err == IntPtr.Zero);
+            Native.Instance.rocksdb_put(db, writeoptions, "two", "dos", out err);
+            Debug.Assert(err == IntPtr.Zero);
+            Native.Instance.rocksdb_put(db, writeoptions, "three", "tres", out err);
+            Debug.Assert(err == IntPtr.Zero);
+            Native.Instance.rocksdb_put(db, writeoptions, "five", "五", out err);
+            Debug.Assert(err == IntPtr.Zero);
+
+            // Get value
+            IntPtr readoptions = Native.Instance.rocksdb_readoptions_create();
+            var values = Native.Instance.rocksdb_multi_get(db, readoptions, new[] { "two", "four", "five" });
+
+            Debug.Assert(values[2].Value == "五");
+
+            string returned_value =
+                Native.Instance.rocksdb_get(db, readoptions, "one", out err);
+            Debug.Assert(err == IntPtr.Zero);
+            Debug.Assert(returned_value == "uno");
+
+            // cleanup
+            Native.Instance.rocksdb_writeoptions_destroy(writeoptions);
+            Native.Instance.rocksdb_readoptions_destroy(readoptions);
+            Native.Instance.rocksdb_options_destroy(options);
             Native.Instance.rocksdb_close(db);
         }
     }

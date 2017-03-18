@@ -4,6 +4,7 @@ using System.IO;
 using RocksDbSharp;
 using System.Text;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace RocksDbSharpTest
 {
@@ -108,6 +109,18 @@ namespace RocksDbSharpTest
                     iterator.Next();
                     Assert.IsFalse(iterator.Valid());
                 }
+
+                // MultiGet
+                var multiGetResult = db.MultiGet(new[] { "two", "three", "nine" });
+                CollectionAssert.AreEqual(
+                    expected: new[]
+                    {
+                        new KeyValuePair<string, string>("two", "dos"),
+                        new KeyValuePair<string, string>("three", "tres"),
+                        new KeyValuePair<string, string>("nine", null)
+                    },
+                    actual: multiGetResult
+                );
 
             }
 
