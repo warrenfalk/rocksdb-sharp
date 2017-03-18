@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RocksDbSharpNet45", "net45\RocksDbSharpNet45.csproj", "{5103223C-2F0A-4683-A9BC-3C692749E12B}"
 EndProject
@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RocksDbSharpTest", "tests\R
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RocksDbSharp", "shared\RocksDbSharp.shproj", "{45107CCE-783A-4B27-A525-3E41502EA713}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RocksDbSharpCore", "netcoreapp1.0\RocksDbSharpCore.xproj", "{84475E5D-3CC1-44A2-AEE9-ED2757869019}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "netcoreapp1.0", "netcoreapp1.0\netcoreapp1.0.csproj", "{84475E5D-3CC1-44A2-AEE9-ED2757869019}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RocksDbSharpNet40", "net40\RocksDbSharpNet40.csproj", "{C6B7B557-2090-4AED-9E5B-82933C4DCC19}"
 EndProject
