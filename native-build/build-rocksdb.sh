@@ -1,7 +1,7 @@
 #!/bin/bash
-# This is designed to be able to be run from git bash on Windows
-# You therefore should install git bash, Visual Studio 2015, and cmake
-# Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
+# If you are in Windows, this is designed to be run from git bash
+#   You therefore should install git bash, Visual Studio 2015, and cmake
+#   Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
 #
 # Instructions for upgrading rocksdb version
 # 1. Fetch the desired version locally with something like:
