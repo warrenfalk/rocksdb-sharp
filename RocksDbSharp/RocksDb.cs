@@ -188,6 +188,11 @@ namespace RocksDbSharp
             return new Snapshot(Handle, snapshotHandle);
         }
 
+        public static IEnumerable<string> ListColumnFamilies(DbOptions options, string name)
+        {
+            return Native.Instance.rocksdb_list_column_families(options.Handle, name);
+        }
+
         public ColumnFamilyHandle CreateColumnFamily(ColumnFamilyOptions cfOptions, string name)
         {
             var cfh = Native.Instance.rocksdb_create_column_family(Handle, cfOptions.Handle, name);

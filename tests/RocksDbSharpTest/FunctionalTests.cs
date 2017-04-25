@@ -166,6 +166,12 @@ namespace RocksDbSharpTest
                 db.Put("tres", "three", cf: reverse);
             }
 
+            // Test list
+            {
+                var list = RocksDb.ListColumnFamilies(optionsCf, path);
+                CollectionAssert.AreEquivalent(new[] { "default", "reverse" }, list.ToArray());
+            }
+
             // Test reopen with column families
             using (var db = RocksDb.Open(optionsCf, path, columnFamilies))
             {
