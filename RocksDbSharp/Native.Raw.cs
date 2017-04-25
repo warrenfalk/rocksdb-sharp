@@ -91,7 +91,6 @@ typedef struct rocksdb_ratelimiter_t     rocksdb_ratelimiter_t;
 #endregion
 
 #region DB operations
-#if ROCKSDB_DB_OPERATIONS
 
 public abstract /* rocksdb_t* */ IntPtr rocksdb_open(
     /* const rocksdb_options_t* */ IntPtr options, string name, out IntPtr errptr);
@@ -354,7 +353,6 @@ public abstract void rocksdb_disable_file_deletions(/*rocksdb_t**/ IntPtr db,
 public abstract void rocksdb_enable_file_deletions(
     /*rocksdb_t**/ IntPtr db, bool force, out IntPtr errptr);
 
-#endif
 #endregion
 
 #region Management operations
@@ -370,7 +368,6 @@ public abstract void rocksdb_repair_db(
 #endregion
 
 #region Iterator
-#if ROCKSDB_ITERATOR
 
 public abstract void rocksdb_iter_destroy(/*(rocksdb_iterator_t*)*/ IntPtr iter);
 public abstract bool rocksdb_iter_valid(
@@ -396,11 +393,9 @@ public abstract /* const char* */ IntPtr rocksdb_iter_value(
 public abstract void rocksdb_iter_get_error(
     /*(const rocksdb_iterator_t*)*/ IntPtr iter, out IntPtr errptr);
 
-#endif
 #endregion
 
 #region Write batch
-#if ROCKSDB_WRITE_BATCH
 
 public abstract /* rocksdb_writebatch_t* */ IntPtr rocksdb_writebatch_create();
 public abstract /* rocksdb_writebatch_t* */ IntPtr rocksdb_writebatch_create_from(
@@ -510,11 +505,9 @@ public abstract void rocksdb_writebatch_iterate(
     WriteBatchIterateDeleteCallback deleted);
 public abstract /* const char* */ IntPtr rocksdb_writebatch_data(
     /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(size_t*)*/ out ulong size);
-#endif
 #endregion
 
 #region Block based table options
-#if ROCKSDB_BLOCK_BASED_TABLE_OPTIONS
 
 public abstract /* rocksdb_block_based_table_options_t* */ IntPtr rocksdb_block_based_options_create();
 public abstract void rocksdb_block_based_options_destroy(
@@ -557,7 +550,6 @@ public abstract void rocksdb_block_based_options_set_skip_table_builder_flush(
     /*(rocksdb_block_based_table_options_t*)*/ IntPtr options, /*(unsigned char)*/ bool skip_table_builder_flush);
 public abstract void rocksdb_options_set_block_based_table_factory(
     /* rocksdb_options_t* */ IntPtr opt, /*(rocksdb_block_based_table_options_t*)*/ IntPtr table_options);
-#endif
 #endregion
 
 #region Cuckoo table options
@@ -583,7 +575,6 @@ public abstract void rocksdb_options_set_cuckoo_table_factory(
 #endregion
 
 #region Options
-#if ROCKSDB_OPTIONS
 
 public abstract /* rocksdb_options_t* */ IntPtr rocksdb_options_create();
 public abstract void rocksdb_options_destroy(/* rocksdb_options_t* */ IntPtr options);
@@ -816,7 +807,6 @@ public abstract void rocksdb_options_set_universal_compaction_options(
             /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_universal_compaction_options_t*)*/ IntPtr universal_compaction_options);
 public abstract void rocksdb_options_set_fifo_compaction_options(
             /* rocksdb_options_t* */ IntPtr opt, /*(rocksdb_fifo_compaction_options_t*)*/ IntPtr fifo_compaction_options);
-#endif
 #endregion
 #region Rate Limiter
 #if ROCKSDB_RATE_LIMITER
@@ -891,7 +881,6 @@ public abstract void rocksdb_comparator_destroy(
 #endregion
 
 #region Filter policy
-#if ROCKSDB_FILTER_POLICY
 #if ROCKSDB_FILTER_POLICY_FULL
 public abstract /* rocksdb_filterpolicy_t* */ IntPtr rocksdb_filterpolicy_create(
     void* state, void (*destructor)(void*),
@@ -910,7 +899,6 @@ public abstract /* rocksdb_filterpolicy_t* */ IntPtr rocksdb_filterpolicy_create
 
 public abstract /* rocksdb_filterpolicy_t* */ IntPtr rocksdb_filterpolicy_create_bloom_full(int bits_per_key);
 
-#endif
 #endregion
 
 #region Merge Operator
@@ -937,7 +925,6 @@ public abstract void rocksdb_mergeoperator_destroy(
 #endregion
 
 #region Read options
-#if ROCKSDB_READ_OPTIONS
 
 public abstract /* rocksdb_readoptions_t* */ IntPtr rocksdb_readoptions_create();
 public abstract void rocksdb_readoptions_destroy(
@@ -963,11 +950,9 @@ public abstract void rocksdb_readoptions_set_pin_data(
 public abstract void rocksdb_readoptions_set_total_order_seek(
     /*(rocksdb_readoptions_t*)*/ IntPtr options, /*(unsigned char)*/ bool enable);
 
-#endif
 #endregion
 
 #region Write options
-#if ROCKSDB_WRITE_OPTIONS
 
 public abstract /* rocksdb_writeoptions_t* */ IntPtr rocksdb_writeoptions_create();
 public abstract void rocksdb_writeoptions_destroy(
@@ -977,7 +962,6 @@ public abstract void rocksdb_writeoptions_set_sync(
 public abstract void rocksdb_writeoptions_disable_WAL(
     /*(rocksdb_writeoptions_t*)*/ IntPtr write_options, int disable);
 
-#endif
 #endregion
 
 #region Compact range options
@@ -1094,7 +1078,6 @@ extern ROCKSDB_LIBRARY_API void rocksdb_ingest_external_file_cf(
 #endregion
 
 #region SliceTransform
-#if ROCKSDB_SLICETRANSFORM
 #if ROCKSDB_SLICETRANSFORM_CUSTOM
 public abstract /* rocksdb_slicetransform_t* */ IntPtr rocksdb_slicetransform_create(
     void* state, void (*destructor)(void*),
@@ -1109,7 +1092,6 @@ public abstract /* rocksdb_slicetransform_t* */ IntPtr rocksdb_slicetransform_cr
 public abstract void rocksdb_slicetransform_destroy(
     /*(rocksdb_slicetransform_t*)*/ IntPtr slicetransform);
 
-#endif
 #endregion
 
 #region Universal Compaction options

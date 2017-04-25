@@ -37,9 +37,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\net45\RocksDbSharpNet45.csproj">
-      <Project>{5103223c-2f0a-4683-a9bc-3c692749e12b}</Project>
-      <Name>RocksDbSharpNet45</Name>
+    <ProjectReference Include="..\..\RocksDbSharp\RocksDbSharp.csproj">
+      <Project>{53056b3c-fac0-41ed-9c5b-8ba41df85f61}</Project>
+      <Name>RocksDbSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

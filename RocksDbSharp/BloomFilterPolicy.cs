@@ -2,7 +2,6 @@
 
 namespace RocksDbSharp
 {
-    #if ROCKSDB_FILTER_POLICY
     public class BloomFilterPolicy
     {
         public IntPtr Handle { get; protected set; }
@@ -49,5 +48,4 @@ namespace RocksDbSharp
             return new BloomFilterPolicy(handle);
         }
     }
-    #endif
 }

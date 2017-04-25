@@ -10,7 +10,6 @@ namespace RocksDbSharp
     public class ColumnFamilyOptions : OptionsHandle
     {
 
-#if ROCKSDB_BLOCK_BASED_TABLE_OPTIONS
         public ColumnFamilyOptions SetBlockBasedTableFactory(BlockBasedTableOptions table_options)
         {
             References.BlockBasedTableFactory = table_options;
@@ -18,7 +17,6 @@ namespace RocksDbSharp
             Native.Instance.rocksdb_options_set_block_based_table_factory(Handle, table_options.Handle);
             return this;
         }
-#endif
 
 #if ROCKSDB_CUCKOO_TABLE_OPTIONS
         public ColumnFamilyOptions set_cuckoo_table_factory(rocksdb_cuckoo_table_options_t* table_options)

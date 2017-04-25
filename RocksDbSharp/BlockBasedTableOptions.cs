@@ -3,7 +3,6 @@ using System.Dynamic;
 
 namespace RocksDbSharp
 {
-#if ROCKSDB_BLOCK_BASED_TABLE_OPTIONS
     public class BlockBasedTableOptions
     {
         public IntPtr Handle { get; protected set; }
@@ -122,5 +121,4 @@ namespace RocksDbSharp
             return this;
         }      
     }
-#endif
 }

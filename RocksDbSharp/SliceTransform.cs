@@ -2,7 +2,6 @@
 
 namespace RocksDbSharp
 {
-    #if ROCKSDB_SLICETRANSFORM
     public class SliceTransform
     {
         public IntPtr Handle { get; protected set; }
@@ -38,5 +37,4 @@ namespace RocksDbSharp
             }
         }
     }
-    #endif
 }

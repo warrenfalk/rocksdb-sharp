@@ -54,7 +54,7 @@ namespace Transitional
 #endif
 
         public static unsafe string CreateString(sbyte* value, int startIndex, int length, System.Text.Encoding enc)
-#if NETCORE1
+#if NETSTANDARD1_6
         {           
             int vlength = enc.GetCharCount((byte*)value, length);
             fixed (char* v = new char[vlength])
@@ -70,7 +70,7 @@ namespace Transitional
 
     internal static class TransitionalExtensions
     {
-#if NET40 || NETCORE1
+#if NET40 || NETSTANDARD1_6
         public static long GetLongLength<T>(this T[] array, int dimension) => array.GetLength(dimension);
 #endif
 
@@ -90,7 +90,7 @@ namespace Transitional
 }
 
 
-#if !NETCORE
+#if !NETSTANDARD1_6
 namespace System.Runtime.InteropServices
 {
     public static class OSPlatform

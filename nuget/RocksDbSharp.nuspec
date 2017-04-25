@@ -17,11 +17,11 @@
     <tags>rocksdb leveldb embedded database</tags>
   </metadata>
   <files>
-    <file src="..\net45\bin\Release\RocksDbSharp.dll" target="lib\net45" />
-    <file src="..\net45\bin\Release\RocksDbSharp.pdb" target="lib\net45" />
-    <file src="..\net40\bin\Release\RocksDbSharp.dll" target="lib\net40" />
-    <file src="..\net40\bin\Release\RocksDbSharp.pdb" target="lib\net40" />
-    <file src="..\netcoreapp1.0\bin\Release\netstandard1.6\RocksDbSharp.dll" target="lib\netcoreapp1.0" />
-    <file src="..\netcoreapp1.0\bin\Release\netstandard1.6\RocksDbSharp.pdb" target="lib\netcoreapp1.0" />
+    <file src="..\RocksDbSharp\bin\Release\net45\RocksDbSharp.dll" target="lib\net45" />
+    <file src="..\RocksDbSharp\bin\Release\net45\RocksDbSharp.pdb" target="lib\net45" />
+    <file src="..\RocksDbSharp\bin\Release\net40\RocksDbSharp.dll" target="lib\net40" />
+    <file src="..\RocksDbSharp\bin\Release\net40\RocksDbSharp.pdb" target="lib\net40" />
+    <file src="..\RocksDbSharp\bin\Release\netstandard1.6\RocksDbSharp.dll" target="lib\netstandard1.6" />
+    <file src="..\RocksDbSharp\bin\Release\netstandard1.6\RocksDbSharp.pdb" target="lib\netstandard1.6" />
   </files>
 </package>
