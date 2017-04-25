@@ -33,6 +33,7 @@
 using System;
 using System.Runtime.InteropServices;
 
+#pragma warning disable IDE1006 // Intentionally violating naming conventions because this is meant to match the C API
 namespace RocksDbSharp
 {
 //void (*put)(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ ulong vlen),
