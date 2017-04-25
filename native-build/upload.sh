@@ -20,12 +20,22 @@ ROCKSDB_WINDOWS_COPY="scp -r"
 cd $(dirname $0)
 
 if [ ! -f ../native-${REVISION}/amd64/librocksdb.dylib ]; then
+	echo "Copying from mac"
 	${ROCKSDB_MAC_COPY} ${ROCKSDB_MAC}/native-${REVISION}/ ../
+	echo "Copy Complete"
 fi
 
 if [ ! -f ../native-${REVISION}/amd64/rocksdb.dll ]; then
+	echo "Copying from windows"
 	${ROCKSDB_WINDOWS_COPY} ${ROCKSDB_WINDOWS}/native-${REVISION}/ ../
+	echo "Copy Complete"
 fi
+
+[ -f ../native-${REVISION}/amd64/librocksdb.dylib ] || { echo "Missing 64 bit mac lib"; exit 1; }
+[ -f ../native-${REVISION}/i386/librocksdb.dylib ] || { echo "Missing 32 bit mac lib"; exit 1; }
+[ -f ../native-${REVISION}/amd64/librocksdb.so ] || { echo "Missing 64 bit linux lib"; exit 1; }
+[ -f ../native-${REVISION}/i386/librocksdb.so ] || { echo "Missing 32 bit linux lib"; exit 1; }
+[ -f ../native-${REVISION}/amd64/rocksdb.dll ] || { echo "Missing windows lib"; exit 1; }
 
 echo "Contents:"
 find ../native-${REVISION}
