@@ -1,5 +1,6 @@
 Make sure version number is propagated everywhere
 Make sure correct native binaries are downloaded
+Check .nuspec files and edit any release info
 Do a batch build, rebuild all
 Open a powershell, go to the nuget folder and run:
 nuget pack RocksDbSharp.nuspec ; nuget pack RocksDbNative.nuspec
