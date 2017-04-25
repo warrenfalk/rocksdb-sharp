@@ -9,7 +9,7 @@ namespace RocksDbSharp
 {
     public class ColumnFamilies : IEnumerable<ColumnFamilies.Descriptor>
     {
-        private List<Descriptor> descriptors { get; } = new List<Descriptor>();
+        private List<Descriptor> Descriptors { get; } = new List<Descriptor>();
 
         public static readonly string DefaultName = "default";
 
@@ -27,7 +27,7 @@ namespace RocksDbSharp
 
         public ColumnFamilies(ColumnFamilyOptions options = null)
         {
-            descriptors.Add(new Descriptor(DefaultName, options ?? new ColumnFamilyOptions()));
+            Descriptors.Add(new Descriptor(DefaultName, options ?? new ColumnFamilyOptions()));
         }
 
         public IEnumerable<string> Names => this.Select(cfd => cfd.Name);
@@ -37,9 +37,9 @@ namespace RocksDbSharp
         public void Add(Descriptor descriptor)
         {
             if (descriptor.Name == DefaultName)
-                descriptors[0] = descriptor;
+                Descriptors[0] = descriptor;
             else
-                descriptors.Add(descriptor);
+                Descriptors.Add(descriptor);
         }
 
         public void Add(string name, ColumnFamilyOptions options)
@@ -49,12 +49,12 @@ namespace RocksDbSharp
 
         public IEnumerator<Descriptor> GetEnumerator()
         {
-            return descriptors.GetEnumerator();
+            return Descriptors.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return descriptors.GetEnumerator();
+            return Descriptors.GetEnumerator();
         }
     }
 }

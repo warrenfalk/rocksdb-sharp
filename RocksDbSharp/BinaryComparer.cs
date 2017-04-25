@@ -126,11 +126,11 @@ namespace RocksDbSharp
 
                             /* bitmagic hash */
                             k1 *= c1;
-                            k1 = rotl32(k1, 15);
+                            k1 = Rotl32(k1, 15);
                             k1 *= c2;
 
                             h1 ^= k1;
-                            h1 = rotl32(h1, 13);
+                            h1 = Rotl32(h1, 13);
                             h1 = h1 * 5 + 0xe6546b64;
                             break;
                         case 3:
@@ -139,7 +139,7 @@ namespace RocksDbSharp
                                     | chunk[1] << 8
                                     | chunk[2] << 16);
                             k1 *= c1;
-                            k1 = rotl32(k1, 15);
+                            k1 = Rotl32(k1, 15);
                             k1 *= c2;
                             h1 ^= k1;
                             break;
@@ -148,14 +148,14 @@ namespace RocksDbSharp
                                 (chunk[0]
                                     | chunk[1] << 8);
                             k1 *= c1;
-                            k1 = rotl32(k1, 15);
+                            k1 = Rotl32(k1, 15);
                             k1 *= c2;
                             h1 ^= k1;
                             break;
                         case 1:
                             k1 = (uint)(chunk[0]);
                             k1 *= c1;
-                            k1 = rotl32(k1, 15);
+                            k1 = Rotl32(k1, 15);
                             k1 *= c2;
                             h1 ^= k1;
                             break;
@@ -167,7 +167,7 @@ namespace RocksDbSharp
 
             // finalization, magic chants to wrap it all up
             h1 ^= streamLength;
-            h1 = fmix(h1);
+            h1 = Fmix(h1);
 
             unchecked //ignore overflow
             {
@@ -175,12 +175,12 @@ namespace RocksDbSharp
             }
         }
 
-        private static uint rotl32(uint x, byte r)
+        private static uint Rotl32(uint x, byte r)
         {
             return (x << r) | (x >> (32 - r));
         }
 
-        private static uint fmix(uint h)
+        private static uint Fmix(uint h)
         {
             h ^= h >> 16;
             h *= 0x85ebca6b;
