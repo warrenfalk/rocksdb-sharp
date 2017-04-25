@@ -15,9 +15,9 @@
 # 5. Search through code for old hash and old version number and replace
 # 6. Run this script to build (see README.md for more info)
 
-ROCKSDBVERSION=462c21dd
-ROCKSDBVNUM=5.1.4
-ROCKSDBSHARPVNUM=5.1.4.0
+ROCKSDBVERSION=e52d6ad
+ROCKSDBVNUM=5.2.1
+ROCKSDBSHARPVNUM=5.2.1.0
 GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 

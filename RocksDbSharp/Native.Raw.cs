@@ -3,17 +3,17 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version 462c21dd
-    https://github.com/facebook/rocksdb/blob/462c21dd/include/rocksdb/c.h
+    In particular, it was originally derived from version e52d6ad
+    https://github.com/facebook/rocksdb/blob/e52d6ad/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
     Changes to c.h should be incorporated here.  View those changes by going to the native rocksdb
     source and fetching the desired version like this:
     cd native-build/rocksdb
     git fetch https://github.com/warrenfalk/rocksdb.git rocksdb_sharp
-    git fetch https://github.com/facebook/rocksdb.git v5.1.4
+    git fetch https://github.com/facebook/rocksdb.git v5.2.1
     git checkout FETCH_HEAD
-    git diff 462c21dd HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace 462c21dd with whatever HEAD is
+    git diff e52d6ad HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace e52d6ad with whatever HEAD is
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
@@ -303,7 +303,12 @@ public abstract void rocksdb_release_snapshot(
    Else returns a pointer to a malloc()-ed null-terminated value. */
 public abstract /* char* */ IntPtr rocksdb_property_value(/*rocksdb_t**/ IntPtr db,
                                                         string propname);
-
+/* returns 0 on success, -1 otherwise */
+/*
+int rocksdb_property_int(
+    rocksdb_t* db,
+    const char* propname, uint64_t *out_val);
+*/
 public abstract /* char* */ IntPtr rocksdb_property_value_cf(
     /*rocksdb_t**/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
     string propname);
@@ -506,6 +511,10 @@ public abstract void rocksdb_writebatch_iterate(
     WriteBatchIterateDeleteCallback deleted);
 public abstract /* const char* */ IntPtr rocksdb_writebatch_data(
     /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(size_t*)*/ out ulong size);
+public abstract void rocksdb_writebatch_set_save_point(
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch);
+public abstract void rocksdb_writebatch_rollback_to_save_point(
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, out IntPtr errptr);
 #endregion
 
 #region Block based table options
@@ -576,6 +585,8 @@ public abstract void rocksdb_options_set_cuckoo_table_factory(
 #endregion
 
 #region Options
+public abstract void rocksdb_set_options(
+    /*(rocksdb_t*)*/ IntPtr db, int count, /*(const char* const)*/ string[] keys, /*(const char* const)*/ string[] values, /*(char **)*/ out IntPtr errptr);
 
 public abstract /* rocksdb_options_t* */ IntPtr rocksdb_options_create();
 public abstract void rocksdb_options_destroy(/* rocksdb_options_t* */ IntPtr options);
@@ -677,6 +688,10 @@ public abstract void rocksdb_options_set_soft_rate_limit(
             /* rocksdb_options_t* */ IntPtr options, double value);
 public abstract void rocksdb_options_set_hard_rate_limit(
             /* rocksdb_options_t* */ IntPtr options, double value);
+public abstract void rocksdb_options_set_soft_pending_compaction_bytes_limit(
+    /*(rocksdb_options_t*)*/ IntPtr opt, /*(size_t)*/ ulong v);
+public abstract void rocksdb_options_set_hard_pending_compaction_bytes_limit(
+    /*(rocksdb_options_t*)*/ IntPtr opt, /*(size_t)*/ ulong v);
 public abstract void rocksdb_options_set_rate_limit_delay_max_milliseconds(/* rocksdb_options_t* */ IntPtr options,
             uint value);
 public abstract void rocksdb_options_set_max_manifest_file_size(
@@ -735,6 +750,8 @@ public abstract void rocksdb_options_set_max_sequential_skip_in_iterations(/* ro
 public abstract void rocksdb_options_set_disable_data_sync(
     /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_disable_auto_compactions(
+    /* rocksdb_options_t* */ IntPtr options, int value);
+public abstract void rocksdb_options_set_optimize_filters_for_hits(
     /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_delete_obsolete_files_period_micros(/* rocksdb_options_t* */ IntPtr options,
             ulong value);

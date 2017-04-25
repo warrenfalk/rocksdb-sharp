@@ -11,3 +11,16 @@ index 460d13a..079d9d9 100644
  
  # Main library source code
  
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 66717d5..9112436 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -726,7 +726,7 @@ foreach(sourcefile ${C_TEST_EXES})
+     add_test(NAME ${exename} COMMAND ${exename}${ARTIFACT_SUFFIX})
+     add_dependencies(check ${exename}${ARTIFACT_SUFFIX})
+ endforeach(sourcefile ${C_TEST_EXES})
+-add_subdirectory(tools)
++#add_subdirectory(tools)
+ 
+ # Installation and packaging for Linux
+ if (NOT WIN32)
