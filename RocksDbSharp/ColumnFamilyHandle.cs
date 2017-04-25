@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace RocksDbSharp
 {
+#pragma warning disable IDE1006 // Naming (missing I) for backward source-compatibility reasons
     public interface ColumnFamilyHandle
+#pragma warning restore IDE1006
     {
         IntPtr Handle { get; }
     }
