@@ -168,12 +168,12 @@ namespace NativeImport
 
         public static class U
         {
-            public static Delegate LoadFunc(INativeLibImporter importer, IntPtr libraryHandle, string entryPoint, Type delegateType)
+            public static T LoadFunc<T>(INativeLibImporter importer, IntPtr libraryHandle, string entryPoint)
             {
                 IntPtr procAddress = importer.GetProcAddress(libraryHandle, entryPoint);
                 if (procAddress == IntPtr.Zero)
-                    throw new NativeLoadException(string.Format("Unable to get address of {0} ({1})", entryPoint, delegateType), null);
-                return Marshal.GetDelegateForFunctionPointer(procAddress, delegateType);
+                    throw new NativeLoadException(string.Format("Unable to get address of {0} ({1})", entryPoint, typeof(T)), null);
+                return CurrentFramework.GetDelegateForFunctionPointer<T>(procAddress);
             }
         }
 
@@ -254,10 +254,11 @@ namespace NativeImport
                     il.Emit(OpCodes.Ldarg_0); // this
                     il.Emit(OpCodes.Ldfld, field_libraryHandle);
                     il.Emit(OpCodes.Ldstr, delegates[i].MethodInfo.Name); // use method name from original class as entry point
-                    il.Emit(OpCodes.Ldtoken, delegates[i].DelegateType); // the delegate type
-                    il.Emit(OpCodes.Call, typeof(System.Type).GetTypeInfo().GetMethod("GetTypeFromHandle")); // typeof()
-                    il.Emit(OpCodes.Call, typeof(U).GetTypeInfo().GetMethod("LoadFunc")); // U.LoadFunc()
-                    il.Emit(OpCodes.Isinst, delegates[i].DelegateType); // as <delegate type>
+                    var delegateType = delegates[i].DelegateType;
+                    //il.Emit(OpCodes.Ldtoken, delegateType); // the delegate type
+                    //il.Emit(OpCodes.Call, typeof(System.Type).GetTypeInfo().GetMethod("GetTypeFromHandle")); // typeof()
+                    il.Emit(OpCodes.Call, typeof(U).GetTypeInfo().GetMethod("LoadFunc").MakeGenericMethod(delegateType)); // U.LoadFunc<delegate type>()
+                    //il.Emit(OpCodes.Isinst, delegates[i].DelegateType); // as <delegate type>
                     il.Emit(OpCodes.Stfld, fields[i]);
                 }
 

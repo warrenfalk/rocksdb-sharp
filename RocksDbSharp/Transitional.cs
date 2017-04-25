@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 
 /// <summary>
 /// The purpose of this file is to ease the transition from framework to framework.
@@ -65,6 +66,13 @@ namespace Transitional
         }
 #else
             => new string(value, startIndex, length, enc);
+#endif
+
+        internal static T GetDelegateForFunctionPointer<T>(IntPtr ptr)
+#if NETSTANDARD1_6
+            => Marshal.GetDelegateForFunctionPointer<T>(ptr);
+#else
+            => (T)(object)Marshal.GetDelegateForFunctionPointer(ptr, typeof(T));
 #endif
     }
 
