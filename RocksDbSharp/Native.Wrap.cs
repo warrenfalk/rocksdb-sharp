@@ -14,8 +14,7 @@ namespace RocksDbSharp
             /* const rocksdb_options_t* */ IntPtr options,
             string name)
         {
-            IntPtr errptr;
-            var result = rocksdb_open(options, name, out errptr);
+            var result = rocksdb_open(options, name, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -26,8 +25,7 @@ namespace RocksDbSharp
             string name,
             bool error_if_log_file_exists = false)
         {
-            IntPtr errptr;
-            var result = rocksdb_open_for_read_only(options, name, error_if_log_file_exists, out errptr);
+            var result = rocksdb_open_for_read_only(options, name, error_if_log_file_exists, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -41,8 +39,7 @@ namespace RocksDbSharp
             IntPtr[] column_family_options,
             IntPtr[] column_family_handles)
         {
-            IntPtr errptr;
-            var result = rocksdb_open_column_families(options, name, num_column_families, column_family_names, column_family_options, column_family_handles, out errptr);
+            var result = rocksdb_open_column_families(options, name, num_column_families, column_family_names, column_family_options, column_family_handles, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -57,8 +54,7 @@ namespace RocksDbSharp
             IntPtr[] column_family_handles,
             bool error_if_log_file_exists)
         {
-            IntPtr errptr;
-            var result = rocksdb_open_for_read_only_column_families(options, name, num_column_families, column_family_names, column_family_options, column_family_handles, error_if_log_file_exists, out errptr);
+            var result = rocksdb_open_for_read_only_column_families(options, name, num_column_families, column_family_names, column_family_options, column_family_handles, error_if_log_file_exists, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -70,8 +66,7 @@ namespace RocksDbSharp
             out ulong lencf
             )
         {
-            IntPtr errptr;
-            var result = rocksdb_list_column_families(options, name, out lencf, out errptr);
+            var result = rocksdb_list_column_families(options, name, out lencf, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -85,8 +80,7 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf = null,
             Encoding encoding = null)
         {
-            IntPtr errptr;
-            rocksdb_put(db, writeOptions, key, val, out errptr, cf, encoding);
+            rocksdb_put(db, writeOptions, key, val, out IntPtr errptr, cf, encoding);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -117,8 +111,7 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf,
             Encoding encoding = null)
         {
-            IntPtr errptr;
-            var result = rocksdb_get(db, read_options, key, out errptr, cf, encoding);
+            var result = rocksdb_get(db, read_options, key, out IntPtr errptr, cf, encoding);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -132,9 +125,8 @@ namespace RocksDbSharp
             out long vallen,
             ColumnFamilyHandle cf)
         {
-            IntPtr errptr;
             var result = cf == null
-                ? rocksdb_get(db, read_options, key, keyLength, out vallen, out errptr)
+                ? rocksdb_get(db, read_options, key, keyLength, out vallen, out IntPtr errptr)
                 : rocksdb_get_cf(db, read_options, cf.Handle, key, keyLength, out vallen, out errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
@@ -148,8 +140,7 @@ namespace RocksDbSharp
             long keyLength = 0,
             ColumnFamilyHandle cf = null)
         {
-            IntPtr errptr;
-            var result = rocksdb_get(db, read_options, key, keyLength == 0 ? key.Length : keyLength, out errptr, cf);
+            var result = rocksdb_get(db, read_options, key, keyLength == 0 ? key.Length : keyLength, out IntPtr errptr, cf);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -194,8 +185,7 @@ namespace RocksDbSharp
             /*const*/ string key,
             ColumnFamilyHandle cf)
         {
-            IntPtr errptr;
-            rocksdb_delete(db, writeOptions, key, out errptr, cf);
+            rocksdb_delete(db, writeOptions, key, out IntPtr errptr, cf);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -206,8 +196,7 @@ namespace RocksDbSharp
             /*const*/ byte[] key,
             long keylen)
         {
-            IntPtr errptr;
-            rocksdb_delete(db, writeOptions, key, keylen, out errptr);
+            rocksdb_delete(db, writeOptions, key, keylen, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -217,16 +206,14 @@ namespace RocksDbSharp
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
             /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch)
         {
-            IntPtr errptr;
-            rocksdb_write(db, writeOptions, writeBatch, out errptr);
+            rocksdb_write(db, writeOptions, writeBatch, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
 
         public byte[] rocksdb_iter_key(IntPtr iterator)
         {
-            ulong length;
-            IntPtr buffer = rocksdb_iter_key(iterator, out length);
+            IntPtr buffer = rocksdb_iter_key(iterator, out ulong length);
             byte[] result = new byte[(int)length];
             Marshal.Copy(buffer, result, 0, (int)length);
             // Do not free, this is owned by the iterator and will be freed there
@@ -236,8 +223,7 @@ namespace RocksDbSharp
 
         public byte[] rocksdb_iter_value(IntPtr iterator)
         {
-            ulong length;
-            IntPtr buffer = rocksdb_iter_value(iterator, out length);
+            IntPtr buffer = rocksdb_iter_value(iterator, out ulong length);
             byte[] result = new byte[(int)length];
             Marshal.Copy(buffer, result, 0, (int)length);
             // Do not free, this is owned by the iterator and will be freed there
@@ -250,8 +236,7 @@ namespace RocksDbSharp
             /* const rocksdb_options_t* */ IntPtr column_family_options,
             string column_family_name)
         {
-            IntPtr errptr;
-            var result = rocksdb_create_column_family(db, column_family_options, column_family_name, out errptr);
+            var result = rocksdb_create_column_family(db, column_family_options, column_family_name, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -262,8 +247,7 @@ namespace RocksDbSharp
             /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family_handle
             )
         {
-            IntPtr errptr;
-            rocksdb_drop_column_family(db, column_family_handle, out errptr);
+            rocksdb_drop_column_family(db, column_family_handle, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }

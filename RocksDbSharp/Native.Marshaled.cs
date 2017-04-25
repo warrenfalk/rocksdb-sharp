@@ -32,9 +32,7 @@ namespace RocksDbSharp
             string name
             )
         {
-            IntPtr errptr;
-            ulong lencf;
-            var result = rocksdb_list_column_families(options, name, out lencf, out errptr);
+            var result = rocksdb_list_column_families(options, name, out ulong lencf, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             IntPtr[] ptrs = new IntPtr[lencf];
@@ -93,7 +91,6 @@ namespace RocksDbSharp
         {
             if (encoding == null)
                 encoding = Encoding.UTF8;
-            long bvlength;
             unsafe
             {
                 fixed (char* k = key)
@@ -105,7 +102,7 @@ namespace RocksDbSharp
                     encoding.GetBytes(k, klength, bk, bklength);
 
                     var resultPtr = cf == null
-                        ? rocksdb_get(db, read_options, bk, bklength, out bvlength, out errptr)
+                        ? rocksdb_get(db, read_options, bk, bklength, out long bvlength, out errptr)
                         : rocksdb_get_cf(db, read_options, cf.Handle, bk, bklength, out bvlength, out errptr);
 #if DEBUG
                     Zero(bk, bklength);
@@ -141,9 +138,8 @@ namespace RocksDbSharp
             out IntPtr errptr,
             ColumnFamilyHandle cf = null)
         {
-            long valueLength;
             var resultPtr = cf == null
-                ? rocksdb_get(db, read_options, key, keyLength, out valueLength, out errptr)
+                ? rocksdb_get(db, read_options, key, keyLength, out long valueLength, out errptr)
                 : rocksdb_get_cf(db, read_options, cf.Handle, key, keyLength, out valueLength, out errptr);
             if (errptr != IntPtr.Zero)
                 return null;
@@ -434,10 +430,9 @@ namespace RocksDbSharp
         {
             if (encoding == null)
                 encoding = Encoding.UTF8;
-            ulong bklength;
             unsafe
             {
-                var resultPtr = rocksdb_iter_key(iter, out bklength);
+                var resultPtr = rocksdb_iter_key(iter, out ulong bklength);
 
                 return MarshalString(resultPtr, (long)bklength, encoding);
             }
@@ -449,10 +444,9 @@ namespace RocksDbSharp
         {
             if (encoding == null)
                 encoding = Encoding.UTF8;
-            ulong bvlength;
             unsafe
             {
-                var resultPtr = rocksdb_iter_value(iter, out bvlength);
+                var resultPtr = rocksdb_iter_value(iter, out ulong bvlength);
 
                 return MarshalString(resultPtr, (long)bvlength, encoding);
             }
@@ -460,8 +454,7 @@ namespace RocksDbSharp
 
         public byte[] rocksdb_writebatch_data(IntPtr wbHandle)
         {
-            ulong size;
-            var resultPtr = rocksdb_writebatch_data(wbHandle, out size);
+            var resultPtr = rocksdb_writebatch_data(wbHandle, out ulong size);
             var data = new byte[size];
             Marshal.Copy(resultPtr, data, 0, (int)size);
             // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
@@ -471,8 +464,7 @@ namespace RocksDbSharp
 
         public int rocksdb_writebatch_data(IntPtr wbHandle, byte[] buffer, int offset, int length)
         {
-            ulong size;
-            var resultPtr = rocksdb_writebatch_data(wbHandle, out size);
+            var resultPtr = rocksdb_writebatch_data(wbHandle, out ulong size);
             bool fits = (int)size <= length;
             if (!fits)
             {
