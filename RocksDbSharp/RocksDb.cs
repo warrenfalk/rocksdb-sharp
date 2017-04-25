@@ -83,6 +83,13 @@ namespace RocksDbSharp
                 columnFamilies: cfHandleMap);
         }
 
+        public void SetOptions(IEnumerable<KeyValuePair<string, string>> options)
+        {
+            var keys = options.Select(e => e.Key).ToArray();
+            var values = options.Select(e => e.Value).ToArray();
+            Native.Instance.rocksdb_set_options(Handle, keys.Length, keys, values);
+        }
+
         public string Get(string key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null, Encoding encoding = null)
         {
             return Native.Instance.rocksdb_get(Handle, (readOptions ?? defaultReadOptions).Handle, key, cf, encoding ?? defaultEncoding);

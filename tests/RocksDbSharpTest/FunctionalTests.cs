@@ -64,6 +64,25 @@ namespace RocksDbSharpTest
                 }
                 Assert.AreEqual("uno", db.Get("one"));
 
+                // With save point
+                using (WriteBatch batch = new WriteBatch())
+                {
+                    batch
+                        .Put("hearts", "red")
+                        .Put("diamonds", "red");
+                    batch.SetSavePoint();
+                    batch
+                        .Put("clubs", "black");
+                    batch.SetSavePoint();
+                    batch
+                        .Put("spades", "black");
+                    batch.RollbackToSavePoint();
+                    db.Write(batch);
+                }
+                Assert.AreEqual("red", db.Get("diamonds"));
+                Assert.AreEqual("black", db.Get("clubs"));
+                Assert.IsNull(db.Get("spades"));
+
                 // With bytes
                 var utf8 = Encoding.UTF8;
                 using (WriteBatch batch = new WriteBatch()

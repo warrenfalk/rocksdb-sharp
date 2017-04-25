@@ -581,6 +581,30 @@ namespace RocksDbSharp
             return this;
         }
 
+        /// <summary>
+        /// All writes will be slowed down to at least delayed_write_rate if estimated
+        /// bytes needed to be compaction exceed this threshold.
+        ///
+        /// Default: 64GB
+        /// </summary>
+        public ColumnFamilyOptions SetSoftPendingCompactionBytesLimit(ulong value)
+        {
+            Native.Instance.rocksdb_options_set_soft_pending_compaction_bytes_limit(Handle, value);
+            return this;
+        }
+
+        /// <summary>
+        /// All writes are stopped if estimated bytes needed to be compaction exceed
+        /// this threshold.
+        ///
+        /// Default: 256GB
+        /// </summary>
+        public ColumnFamilyOptions SetHardPendingCompactionBytesLimit(ulong value)
+        {
+            Native.Instance.rocksdb_options_set_hard_pending_compaction_bytes_limit(Handle, value);
+            return this;
+        }
+
         // DEPRECATED -- this options is no longer used
         [Obsolete("this option is no longer used")]
         public ColumnFamilyOptions SetRateLimitDelayMaxMilliseconds(uint value)
@@ -668,6 +692,28 @@ namespace RocksDbSharp
         public ColumnFamilyOptions SetDisableAutoCompactions(int value)
         {
             Native.Instance.rocksdb_options_set_disable_auto_compactions(Handle, value);
+            return this;
+        }
+
+        /// <summary>
+        /// This flag specifies that the implementation should optimize the filters
+        /// mainly for cases where keys are found rather than also optimize for keys
+        /// missed. This would be used in cases where the application knows that
+        /// there are very few misses or the performance in the case of misses is not
+        /// important.
+        ///
+        /// For now, this flag allows us to not store filters for the last level i.e
+        /// the largest level which contains data of the LSM store. For keys which
+        /// are hits, the filters in this level are not useful because we will search
+        /// for the data anyway. NOTE: the filters in other levels are still useful
+        /// even for key hit because they tell us whether to look in that level or go
+        /// to the higher level.
+        ///
+        /// Default: false
+        /// </summary>
+        public ColumnFamilyOptions SetOptimizeFiltersForHits(int value)
+        {
+            Native.Instance.rocksdb_options_set_optimize_filters_for_hits(Handle, value);
             return this;
         }
 

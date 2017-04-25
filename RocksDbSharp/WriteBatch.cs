@@ -220,5 +220,15 @@ namespace RocksDbSharp
                 return buffer;
             return null;
         }
+
+        public void SetSavePoint()
+        {
+            Native.Instance.rocksdb_writebatch_set_save_point(handle);
+        }
+
+        public void RollbackToSavePoint()
+        {
+            Native.Instance.rocksdb_writebatch_rollback_to_save_point(handle);
+        }
     }
 }

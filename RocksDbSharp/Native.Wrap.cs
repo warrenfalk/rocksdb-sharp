@@ -253,5 +253,19 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_set_options(IntPtr db, int count, string[] keys, string[] values)
+        {
+            rocksdb_set_options(db, keys.Length, keys, values, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+
+        public void rocksdb_writebatch_rollback_to_save_point(IntPtr writeBatch)
+        {
+            rocksdb_writebatch_rollback_to_save_point(writeBatch, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
     }
 }
