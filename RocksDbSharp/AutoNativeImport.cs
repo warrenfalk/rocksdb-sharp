@@ -89,6 +89,7 @@ namespace NativeImport
         {
             public string LibraryExtension { get; }
 
+#pragma warning disable IDE1006 // Intentionally violating naming conventions because this is meant to match the library being loaded
             [DllImport("libdl")]
             private static extern IntPtr dlopen(String fileName, int flags);
 
@@ -103,6 +104,7 @@ namespace NativeImport
 
             [DllImport("libc")]
             private static extern int uname(IntPtr buf);
+#pragma warning restore IDE1006
 
             public PosixImporter()
             {
