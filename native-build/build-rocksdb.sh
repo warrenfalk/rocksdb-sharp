@@ -53,6 +53,13 @@ checkout() {
 	git checkout "$VERSION" || fail "Unable to checkout $NAME version ${VERSION}"
 }
 
+update_vcxproj(){
+	for filename in `find . -type f -regex .*?\.vcxproj`; do
+	    sed -i 's/MultiThreadedDLL/MultiThreaded/g' $filename
+		sed -i 's/MultiThreadedDebugDLL/MultiThreadedDebug/g' $filename
+	done
+}
+
 BASEDIR=$(dirname "$0")
 OSINFO=$(uname)
 
@@ -71,6 +78,10 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		(cd build && {
 			cmake -G "Visual Studio 14 2015 Win64" .. || fail "Running cmake on snappy failed"
 		}) || fail "cmake build generation failed"
+
+
+		update_vcxproj
+
 		test -z "$RUNTESTS" || {
 			cmd //c "msbuild build/snappy.sln /p:Configuration=Debug /m:$CONCURRENCY" || fail "Build of snappy (debug config) failed"
 		}
@@ -85,6 +96,9 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		(cd build && {
 			cmake -G "Visual Studio 14 2015 Win64" .. || fail "Running cmake failed"
 		}) || fail "cmake build generation failed"
+
+		update_vcxproj
+
 		test -z "$RUNTESTS" || {
 			cmd //c "msbuild build/gflags.sln /p:Configuration=Debug /m:$CONCURRENCY" || fail "Build of gflags (debug config) failed"
 		}
@@ -106,10 +120,14 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		patch -N < ../rocksdb.nobuildtools.patch || warn "Patching of CMakeLists.txt failed"
 		rm -f CMakeLists.txt.rej CMakeLists.txt.orig
 
+		sed -i 's/\/MD/\/MT/g' CMakeLists.txt
+
 		mkdir -p build
 		(cd build && {
 			cmake -G "Visual Studio 14 2015 Win64" -DOPTDBG=1 -DGFLAGS=1 -DSNAPPY=1 .. || fail "Running cmake failed"
 		}) || fail "cmake build generation failed"
+
+		update_vcxproj
 
 		export TEST_TMPDIR=$(cmd //c "echo %TMP%")
 
