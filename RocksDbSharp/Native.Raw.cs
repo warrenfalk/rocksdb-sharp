@@ -3,17 +3,17 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version e52d6ad
-    https://github.com/facebook/rocksdb/blob/e52d6ad/include/rocksdb/c.h
+    In particular, it was originally derived from version 98f8d47
+    https://github.com/facebook/rocksdb/blob/98f8d47/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
     Changes to c.h should be incorporated here.  View those changes by going to the native rocksdb
     source and fetching the desired version like this:
     cd native-build/rocksdb
     git fetch https://github.com/warrenfalk/rocksdb.git rocksdb_sharp
-    git fetch https://github.com/facebook/rocksdb.git v5.2.1
+    git fetch https://github.com/facebook/rocksdb.git v5.3.4
     git checkout FETCH_HEAD
-    git diff e52d6ad HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace e52d6ad with whatever HEAD is
+    git diff 98f8d47 HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace 98f8d47 with whatever HEAD is
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
@@ -556,8 +556,6 @@ public abstract void rocksdb_block_based_options_set_cache_index_and_filter_bloc
     /*(rocksdb_block_based_table_options_t*)*/ IntPtr bbto, /*(unsigned char)*/ bool cache_index_and_filter_blocks);
 public abstract void rocksdb_block_based_options_set_pin_l0_filter_and_index_blocks_in_cache(
     /*(rocksdb_block_based_table_options_t*)*/ IntPtr bbto, /*(unsigned char)*/ bool pin_l0_filter_and_index_blocks_in_cache);
-public abstract void rocksdb_block_based_options_set_skip_table_builder_flush(
-    /*(rocksdb_block_based_table_options_t*)*/ IntPtr options, /*(unsigned char)*/ bool skip_table_builder_flush);
 public abstract void rocksdb_options_set_block_based_table_factory(
     /* rocksdb_options_t* */ IntPtr opt, /*(rocksdb_block_based_table_options_t*)*/ IntPtr table_options);
 #endregion
@@ -743,12 +741,8 @@ rocksdb_options_set_allow_concurrent_memtable_write(/* rocksdb_options_t* */ Int
 public abstract void
 rocksdb_options_set_enable_write_thread_adaptive_yield(/* rocksdb_options_t* */ IntPtr options,
                                                        bool value);
-public abstract void rocksdb_options_set_verify_checksums_in_compaction(/* rocksdb_options_t* */ IntPtr options,
-            bool value);
 public abstract void rocksdb_options_set_max_sequential_skip_in_iterations(/* rocksdb_options_t* */ IntPtr options,
             ulong value);
-public abstract void rocksdb_options_set_disable_data_sync(
-    /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_disable_auto_compactions(
     /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_optimize_filters_for_hits(
@@ -778,8 +772,6 @@ public abstract void rocksdb_options_set_memtable_huge_page_size(
 
 public abstract void rocksdb_options_set_max_successive_merges(
             /* rocksdb_options_t* */ IntPtr options, ulong value);
-public abstract void rocksdb_options_set_min_partial_merge_operands(
-            /* rocksdb_options_t* */ IntPtr options, uint value);
 public abstract void rocksdb_options_set_bloom_locality(
             /* rocksdb_options_t* */ IntPtr options, uint value);
 public abstract void rocksdb_options_set_inplace_update_support(

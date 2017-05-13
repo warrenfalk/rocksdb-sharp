@@ -564,20 +564,6 @@ namespace RocksDbSharp
         }
 
         /// <summary>
-        /// If true, then the contents of manifest and data files are not synced
-        /// to stable storage. Their contents remain in the OS buffers till the
-        /// OS decides to flush them. This option is good for bulk-loading
-        /// of data. Once the bulk-loading is complete, please issue a
-        /// sync to the OS to flush all dirty buffesrs to stable storage.
-        /// Default: false
-        /// </summary>
-        public DbOptions SetDisableDataSync(int value)
-        {
-            Native.Instance.rocksdb_options_set_disable_data_sync(Handle, value);
-            return this;
-        }
-
-        /// <summary>
         /// The periodicity when obsolete files get deleted. The default
         /// value is 6 hours. The files that get out of scope by compaction
         /// process will still get automatically delete on every compaction,
