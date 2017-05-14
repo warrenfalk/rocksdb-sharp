@@ -1,7 +1,18 @@
 #!/bin/bash
-# If you are in Windows, this is designed to be run from git bash
-#   You therefore should install git bash, Visual Studio 2015, and cmake
-#   Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
+# WINDOWS:
+#   If you are in Windows, this is designed to be run from git bash
+#     You therefore should install git bash, Visual Studio 2015, and cmake
+#     Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
+# MAC:
+#   You will need snappy (must build: homebrew version is not universal)
+#     brew install automake
+#     brew install libtool
+#     git clone git@github.com:google/snappy.git
+#     cd snappy
+#     ./autogen.sh
+#     ./configure --prefix=/usr/local CFLAGS="-arch i386 -arch x86_64" CXXFLAGS="-arch i386 -arch x86_64" LDFLAGS="-arch i386 -arch x86_64" --disable-dependency-tracking
+#     make
+#     sudo make install
 #
 # Instructions for upgrading rocksdb version
 # 1. Fetch the desired version locally with something like:
@@ -242,7 +253,7 @@ else
 	if [ "$(uname)" == "Darwin" ]; then
 		echo "Mac (Darwin) detected"
 		CFLAGS=-I/usr/local/include
-		LDFLAGS="-L/usr/local/Cellar/snappy/1.1.3/lib -L/usr/local/lib"
+		LDFLAGS="-L/usr/local/lib"
 		LIBEXT=.dylib
 	else
 		CFLAGS=-static-libstdc++
