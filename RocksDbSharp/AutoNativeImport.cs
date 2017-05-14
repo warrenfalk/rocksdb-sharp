@@ -10,6 +10,7 @@ using System.Reflection.Emit;
 using System.Collections.Generic;
 using System.Linq;
 using Transitional;
+using System.Linq.Expressions;
 
 namespace NativeImport
 {
@@ -172,7 +173,18 @@ namespace NativeImport
             {
                 IntPtr procAddress = importer.GetProcAddress(libraryHandle, entryPoint);
                 if (procAddress == IntPtr.Zero)
-                    throw new NativeLoadException(string.Format("Unable to get address of {0} ({1})", entryPoint, typeof(T)), null);
+                {
+                    var invokeMethod = typeof(T).GetTypeInfo().GetMethod("Invoke");
+                    var parameters = invokeMethod.GetParameters().Select(p => Expression.Parameter(p.ParameterType)).ToArray();
+                    var returnType = invokeMethod.ReturnType;
+                    var errorMessage = string.Format("Unable to get address of {0} ({1})", entryPoint, typeof(T));
+                    Action throwAction = () => throw new NativeLoadException(errorMessage, null);
+                    var callThrowExpr = Expression.Constant(throwAction, typeof(Action));
+                    var defaultExpr = Expression.Default(returnType);
+                    var block = Expression.Block(returnType, Expression.Invoke(callThrowExpr), defaultExpr);
+                    var lambda = Expression.Lambda<T>(block, parameters);
+                    return lambda.Compile();
+                }
                 return CurrentFramework.GetDelegateForFunctionPointer<T>(procAddress);
             }
         }
