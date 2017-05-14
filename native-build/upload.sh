@@ -12,8 +12,10 @@ echo "REVISION = ${REVISION}"
 
 hash jq || { echo "jq is required, apt-get install jq"; exit 1; }
 
+# These can be overridden in ~/.rocksdb-sharp-upload-info
 ROCKSDB_MAC_COPY="scp -r"
 ROCKSDB_WINDOWS_COPY="scp -r"
+GITHUB_LOGIN="warrenfalk"
 
 . ~/.rocksdb-sharp-upload-info || echo "Failed to load collection and upload parameters"
 
@@ -41,17 +43,22 @@ echo "Contents:"
 find ../native-${REVISION}
 
 echo "Zipping..."
-rm ../native-${REVISION}.zip
+rm -f ../native-${REVISION}.zip
 (cd ../native-${REVISION} && zip -r ../native-${REVISION}.zip ./)
 
 echo "Creating Release..."
 PAYLOAD="{\"tag_name\": \"v${VERSION}\", \"target_commitish\": \"master\", \"name\": \"v${VERSION}\", \"body\": \"RocksDbSharp v${VERSION} (rocksdb ${RDBVERSION})\", \"draft\": true, \"prelease\": false }"
 echo ${PAYLOAD}
-DRAFTINFO=$(curl -H "Content-Type: application/json" -X POST -d "${PAYLOAD}" -u "warrenfalk" ${CURLOPTIONS} https://api.github.com/repos/warrenfalk/rocksdb-sharp/releases)
+DRAFTINFO=$(curl -H "Content-Type: application/json" -X POST -d "${PAYLOAD}" --netrc-file ~/.netrc ${CURLOPTIONS} https://api.github.com/repos/warrenfalk/rocksdb-sharp/releases)
 UPLOADURL=`echo "${DRAFTINFO}" | jq .upload_url --raw-output`
+if [ "$UPLOADURL" == "null" ]; then
+	echo "Release creation not successful or unable to determine upload url:"
+	echo "${DRAFTINFO}"
+	exit 1;
+fi
 UPLOADURLBASE="${UPLOADURL%\{*\}}"
 echo "Uploading Zip..."
 echo "to $UPLOADURLBASE"
-curl -H "Content-Type: application/zip" -X POST --data-binary @../native-${REVISION}.zip -u "warrenfalk" ${CURLOPTIONS} ${UPLOADURLBASE}?name=native-${REVISION}.zip
+curl -H "Content-Type: application/zip" -X POST --data-binary @../native-${REVISION}.zip --netrc-file ~/.netrc ${CURLOPTIONS} ${UPLOADURLBASE}?name=native-${REVISION}.zip
 
 
