@@ -260,10 +260,73 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_sstfilewriter_open(IntPtr writer, string name)
+        {
+            rocksdb_sstfilewriter_open(writer, name, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_sstfilewriter_finish(IntPtr writer)
+        {
+            rocksdb_sstfilewriter_finish(writer, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
 
         public void rocksdb_writebatch_rollback_to_save_point(IntPtr writeBatch)
         {
             rocksdb_writebatch_rollback_to_save_point(writeBatch, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_ingest_external_file(IntPtr db, string[] file_list, ulong list_len, IntPtr opt)
+        {
+            rocksdb_ingest_external_file(db, file_list, list_len, opt, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_ingest_external_file_cf(IntPtr db, IntPtr handle, string[] file_list, ulong list_len, IntPtr opt)
+        {
+            rocksdb_ingest_external_file_cf(db, handle, file_list, list_len, opt, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public unsafe void rocksdb_sstfilewriter_add(
+            IntPtr writer,
+            byte* key,
+            ulong keylen,
+            byte* val,
+            ulong vallen)
+        {
+            rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public unsafe void rocksdb_sstfilewriter_add(
+            IntPtr writer,
+            byte[] key,
+            ulong keylen,
+            byte[] val,
+            ulong vallen)
+        {
+            rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public unsafe void rocksdb_sstfilewriter_add(
+            IntPtr writer,
+            string key,
+            ulong keylen,
+            string val,
+            ulong vallen)
+        {
+            rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }

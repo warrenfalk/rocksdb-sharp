@@ -877,17 +877,14 @@ public abstract void rocksdb_compactionfilterfactory_destroy(
 #endregion
 
 #region Comparator
-#if ROCKSDB_COMPARATOR
-
 public abstract /* rocksdb_comparator_t* */ IntPtr rocksdb_comparator_create(
-    void* state, void (*destructor)(void*),
-    int (*compare)(void*, const char* a, size_t alen, const char* b,
-                   size_t blen),
-    const char* (*name)(void*));
+    /*(void*)*/ IntPtr state, /*(void (*destructor)(void*))*/ IntPtr destructor,
+                   /*(int (*compare)(void*, const char* a, size_t alen, const char* b,
+                                  size_t blen))*/ IntPtr compare,
+    /*(const char* (*name)(void*))*/ IntPtr getName);
 public abstract void rocksdb_comparator_destroy(
-    rocksdb_comparator_t*);
+    /*(rocksdb_comparator_t*)*/IntPtr comparator);
 
-#endif
 #endregion
 
 #region Filter policy
@@ -1019,72 +1016,71 @@ rocksdb_cache_get_pinned_usage(/*(rocksdb_cache_t*)*/ IntPtr cache);
 #endregion
 
 #region Env
-#if ROCKSDB_ENV
 
-public abstract /* rocksdb_env_t* */ IntPtr rocksdb_create_default_env();
-public abstract rocksdb_env_t* rocksdb_create_mem_env();
+public abstract /*(rocksdb_env_t*)*/ IntPtr rocksdb_create_default_env();
+public abstract /*(rocksdb_env_t*)*/ IntPtr rocksdb_create_mem_env();
 public abstract void rocksdb_env_set_background_threads(
-    rocksdb_env_t* env, int n);
-public abstract void rocksdb_env_set_high_priority_background_threads(rocksdb_env_t* env, int n);
+    /*(rocksdb_env_t*)*/ IntPtr env, int n);
+public abstract void rocksdb_env_set_high_priority_background_threads(/*(rocksdb_env_t*)*/ IntPtr env, int n);
 public abstract void rocksdb_env_join_all_threads(
-    rocksdb_env_t* env);
-public abstract void rocksdb_env_destroy(rocksdb_env_t*);
+    /*(rocksdb_env_t*)*/ IntPtr env);
+public abstract void rocksdb_env_destroy(/*(rocksdb_env_t*)*/ IntPtr env);
 
-extern ROCKSDB_LIBRARY_API rocksdb_envoptions_t* rocksdb_envoptions_create();
-extern ROCKSDB_LIBRARY_API void rocksdb_envoptions_destroy(
-    rocksdb_envoptions_t* opt);
-#endif
+public abstract /*(rocksdb_envoptions_t*)*/ IntPtr rocksdb_envoptions_create();
+public abstract void rocksdb_envoptions_destroy(
+    /*(rocksdb_envoptions_t*)*/ IntPtr opt);
 #endregion
 
 #region SstFile
-#if ROCKSDB_SSTFILE
 
 /* SstFile */
 
-extern ROCKSDB_LIBRARY_API rocksdb_sstfilewriter_t*
-rocksdb_sstfilewriter_create(const rocksdb_envoptions_t* env,
-                             const rocksdb_options_t* io_options);
-extern ROCKSDB_LIBRARY_API rocksdb_sstfilewriter_t*
+public abstract /*(rocksdb_sstfilewriter_t*)*/ IntPtr
+rocksdb_sstfilewriter_create(/*(const rocksdb_envoptions_t*)*/ IntPtr env,
+                             /*(const rocksdb_options_t*)*/ IntPtr io_options);
+public abstract /*(rocksdb_sstfilewriter_t*)*/ IntPtr
 rocksdb_sstfilewriter_create_with_comparator(
-    const rocksdb_envoptions_t* env, const rocksdb_options_t* io_options,
-    const rocksdb_comparator_t* comparator);
-extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_open(
-    rocksdb_sstfilewriter_t* writer, const char* name, char** errptr);
-extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_add(
-    rocksdb_sstfilewriter_t* writer, const char* key, size_t keylen,
-    const char* val, size_t vallen, char** errptr);
-extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_finish(
-    rocksdb_sstfilewriter_t* writer, char** errptr);
-extern ROCKSDB_LIBRARY_API void rocksdb_sstfilewriter_destroy(
-    rocksdb_sstfilewriter_t* writer);
+    /*(const rocksdb_envoptions_t*)*/ IntPtr env, /*(const rocksdb_options_t*)*/ IntPtr io_options,
+    /*(const rocksdb_comparator_t*)*/ IntPtr comparator);
+public abstract void rocksdb_sstfilewriter_open(
+    /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer, /*(const char*)*/ string name, /*(char** errptr)*/ out IntPtr errptr);
+public abstract unsafe void rocksdb_sstfilewriter_add(
+    /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer, /*(const char*)*/ byte* key, /*(size_t)*/ ulong keylen,
+    /*(const char*)*/ byte* val, /*(size_t)*/ ulong vallen, /*(char** errptr)*/ out IntPtr errptr);
+public abstract void rocksdb_sstfilewriter_add(
+    /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer, /*(const char*)*/ byte[] key, /*(size_t)*/ ulong keylen,
+    /*(const char*)*/ byte[] val, /*(size_t)*/ ulong vallen, /*(char** errptr)*/ out IntPtr errptr);
+public abstract void rocksdb_sstfilewriter_finish(
+    /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer, /*(char** errptr)*/ out IntPtr errptr);
+public abstract void rocksdb_sstfilewriter_destroy(
+    /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer);
 
-extern ROCKSDB_LIBRARY_API rocksdb_ingestexternalfileoptions_t*
+public abstract /*(rocksdb_ingestexternalfileoptions_t*)*/ IntPtr
 rocksdb_ingestexternalfileoptions_create();
-extern ROCKSDB_LIBRARY_API void
+public abstract void
 rocksdb_ingestexternalfileoptions_set_move_files(
-    rocksdb_ingestexternalfileoptions_t* opt, unsigned char move_files);
-extern ROCKSDB_LIBRARY_API void
+    /*(rocksdb_ingestexternalfileoptions_t*)*/ IntPtr opt, bool move_files);
+public abstract void
 rocksdb_ingestexternalfileoptions_set_snapshot_consistency(
-    rocksdb_ingestexternalfileoptions_t* opt,
-    unsigned char snapshot_consistency);
-extern ROCKSDB_LIBRARY_API void
+    /*(rocksdb_ingestexternalfileoptions_t*)*/ IntPtr opt,
+    bool snapshot_consistency);
+public abstract void
 rocksdb_ingestexternalfileoptions_set_allow_global_seqno(
-    rocksdb_ingestexternalfileoptions_t* opt, unsigned char allow_global_seqno);
-extern ROCKSDB_LIBRARY_API void
+    /*(rocksdb_ingestexternalfileoptions_t*)*/ IntPtr opt, bool allow_global_seqno);
+public abstract void
 rocksdb_ingestexternalfileoptions_set_allow_blocking_flush(
-    rocksdb_ingestexternalfileoptions_t* opt,
-    unsigned char allow_blocking_flush);
-extern ROCKSDB_LIBRARY_API void rocksdb_ingestexternalfileoptions_destroy(
-    rocksdb_ingestexternalfileoptions_t* opt);
+    /*(rocksdb_ingestexternalfileoptions_t*)*/ IntPtr opt,
+    bool allow_blocking_flush);
+public abstract void rocksdb_ingestexternalfileoptions_destroy(
+    /*(rocksdb_ingestexternalfileoptions_t*)*/ IntPtr opt);
 
-extern ROCKSDB_LIBRARY_API void rocksdb_ingest_external_file(
-    rocksdb_t* db, const char* const* file_list, const size_t list_len,
-    const rocksdb_ingestexternalfileoptions_t* opt, char** errptr);
-extern ROCKSDB_LIBRARY_API void rocksdb_ingest_external_file_cf(
-    rocksdb_t* db, rocksdb_column_family_handle_t* handle,
-    const char* const* file_list, const size_t list_len,
-    const rocksdb_ingestexternalfileoptions_t* opt, char** errptr);
-#endif
+public abstract void rocksdb_ingest_external_file(
+    /*(rocksdb_t*)*/ IntPtr db, /*(const char* const*)*/ string[] file_list, /*(const size_t)*/ ulong list_len,
+    /*(const rocksdb_ingestexternalfileoptions_t*)*/ IntPtr opt, /*(char** errptr)*/ out IntPtr errptr);
+public abstract void rocksdb_ingest_external_file_cf(
+    /*(rocksdb_t*)*/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr handle,
+    /*(const char* const*)*/ string[] file_list, /*(const size_t)*/ ulong list_len,
+    /*(const rocksdb_ingestexternalfileoptions_t*)*/ IntPtr opt, /*(char** errptr)*/ out IntPtr errptr);
 #endregion
 
 #region SliceTransform

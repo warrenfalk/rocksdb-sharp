@@ -156,6 +156,9 @@ namespace RocksDbSharp
             return this;
         }
 
+        public ColumnFamilyOptions SetComparator(Comparator comparator)
+            => SetComparator(comparator.Handle);
+
         /// <summary>
         /// REQUIRES: The client must provide a merge operator if Merge operation
         /// needs to be accessed. Calling Merge on a DB without a merge operator

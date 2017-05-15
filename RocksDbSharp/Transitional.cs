@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System.Text;
 
 /// <summary>
 /// The purpose of this file is to ease the transition from framework to framework.
@@ -74,6 +75,13 @@ namespace Transitional
 #else
             => (T)(object)Marshal.GetDelegateForFunctionPointer(ptr, typeof(T));
 #endif
+
+        public static IntPtr GetFunctionPointerForDelegate<T>(T func)
+#if NETSTANDARD1_6
+            => Marshal.GetFunctionPointerForDelegate<T>(func);
+#else
+            => Marshal.GetFunctionPointerForDelegate((Delegate)(object)func);
+#endif
     }
 
     internal static class TransitionalExtensions
@@ -92,6 +100,19 @@ namespace Transitional
         public static TypeInfo GetTypeInfo(this Type type)
         {
             return new TypeInfo(type);
+        }
+#endif
+
+#if NET45 || NET40
+        public unsafe static string GetString(this Encoding encoding, byte* bytes, int count)
+        {
+            var ptr = new IntPtr((void*)bytes);
+            if (ReferenceEquals(encoding, Encoding.ASCII))
+                return Marshal.PtrToStringAnsi(ptr, count);
+            // An ugly double copy which is necessary in older frameworks without the unsafe GetString()
+            byte[] temp = new byte[count];
+            Marshal.Copy(ptr, temp, 0, count);
+            return encoding.GetString(temp);
         }
 #endif
     }

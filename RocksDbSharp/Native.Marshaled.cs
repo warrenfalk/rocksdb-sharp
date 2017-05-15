@@ -489,5 +489,38 @@ namespace RocksDbSharp
             return MarshalNullTermAsciiStr(rocksdb_property_value_cf(db, column_family, propname));
         }
 
+        public unsafe void rocksdb_sstfilewriter_add(
+            IntPtr writer,
+            string key,
+            ulong keylen,
+            string val,
+            ulong vallen,
+            out IntPtr errptr,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key, v = val)
+                {
+                    int klength = key.Length;
+                    int vlength = val.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    int bvlength = encoding.GetByteCount(v, vlength);
+                    var buffer = Marshal.AllocHGlobal(bklength + bvlength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+                    byte* bv = bk + bklength;
+                    encoding.GetBytes(v, vlength, bv, bvlength);
+
+                    rocksdb_sstfilewriter_add(writer, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ using RocksDbSharp;
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace RocksDbSharpTest
 {
@@ -205,6 +206,55 @@ namespace RocksDbSharpTest
             {
                 Assert.Equal("uno", db.Get("one"));
             }
+
+            // Test SstFileWriter
+            {
+                var envOpts = new EnvOptions();
+                var ioOpts = new ColumnFamilyOptions();
+                var sst = new SstFileWriter(envOpts, ioOpts);
+                var filename = Path.Combine(temp, "test.sst");
+                if (File.Exists(filename))
+                    File.Delete(filename);
+                sst.Open(filename);
+                sst.Add("four", "quatro");
+                sst.Add("one", "uno");
+                sst.Add("two", "dos");
+                sst.Finish();
+
+                using (var db = RocksDb.Open(options, path, columnFamilies))
+                {
+                    Assert.NotEqual("four", db.Get("four"));
+                    var ingestOptions = new IngestExternalFileOptions()
+                        .SetMoveFiles(true);
+                    db.IngestExternalFiles(new string[] { filename }, ingestOptions);
+                    Assert.Equal("quatro", db.Get("four"));
+                }
+            }
+
+            // test comparator
+            unsafe {
+                var comparator = new IntegerStringComparator();
+
+                var opts = new ColumnFamilyOptions()
+                    .SetComparator(comparator);
+
+                var filename = Path.Combine(temp, "test.sst");
+                if (File.Exists(filename))
+                    File.Delete(filename);
+                var sst = new SstFileWriter(ioOptions: opts);
+                sst.Open(filename);
+                sst.Add("111", "111");
+                sst.Add("1001", "1001"); // this order is only allowed using an integer comparator
+                sst.Finish();
+            }
+        }
+
+        class IntegerStringComparator : StringComparatorBase
+        {
+            Comparison<long> Comparer { get; } = Comparer<long>.Default.Compare;
+
+            public override int Compare(IntPtr state, string a, string b)
+                => Comparer(long.TryParse(a, out long avalue) ? avalue : 0, long.TryParse(b, out long bvalue) ? bvalue : 0);
         }
     }
 }

@@ -229,5 +229,13 @@ namespace RocksDbSharp
         {
             return Native.Instance.rocksdb_property_value_cf_string(Handle, cf.Handle, propertyName);
         }
+
+        public void IngestExternalFiles(string[] files, IngestExternalFileOptions ingestOptions, ColumnFamilyHandle cf = null)
+        {
+            if (cf == null)
+                Native.Instance.rocksdb_ingest_external_file(Handle, files, (ulong)files.Length, ingestOptions.Handle);
+            else
+                Native.Instance.rocksdb_ingest_external_file_cf(Handle, cf.Handle, files, (ulong)files.Length, ingestOptions.Handle);
+        }
     }
 }
