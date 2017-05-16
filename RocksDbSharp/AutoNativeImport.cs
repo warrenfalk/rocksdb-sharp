@@ -55,7 +55,7 @@ namespace NativeImport
 
         private class WindowsImporter : INativeLibImporter
         {
-            [DllImport("kernel32.dll", EntryPoint = "LoadLibrary")]
+            [DllImport("kernel32.dll", EntryPoint = "LoadLibrary", SetLastError = true)]
             public static extern IntPtr WinLoadLibrary(string dllToLoad);
 
             [DllImport("kernel32.dll", EntryPoint = "GetProcAddress")]
@@ -66,7 +66,10 @@ namespace NativeImport
 
             public IntPtr LoadLibrary(string path)
             {
-                return WinLoadLibrary(path);
+                var result = WinLoadLibrary(path);
+                if (result == IntPtr.Zero)
+                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                return result;
             }
 
             public IntPtr GetProcAddress(IntPtr lib, string entryPoint)
@@ -134,15 +137,14 @@ namespace NativeImport
                         Marshal.FreeHGlobal(buf);
                 }
             }
+
             public IntPtr LoadLibrary(string path)
             {
                 dlerror();
                 var lib = dlopen(path, 2);
-                /*
                 var errPtr = dlerror();
                 if (errPtr != IntPtr.Zero)
                     throw new NativeLoadException("dlopen: " + Marshal.PtrToStringAnsi(errPtr), null);
-                */
                 return lib;
             }
 
@@ -150,9 +152,12 @@ namespace NativeImport
             {
                 dlerror();
                 IntPtr address = dlsym(lib, entryPoint);
-                var errPtr = dlerror();
-                if (errPtr != IntPtr.Zero)
-                    throw new NativeLoadException("dlsym: " + Marshal.PtrToStringAnsi(errPtr), null);
+                if (address == IntPtr.Zero)
+                {
+                    var errPtr = dlerror();
+                    if (errPtr != IntPtr.Zero)
+                        throw new NativeLoadException("dlsym: " + Marshal.PtrToStringAnsi(errPtr), null);
+                }
                 return address;
             }
 
@@ -174,6 +179,8 @@ namespace NativeImport
                 IntPtr procAddress = importer.GetProcAddress(libraryHandle, entryPoint);
                 if (procAddress == IntPtr.Zero)
                 {
+                    throw new Exception($"Cannot get proc address of {entryPoint}");
+                    /*
                     var invokeMethod = typeof(T).GetTypeInfo().GetMethod("Invoke");
                     var parameters = invokeMethod.GetParameters().Select(p => Expression.Parameter(p.ParameterType)).ToArray();
                     var returnType = invokeMethod.ReturnType;
@@ -184,6 +191,7 @@ namespace NativeImport
                     var block = Expression.Block(returnType, Expression.Invoke(callThrowExpr), defaultExpr);
                     var lambda = Expression.Lambda<T>(block, parameters);
                     return lambda.Compile();
+                    */
                 }
                 return CurrentFramework.GetDelegateForFunctionPointer<T>(procAddress);
             }
@@ -359,20 +367,41 @@ namespace NativeImport
                     paths.SelectMany(path => names.Select(n => Path.Combine(basePath, path, importer.Translate(n))))
                     .Concat(names.Select(n => importer.Translate(n)))
                 )
+                .Select(path => new SearchPath { Path = path })
                 .ToArray();
 
             foreach (var spec in search)
             {
                 var construct = type.GetConstructor(new Type[] { typeof(INativeLibImporter), typeof(IntPtr) });
-                var lib = importer.LoadLibrary(spec);
-                if (lib == IntPtr.Zero)
+                IntPtr lib = IntPtr.Zero;
+                try
+                {
+                    lib = importer.LoadLibrary(spec.Path);
+                    if (lib == IntPtr.Zero)
+                        throw new NativeLoadException("LoadLibrary returned 0", null);
+                }
+                catch (TargetInvocationException tie)
+                {
+                    spec.Error = tie.InnerException;
                     continue;
+                }
+                catch (Exception e)
+                {
+                    spec.Error = e;
+                    continue;
+                }
                 var obj = construct.Invoke(new object[] { importer, lib });
                 var t = obj as T;
                 return t;
             }
 
-            throw new NativeLoadException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:" + string.Join("\n", search), null);
+            throw new NativeLoadException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:" + string.Join("\n", search.Select(s => $"{s.Path}: ({s.Error.GetType().Name}) {s.Error.Message}")), null);
+        }
+
+        private class SearchPath
+        {
+            public string Path { get; set; }
+            public Exception Error { get; set; }
         }
 
         private static string GetMethodSig(MethodInfo m)
