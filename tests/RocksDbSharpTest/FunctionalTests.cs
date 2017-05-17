@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System.IO;
 using RocksDbSharp;
 using System.Text;
@@ -8,10 +8,9 @@ using System.Collections.Generic;
 
 namespace RocksDbSharpTest
 {
-    [TestClass]
     public class FunctionalTests
     {
-        [TestMethod]
+        [Fact]
         public void FunctionalTest()
         {
             string temp = Path.GetTempPath();
@@ -31,26 +30,26 @@ namespace RocksDbSharpTest
                 // With strings
                 string value = db.Get("key");
                 db.Put("key", "value");
-                Assert.AreEqual("value", db.Get("key"));
-                Assert.IsNull(db.Get("non-existent-key"));
+                Assert.Equal("value", db.Get("key"));
+                Assert.Null(db.Get("non-existent-key"));
                 db.Remove("key");
-                Assert.IsNull(db.Get("value"));
+                Assert.Null(db.Get("value"));
 
                 // With bytes
                 db.Put(Encoding.UTF8.GetBytes("key"), Encoding.UTF8.GetBytes("value"));
-                Assert.IsTrue(BinaryComparer.Default.Equals(Encoding.UTF8.GetBytes("value"), db.Get(Encoding.UTF8.GetBytes("key"))));
+                Assert.True(BinaryComparer.Default.Equals(Encoding.UTF8.GetBytes("value"), db.Get(Encoding.UTF8.GetBytes("key"))));
                 // non-existent kiey
-                Assert.IsNull(db.Get(new byte[] { 0, 1, 2 }));
+                Assert.Null(db.Get(new byte[] { 0, 1, 2 }));
                 db.Remove(Encoding.UTF8.GetBytes("key"));
-                Assert.IsNull(db.Get(Encoding.UTF8.GetBytes("key")));
+                Assert.Null(db.Get(Encoding.UTF8.GetBytes("key")));
 
                 db.Put(Encoding.UTF8.GetBytes("key"), new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
 
                 // With buffers
                 var buffer = new byte[100];
                 long length = db.Get(Encoding.UTF8.GetBytes("key"), buffer, 0, buffer.Length);
-                Assert.AreEqual(8, length);
-                CollectionAssert.AreEqual(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, buffer.Take((int)length).ToList());
+                Assert.Equal(8, length);
+                Assert.Equal(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, buffer.Take((int)length).ToList());
 
                 // Write batches
                 // With strings
@@ -62,7 +61,7 @@ namespace RocksDbSharpTest
                 {
                     db.Write(batch);
                 }
-                Assert.AreEqual("uno", db.Get("one"));
+                Assert.Equal("uno", db.Get("one"));
 
                 // With save point
                 using (WriteBatch batch = new WriteBatch())
@@ -79,9 +78,9 @@ namespace RocksDbSharpTest
                     batch.RollbackToSavePoint();
                     db.Write(batch);
                 }
-                Assert.AreEqual("red", db.Get("diamonds"));
-                Assert.AreEqual("black", db.Get("clubs"));
-                Assert.IsNull(db.Get("spades"));
+                Assert.Equal("red", db.Get("diamonds"));
+                Assert.Equal("black", db.Get("clubs"));
+                Assert.Null(db.Get("spades"));
 
                 // With bytes
                 var utf8 = Encoding.UTF8;
@@ -91,7 +90,7 @@ namespace RocksDbSharpTest
                 {
                     db.Write(batch);
                 }
-                Assert.IsTrue(BinaryComparer.Default.Equals(new byte[] { 4, 4, 4 }, db.Get(utf8.GetBytes("four"))));
+                Assert.True(BinaryComparer.Default.Equals(new byte[] { 4, 4, 4 }, db.Get(utf8.GetBytes("four"))));
 
                 // Snapshots
                 using (var snapshot = db.CreateSnapshot())
@@ -103,14 +102,14 @@ namespace RocksDbSharpTest
                         .SetSnapshot(snapshot);
 
                     // the database value was written
-                    Assert.AreEqual("1", db.Get("one"));
+                    Assert.Equal("1", db.Get("one"));
                     // but the snapshot still sees the old version
                     var after = db.Get("one", readOptions: useSnapshot);
-                    Assert.AreEqual(before, after);
+                    Assert.Equal(before, after);
                 }
 
                 var two = db.Get("two");
-                Assert.AreEqual("dos", two);
+                Assert.Equal("dos", two);
 
                 // Iterators
                 using (var iterator = db.NewIterator(
@@ -119,19 +118,19 @@ namespace RocksDbSharpTest
                         ))
                 {
                     iterator.Seek("k");
-                    Assert.IsTrue(iterator.Valid());
-                    Assert.AreEqual("key", iterator.StringKey());
+                    Assert.True(iterator.Valid());
+                    Assert.Equal("key", iterator.StringKey());
                     iterator.Next();
-                    Assert.IsTrue(iterator.Valid());
-                    Assert.AreEqual("one", iterator.StringKey());
-                    Assert.AreEqual("1", iterator.StringValue());
+                    Assert.True(iterator.Valid());
+                    Assert.Equal("one", iterator.StringKey());
+                    Assert.Equal("1", iterator.StringValue());
                     iterator.Next();
-                    Assert.IsFalse(iterator.Valid());
+                    Assert.False(iterator.Valid());
                 }
 
                 // MultiGet
                 var multiGetResult = db.MultiGet(new[] { "two", "three", "nine" });
-                CollectionAssert.AreEqual(
+                Assert.Equal(
                     expected: new[]
                     {
                         new KeyValuePair<string, string>("two", "dos"),
@@ -169,7 +168,7 @@ namespace RocksDbSharpTest
             // Test list
             {
                 var list = RocksDb.ListColumnFamilies(optionsCf, path);
-                CollectionAssert.AreEquivalent(new[] { "default", "reverse" }, list.ToArray());
+                Assert.Equal(new[] { "default", "reverse" }, list.ToArray());
             }
 
             // Test reopen with column families
@@ -177,10 +176,10 @@ namespace RocksDbSharpTest
             {
                 var reverse = db.GetColumnFamily("reverse");
 
-                Assert.AreEqual("uno", db.Get("one"));
-                Assert.AreEqual("one", db.Get("uno", cf: reverse));
-                Assert.IsNull(db.Get("uno"));
-                Assert.IsNull(db.Get("one", cf: reverse));
+                Assert.Equal("uno", db.Get("one"));
+                Assert.Equal("one", db.Get("uno", cf: reverse));
+                Assert.Null(db.Get("uno"));
+                Assert.Null(db.Get("one", cf: reverse));
             }
 
             // Test dropping and creating column family
@@ -188,23 +187,23 @@ namespace RocksDbSharpTest
             {
                 db.DropColumnFamily("reverse");
                 var reverse = db.CreateColumnFamily(new ColumnFamilyOptions(), "reverse");
-                Assert.IsNull(db.Get("uno", cf: reverse));
+                Assert.Null(db.Get("uno", cf: reverse));
                 db.Put("red", "rouge", cf: reverse);
-                Assert.AreEqual("rouge", db.Get("red", cf: reverse));
+                Assert.Equal("rouge", db.Get("red", cf: reverse));
             }
 
             // Test reopen after drop and create
             using (var db = RocksDb.Open(options, path, columnFamilies))
             {
                 var reverse = db.GetColumnFamily("reverse");
-                Assert.IsNull(db.Get("uno", cf: reverse));
-                Assert.AreEqual("rouge", db.Get("red", cf: reverse));
+                Assert.Null(db.Get("uno", cf: reverse));
+                Assert.Equal("rouge", db.Get("red", cf: reverse));
             }
 
             // Test read only
             using (var db = RocksDb.OpenReadOnly(options, path, columnFamilies, false))
             {
-                Assert.AreEqual("uno", db.Get("one"));
+                Assert.Equal("uno", db.Get("one"));
             }
         }
     }
