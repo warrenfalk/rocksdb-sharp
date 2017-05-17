@@ -46,12 +46,33 @@ namespace NativeImport
         IntPtr GetProcAddress(IntPtr lib, string entryPoint);
         void FreeLibrary(IntPtr lib);
         string Translate(string name);
+        object GetDelegate(IntPtr lib, string entryPoint, Type delegateType);
     }
 
     public static class Importers
     {
         public static INativeLibImporter Windows = new WindowsImporter();
         public static INativeLibImporter Posix = new PosixImporter();
+
+        static object GetDelegate(INativeLibImporter importer, IntPtr lib, string entryPoint, Type delegateType)
+        {
+            IntPtr procAddress = importer.GetProcAddress(lib, entryPoint);
+            if (procAddress == IntPtr.Zero)
+            {
+                var invokeMethod = delegateType.GetTypeInfo().GetMethod("Invoke");
+                var parameters = invokeMethod.GetParameters().Select(p => Expression.Parameter(p.ParameterType)).ToArray();
+                var returnType = invokeMethod.ReturnType;
+                var errorMessage = string.Format("Unable to get address of {0} ({1})", entryPoint, delegateType);
+                Action throwAction = () => throw new NativeLoadException(errorMessage, null);
+                var callThrowExpr = Expression.Constant(throwAction, typeof(Action));
+                var defaultExpr = Expression.Default(returnType);
+                var block = Expression.Block(returnType, Expression.Invoke(callThrowExpr), defaultExpr);
+                var lambda = Expression.Lambda(delegateType, block, parameters);
+                return lambda.Compile();
+            }
+            var method = typeof(CurrentFramework).GetTypeInfo().GetMethod(nameof(CurrentFramework.GetDelegateForFunctionPointer)).MakeGenericMethod(delegateType);
+            return method.Invoke(null, new object[] { procAddress });
+        }
 
         private class WindowsImporter : INativeLibImporter
         {
@@ -77,6 +98,9 @@ namespace NativeImport
                 var address = WinGetProcAddress(lib, entryPoint);
                 return address;
             }
+
+            public object GetDelegate(IntPtr lib, string entryPoint, Type delegateType)
+                => Importers.GetDelegate(this, lib, entryPoint, delegateType);
 
             public void FreeLibrary(IntPtr lib)
             {
@@ -161,6 +185,9 @@ namespace NativeImport
                 return address;
             }
 
+            public object GetDelegate(IntPtr lib, string entryPoint, Type delegateType)
+                => Importers.GetDelegate(this, lib, entryPoint, delegateType);
+
             public void FreeLibrary(IntPtr lib)
             {
                 dlclose(lib);
@@ -169,31 +196,6 @@ namespace NativeImport
             public string Translate(string name)
             {
                 return "lib" + name + "." + LibraryExtension;
-            }
-        }
-
-        public static class U
-        {
-            public static T LoadFunc<T>(INativeLibImporter importer, IntPtr libraryHandle, string entryPoint)
-            {
-                IntPtr procAddress = importer.GetProcAddress(libraryHandle, entryPoint);
-                if (procAddress == IntPtr.Zero)
-                {
-                    throw new Exception($"Cannot get proc address of {entryPoint}");
-                    /*
-                    var invokeMethod = typeof(T).GetTypeInfo().GetMethod("Invoke");
-                    var parameters = invokeMethod.GetParameters().Select(p => Expression.Parameter(p.ParameterType)).ToArray();
-                    var returnType = invokeMethod.ReturnType;
-                    var errorMessage = string.Format("Unable to get address of {0} ({1})", entryPoint, typeof(T));
-                    Action throwAction = () => throw new NativeLoadException(errorMessage, null);
-                    var callThrowExpr = Expression.Constant(throwAction, typeof(Action));
-                    var defaultExpr = Expression.Default(returnType);
-                    var block = Expression.Block(returnType, Expression.Invoke(callThrowExpr), defaultExpr);
-                    var lambda = Expression.Lambda<T>(block, parameters);
-                    return lambda.Compile();
-                    */
-                }
-                return CurrentFramework.GetDelegateForFunctionPointer<T>(procAddress);
             }
         }
 
@@ -241,8 +243,7 @@ namespace NativeImport
                 MethodInfo = m,
                 DelegateType = delegateMap[GetMethodSig(m)],
             }).ToArray();
-            var fields = delegates.Select(d => typeBuilder.DefineField(d.MethodInfo.Name + "_func", d.DelegateType, FieldAttributes.Private)).ToArray();
-
+            var fields = delegates.Select((d, i) => typeBuilder.DefineField($"{d.MethodInfo.Name}_func_{i}", d.DelegateType, FieldAttributes.Private)).ToArray();
 
             // Create the constructor which will initialize the importer and library handle
             // and also use the importer to populate each of the delegate fields
@@ -266,19 +267,22 @@ namespace NativeImport
                 il.Emit(OpCodes.Ldarg_2); // library handle
                 il.Emit(OpCodes.Stfld, field_libraryHandle);
 
+                var getDelegateMethod = typeof(INativeLibImporter).GetTypeInfo().GetMethod("GetDelegate");
                 // Initialize each delegate field
                 for (int i = 0; i < fields.Length; i++)
                 {
+                    var delegateType = delegates[i].DelegateType;
+
                     il.Emit(OpCodes.Ldarg_0); // this
+
                     il.Emit(OpCodes.Ldarg_1); // importer
                     il.Emit(OpCodes.Ldarg_0); // this
                     il.Emit(OpCodes.Ldfld, field_libraryHandle);
                     il.Emit(OpCodes.Ldstr, delegates[i].MethodInfo.Name); // use method name from original class as entry point
-                    var delegateType = delegates[i].DelegateType;
-                    //il.Emit(OpCodes.Ldtoken, delegateType); // the delegate type
-                    //il.Emit(OpCodes.Call, typeof(System.Type).GetTypeInfo().GetMethod("GetTypeFromHandle")); // typeof()
-                    il.Emit(OpCodes.Call, typeof(U).GetTypeInfo().GetMethod("LoadFunc").MakeGenericMethod(delegateType)); // U.LoadFunc<delegate type>()
-                    //il.Emit(OpCodes.Isinst, delegates[i].DelegateType); // as <delegate type>
+                    il.Emit(OpCodes.Ldtoken, delegateType); // the delegate type
+                    il.Emit(OpCodes.Call, typeof(System.Type).GetTypeInfo().GetMethod("GetTypeFromHandle")); // typeof()
+                    il.Emit(OpCodes.Callvirt, getDelegateMethod); // importer.GetDelegate()
+                    il.Emit(OpCodes.Isinst, delegateType); // as <delegate type>
                     il.Emit(OpCodes.Stfld, fields[i]);
                 }
 

@@ -68,7 +68,7 @@ namespace Transitional
             => new string(value, startIndex, length, enc);
 #endif
 
-        internal static T GetDelegateForFunctionPointer<T>(IntPtr ptr)
+        public static T GetDelegateForFunctionPointer<T>(IntPtr ptr)
 #if NETSTANDARD1_6
             => Marshal.GetDelegateForFunctionPointer<T>(ptr);
 #else
