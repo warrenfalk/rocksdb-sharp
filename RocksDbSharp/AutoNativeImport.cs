@@ -361,7 +361,9 @@ namespace NativeImport
             };
 
             var basePaths = new string[] {
+                Path.GetDirectoryName(UriToPath(Assembly.GetEntryAssembly()?.CodeBase)),
                 Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location),
+                Path.GetDirectoryName(UriToPath(typeof(PosixImporter).GetTypeInfo().Assembly.CodeBase)),
                 Path.GetDirectoryName(typeof(PosixImporter).GetTypeInfo().Assembly.Location),
             };
             var search = basePaths
@@ -400,6 +402,14 @@ namespace NativeImport
             }
 
             throw new NativeLoadException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:" + string.Join("\n", search.Select(s => $"{s.Path}: ({s.Error.GetType().Name}) {s.Error.Message}")), null);
+        }
+
+        private static string UriToPath(string uriString)
+        {
+            if (uriString == null || !Uri.IsWellFormedUriString(uriString, UriKind.RelativeOrAbsolute))
+                return null;
+            var uri = new Uri(uriString);
+            return uri.LocalPath;
         }
 
         private class SearchPath
