@@ -17,7 +17,7 @@ plus an idiomatic C# class hierarchy for ease of use (high level).
 ### Example (High Level)
 
 ```csharp
-var options = new Options()
+var options = new DbOptions()
     .SetCreateIfMissing(true);
 using (var db = RocksDb.Open(options, path))
 {
