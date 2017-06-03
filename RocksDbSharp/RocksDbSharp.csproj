@@ -3,10 +3,10 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <Version>5.3.4.1</Version>
+    <Version>5.4.6.0</Version>
     <Description>C# bindings and wrappers for the rocksdb library</Description>
-    <AssemblyVersion>5.3.4.1</AssemblyVersion>
-    <FileVersion>5.3.4.1</FileVersion>
+    <AssemblyVersion>5.4.6.0</AssemblyVersion>
+    <FileVersion>5.4.6.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard1.6|AnyCPU'">

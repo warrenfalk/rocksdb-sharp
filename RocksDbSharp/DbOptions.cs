@@ -14,6 +14,8 @@ namespace RocksDbSharp
         WillNeed,
     }
 
+    // Summaries taken from:
+    // rocksdb/include/rocksdb/options.h
     public class DbOptions : ColumnFamilyOptions
     {
         internal bool CreateIfMissing { get; set; }
@@ -423,19 +425,15 @@ namespace RocksDbSharp
         }
 
         /// <summary>
-        /// Enable direct I/O mode for read/write
-        /// they may or may not improve performance depending on the use case
-        ///
-        /// Files will be opened in "direct I/O" mode
-        /// which means that data r/w from the disk will not be cached or
-        /// bufferized. The hardware buffer of the devices may however still
-        /// be used. Memory mapped files are not impacted by these parameters.
-        /// Use O_DIRECT for writing file
+        /// Use O_DIRECT for both reads and writes in background flush and compactions
+        /// When true, we also force new_table_reader_for_compaction_inputs to true.
+        /// Default: false
+        /// Not supported in ROCKSDB_LITE mode!
         /// Default: false
         /// </summary>
-        public DbOptions SetUseDirectWrites(bool value)
+        public DbOptions SetUseDirectIoForFlushAndCompaction(bool value)
         {
-            Native.Instance.rocksdb_options_set_use_direct_writes(Handle, value);
+            Native.Instance.rocksdb_options_set_use_direct_io_for_flush_and_compaction(Handle, value);
             return this;
         }
 
