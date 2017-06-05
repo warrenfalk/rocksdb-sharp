@@ -29,11 +29,9 @@
 ROCKSDBVERSION=6e05979
 ROCKSDBVNUM=5.4.6
 ROCKSDBSHARPVNUM=5.4.6.0
-GFLAGSVERSION=9db82895
 SNAPPYVERSION=37aafc9e
 
 ROCKSDBREMOTE=https://github.com/warrenfalk/rocksdb
-GFLAGSREMOTE=https://github.com/warrenfalk/gflags
 SNAPPYREMOTE=https://github.com/warrenfalk/snappy
 
 CONCURRENCY=8
@@ -94,23 +92,6 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		}
 		cmd //c "msbuild build/snappy.sln /p:Configuration=Release /m:$CONCURRENCY" || fail "Build of snappy failed"
 	}) || fail "Snappy build failed"
-
-
-	mkdir -p gflags || fail "unable to create gflags directory"
-	(cd gflags && {
-		checkout "gflags" "$GFLAGSREMOTE" "$GFLAGSVERSION" "master"
-		mkdir -p build
-		(cd build && {
-			cmake -G "Visual Studio 14 2015 Win64" .. || fail "Running cmake failed"
-		}) || fail "cmake build generation failed"
-
-		update_vcxproj
-
-		test -z "$RUNTESTS" || {
-			cmd //c "msbuild build/gflags.sln /p:Configuration=Debug /m:$CONCURRENCY" || fail "Build of gflags (debug config) failed"
-		}
-		cmd //c "msbuild build/gflags.sln /p:Configuration=Release /m:$CONCURRENCY" || fail "Build of gflags failed"
-	}) || fail "GFlags build failed"
 
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
