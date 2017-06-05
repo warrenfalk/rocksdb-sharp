@@ -65,10 +65,8 @@ checkout() {
 }
 
 update_vcxproj(){
-	for filename in `find . -type f -regex .*?\.vcxproj`; do
-	    sed -i 's/MultiThreadedDLL/MultiThreaded/g' $filename
-		sed -i 's/MultiThreadedDebugDLL/MultiThreadedDebug/g' $filename
-	done
+	echo "Patching vcxproj for static vc runtime"
+	/bin/find . -type f -name '*.vcxproj' -exec sed -i 's/MultiThreadedDLL/MultiThreaded/g; s/MultiThreadedDebugDLL/MultiThreadedDebug/g' '{}' ';'
 }
 
 BASEDIR=$(dirname "$0")
@@ -88,10 +86,8 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		mkdir -p build
 		(cd build && {
 			cmake -G "Visual Studio 14 2015 Win64" .. || fail "Running cmake on snappy failed"
+			update_vcxproj || warn "unable to patch snappy for static vc runtime"
 		}) || fail "cmake build generation failed"
-
-
-		update_vcxproj
 
 		test -z "$RUNTESTS" || {
 			cmd //c "msbuild build/snappy.sln /p:Configuration=Debug /m:$CONCURRENCY" || fail "Build of snappy (debug config) failed"
@@ -135,10 +131,9 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 
 		mkdir -p build
 		(cd build && {
-			cmake -G "Visual Studio 14 2015 Win64" -DOPTDBG=1 -DGFLAGS=1 -DSNAPPY=1 .. || fail "Running cmake failed"
+			cmake -G "Visual Studio 14 2015 Win64" -DOPTDBG=1 -DGFLAGS=0 -DSNAPPY=1 .. || fail "Running cmake failed"
+			update_vcxproj || warn "failed to patch vcxproj files for static vc runtime"
 		}) || fail "cmake build generation failed"
-
-		update_vcxproj
 
 		export TEST_TMPDIR=$(cmd //c "echo %TMP%")
 
