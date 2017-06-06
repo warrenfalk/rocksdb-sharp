@@ -247,6 +247,55 @@ namespace RocksDbSharpTest
                 sst.Add("1001", "1001"); // this order is only allowed using an integer comparator
                 sst.Finish();
             }
+
+            // test write batch with index
+            {
+                var wbwi = new WriteBatchWithIndex(reservedBytes: 1024);
+                wbwi.Put("one", "un");
+                wbwi.Put("two", "deux");
+                var oneValueIn = Encoding.UTF8.GetBytes("one");
+                var oneValueOut = wbwi.Get("one");
+                Assert.Equal("un", oneValueOut);
+                using (var db = RocksDb.Open(options, path, columnFamilies))
+                {
+                    var oneCombinedOut = wbwi.Get(db, "one");
+                    var threeCombinedOut = wbwi.Get(db, "three");
+                    Assert.Equal("un", oneCombinedOut);
+                    Assert.Equal("tres", threeCombinedOut);
+
+                    using (var wbIterator = wbwi.NewIterator(db.NewIterator()))
+                    {
+                        wbIterator.Seek("o");
+                        Assert.True(wbIterator.Valid());
+                        var itkey = wbIterator.StringKey();
+                        Assert.Equal("one", itkey);
+                        var itval = wbIterator.StringValue();
+                        Assert.Equal("un", itval);
+
+                        wbIterator.Next();
+                        Assert.True(wbIterator.Valid());
+                        itkey = wbIterator.StringKey();
+                        Assert.Equal("three", itkey);
+                        itval = wbIterator.StringValue();
+                        Assert.Equal("tres", itval);
+
+                        wbIterator.Next();
+                        Assert.True(wbIterator.Valid());
+                        itkey = wbIterator.StringKey();
+                        Assert.Equal("two", itkey);
+                        itval = wbIterator.StringValue();
+                        Assert.Equal("deux", itval);
+
+                        wbIterator.Next();
+                        Assert.False(wbIterator.Valid());
+                    }
+
+                    db.Write(wbwi);
+
+                    var oneDbOut = wbwi.Get("one");
+                    Assert.Equal("un", oneDbOut);
+                }
+            }
         }
 
         class IntegerStringComparator : StringComparatorBase

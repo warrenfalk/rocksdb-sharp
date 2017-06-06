@@ -212,6 +212,16 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_write_writebatch_wi(
+            /*rocksdb_t**/ IntPtr db,
+            /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+            /*(rocksdb_writebatch_wi_t*)*/ IntPtr writeBatchWithIndex)
+        {
+            rocksdb_write_writebatch_wi(db, writeOptions, writeBatchWithIndex, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
         public byte[] rocksdb_iter_key(IntPtr iterator)
         {
             IntPtr buffer = rocksdb_iter_key(iterator, out ulong length);
@@ -281,6 +291,13 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_writebatch_wi_rollback_to_save_point(IntPtr writeBatch)
+        {
+            rocksdb_writebatch_wi_rollback_to_save_point(writeBatch, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
         public void rocksdb_ingest_external_file(IntPtr db, string[] file_list, ulong list_len, IntPtr opt)
         {
             rocksdb_ingest_external_file(db, file_list, list_len, opt, out IntPtr errptr);
@@ -329,6 +346,93 @@ namespace RocksDbSharp
             rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
+        }
+
+        public string rocksdb_writebatch_wi_get_from_batch(
+            IntPtr wb,
+            IntPtr options,
+            string key,
+            ColumnFamilyHandle cf,
+            Encoding encoding = null)
+        {
+            var result = rocksdb_writebatch_wi_get_from_batch(wb, options, key, out IntPtr errptr, cf, encoding);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public IntPtr rocksdb_writebatch_wi_get_from_batch(
+            IntPtr wb,
+            IntPtr options,
+            byte[] key,
+            ulong keyLength,
+            out ulong vallen,
+            ColumnFamilyHandle cf)
+        {
+            var result = cf == null
+                ? rocksdb_writebatch_wi_get_from_batch(wb, options, key, keyLength, out vallen, out IntPtr errptr)
+                : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, key, keyLength, out vallen, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public byte[] rocksdb_writebatch_wi_get_from_batch(
+            IntPtr wb,
+            IntPtr options,
+            byte[] key,
+            ulong keyLength = 0,
+            ColumnFamilyHandle cf = null)
+        {
+            var result = rocksdb_writebatch_wi_get_from_batch(wb, options, key, keyLength == 0 ? (ulong)key.Length : keyLength, out IntPtr errptr, cf);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public string rocksdb_writebatch_wi_get_from_batch_and_db(
+            IntPtr wb,
+            IntPtr db,
+            IntPtr read_options,
+            string key,
+            ColumnFamilyHandle cf,
+            Encoding encoding = null)
+        {
+            var result = rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, key, out IntPtr errptr, cf, encoding);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public IntPtr rocksdb_writebatch_wi_get_from_batch_and_db(
+            IntPtr wb,
+            IntPtr db,
+            IntPtr read_options,
+            byte[] key,
+            ulong keyLength,
+            out ulong vallen,
+            ColumnFamilyHandle cf)
+        {
+            var result = cf == null
+                ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, key, keyLength, out vallen, out IntPtr errptr)
+                : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, key, keyLength, out vallen, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public byte[] rocksdb_writebatch_wi_get_from_batch_and_db(
+            IntPtr wb,
+            IntPtr db,
+            IntPtr read_options,
+            byte[] key,
+            ulong keyLength = 0,
+            ColumnFamilyHandle cf = null)
+        {
+            var result = rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, key, keyLength == 0 ? (ulong)key.Length : keyLength, out IntPtr errptr, cf);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
         }
     }
 }

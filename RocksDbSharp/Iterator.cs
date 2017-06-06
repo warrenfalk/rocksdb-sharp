@@ -42,6 +42,17 @@ namespace RocksDbSharp
             }
         }
 
+        /// <summary>
+        /// Detach the iterator from its handle but don't dispose the handle
+        /// </summary>
+        /// <returns></returns>
+        public IntPtr Detach()
+        {
+            var r = handle;
+            handle = IntPtr.Zero;
+            return r;
+        }
+
         public bool Valid()
         {
             return Native.Instance.rocksdb_iter_valid(handle);

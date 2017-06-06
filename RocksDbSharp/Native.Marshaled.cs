@@ -362,6 +362,33 @@ namespace RocksDbSharp
             }
         }
 
+        public void rocksdb_writebatch_wi_put(IntPtr writeOptions, string key, string val, Encoding encoding)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key, v = val)
+                {
+                    int klength = key.Length;
+                    int vlength = val.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    int bvlength = encoding.GetByteCount(v, vlength);
+                    var buffer = Marshal.AllocHGlobal(bklength + bvlength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+                    byte* bv = bk + bklength;
+                    encoding.GetBytes(v, vlength, bv, bvlength);
+
+                    rocksdb_writebatch_wi_put(writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
         public void rocksdb_iter_seek(
             IntPtr iter,
             string key,
@@ -463,9 +490,35 @@ namespace RocksDbSharp
             return data;
         }
 
+        public byte[] rocksdb_writebatch_wi_data(IntPtr wbHandle)
+        {
+            var resultPtr = rocksdb_writebatch_wi_data(wbHandle, out ulong size);
+            var data = new byte[size];
+            Marshal.Copy(resultPtr, data, 0, (int)size);
+            // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
+            // rocksdb_free(resultPtr);
+            return data;
+        }
+
         public int rocksdb_writebatch_data(IntPtr wbHandle, byte[] buffer, int offset, int length)
         {
             var resultPtr = rocksdb_writebatch_data(wbHandle, out ulong size);
+            bool fits = (int)size <= length;
+            if (!fits)
+            {
+                // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
+                // rocksdb_free(resultPtr);
+                return -1;
+            }
+            Marshal.Copy(resultPtr, buffer, offset, (int)size);
+            // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
+            // rocksdb_free(resultPtr);
+            return (int)size;
+        }
+
+        public int rocksdb_writebatch_wi_data(IntPtr wbHandle, byte[] buffer, int offset, int length)
+        {
+            var resultPtr = rocksdb_writebatch_wi_data(wbHandle, out ulong size);
             bool fits = (int)size <= length;
             if (!fits)
             {
@@ -522,5 +575,126 @@ namespace RocksDbSharp
                 }
             }
         }
+
+        public string rocksdb_writebatch_wi_get_from_batch(
+            IntPtr wb,
+            IntPtr options,
+            string key,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            unsafe
+            {
+                fixed (char* k = key)
+                {
+                    int klength = key.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    var resultPtr = cf == null
+                        ? rocksdb_writebatch_wi_get_from_batch(wb, options, bk, (ulong)bklength, out ulong bvlength, out errptr)
+                        : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, bk, (ulong)bklength, out bvlength, out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+
+                    if (errptr != IntPtr.Zero)
+                        return null;
+                    if (resultPtr == IntPtr.Zero)
+                        return null;
+
+                    return MarshalAndFreeRocksDbString(resultPtr, (long)bvlength, encoding);
+                }
+            }
+        }
+
+        public byte[] rocksdb_writebatch_wi_get_from_batch(
+            IntPtr wb,
+            IntPtr options,
+            byte[] key,
+            ulong keyLength,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null)
+        {
+            var resultPtr = cf == null
+                ? rocksdb_writebatch_wi_get_from_batch(wb, options, key, keyLength, out ulong valueLength, out errptr)
+                : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, key, keyLength, out valueLength, out errptr);
+            if (errptr != IntPtr.Zero)
+                return null;
+            if (resultPtr == IntPtr.Zero)
+                return null;
+            var result = new byte[valueLength];
+            Marshal.Copy(resultPtr, result, 0, (int)valueLength);
+            rocksdb_free(resultPtr);
+            return result;
+        }
+
+        public string rocksdb_writebatch_wi_get_from_batch_and_db(
+            IntPtr wb,
+            IntPtr db,
+            IntPtr read_options,
+            string key,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            unsafe
+            {
+                fixed (char* k = key)
+                {
+                    int klength = key.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    var resultPtr = cf == null
+                        ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, bk, (ulong)bklength, out ulong bvlength, out errptr)
+                        : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, bk, (ulong)bklength, out bvlength, out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+
+                    if (errptr != IntPtr.Zero)
+                        return null;
+                    if (resultPtr == IntPtr.Zero)
+                        return null;
+
+                    return MarshalAndFreeRocksDbString(resultPtr, (long)bvlength, encoding);
+                }
+            }
+        }
+
+        public byte[] rocksdb_writebatch_wi_get_from_batch_and_db(
+            IntPtr wb,
+            IntPtr db,
+            IntPtr read_options,
+            byte[] key,
+            ulong keyLength,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null)
+        {
+            var resultPtr = cf == null
+                ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, key, keyLength, out ulong valueLength, out errptr)
+                : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, key, keyLength, out valueLength, out errptr);
+            if (errptr != IntPtr.Zero)
+                return null;
+            if (resultPtr == IntPtr.Zero)
+                return null;
+            var result = new byte[valueLength];
+            Marshal.Copy(resultPtr, result, 0, (int)valueLength);
+            rocksdb_free(resultPtr);
+            return result;
+        }
+
     }
 }

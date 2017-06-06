@@ -3,7 +3,39 @@ using System.Text;
 
 namespace RocksDbSharp
 {
-    public class WriteBatch : IDisposable
+    public interface IWriteBatch : IDisposable
+    {
+        IntPtr Handle { get; }
+        IWriteBatch Clear();
+        int Count();
+        IWriteBatch Put(string key, string val, Encoding encoding = null);
+        IWriteBatch Put(byte[] key, byte[] val, ColumnFamilyHandle cf = null);
+        IWriteBatch Put(byte[] key, ulong klen, byte[] val, ulong vlen, ColumnFamilyHandle cf = null);
+        unsafe void Put(byte* key, ulong klen, byte* val, ulong vlen, ColumnFamilyHandle cf = null);
+        IWriteBatch Putv(int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes);
+        IWriteBatch PutvCf(IntPtr columnFamily, int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes);
+        IWriteBatch Merge(byte[] key, ulong klen, byte[] val, ulong vlen, ColumnFamilyHandle cf = null);
+        unsafe void Merge(byte* key, ulong klen, byte* val, ulong vlen, ColumnFamilyHandle cf = null);
+        IWriteBatch MergeCf(IntPtr columnFamily, byte[] key, ulong klen, byte[] val, ulong vlen);
+        unsafe void MergeCf(IntPtr columnFamily, byte* key, ulong klen, byte* val, ulong vlen);
+        IWriteBatch Mergev(int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes);
+        IWriteBatch MergevCf(IntPtr columnFamily, int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes);
+        IWriteBatch Delete(byte[] key, ColumnFamilyHandle cf = null);
+        IWriteBatch Delete(byte[] key, ulong klen, ColumnFamilyHandle cf = null);
+        unsafe void Delete(byte* key, ulong klen, ColumnFamilyHandle cf = null);
+        unsafe void Deletev(int numKeys, IntPtr keysList, IntPtr keysListSizes, ColumnFamilyHandle cf = null);
+        IWriteBatch DeleteRange(byte[] startKey, ulong sklen, byte[] endKey, ulong eklen, ColumnFamilyHandle cf = null);
+        unsafe void DeleteRange(byte* startKey, ulong sklen, byte* endKey, ulong eklen, ColumnFamilyHandle cf = null);
+        unsafe void DeleteRangev(int numKeys, IntPtr startKeysList, IntPtr startKeysListSizes, IntPtr endKeysList, IntPtr endKeysListSizes, ColumnFamilyHandle cf = null);
+        IWriteBatch PutLogData(byte[] blob, ulong len);
+        IWriteBatch Iterate(IntPtr state, WriteBatchIteratePutCallback put, WriteBatchIterateDeleteCallback deleted);
+        byte[] ToBytes();
+        byte[] ToBytes(byte[] buffer, int offset = 0, int size = -1);
+        void SetSavePoint();
+        void RollbackToSavePoint();
+    }
+
+    public class WriteBatch : IWriteBatch, IDisposable
     {
         private IntPtr handle;
         private Encoding defaultEncoding = Encoding.UTF8;
@@ -230,5 +262,36 @@ namespace RocksDbSharp
         {
             Native.Instance.rocksdb_writebatch_rollback_to_save_point(handle);
         }
+
+        IWriteBatch IWriteBatch.Clear()
+            => Clear();
+        IWriteBatch IWriteBatch.Put(string key, string val, Encoding encoding)
+            => Put(key, val, encoding);
+        IWriteBatch IWriteBatch.Put(byte[] key, byte[] val, ColumnFamilyHandle cf)
+            => Put(key, val, cf);
+        IWriteBatch IWriteBatch.Put(byte[] key, ulong klen, byte[] val, ulong vlen, ColumnFamilyHandle cf)
+            => Put(key, klen, val, vlen, cf);
+        IWriteBatch IWriteBatch.Putv(int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes)
+            => Putv(numKeys, keysList, keysListSizes, numValues, valuesList, valuesListSizes);
+        IWriteBatch IWriteBatch.PutvCf(IntPtr columnFamily, int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes)
+            => PutvCf(columnFamily, numKeys, keysList, keysListSizes, numValues, valuesList, valuesListSizes);
+        IWriteBatch IWriteBatch.Merge(byte[] key, ulong klen, byte[] val, ulong vlen, ColumnFamilyHandle cf)
+            => Merge(key, klen, val, vlen, cf);
+        IWriteBatch IWriteBatch.MergeCf(IntPtr columnFamily, byte[] key, ulong klen, byte[] val, ulong vlen)
+            => MergeCf(columnFamily, key, klen, val, vlen);
+        IWriteBatch IWriteBatch.Mergev(int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes)
+            => Mergev(numKeys, keysList, keysListSizes, numValues, valuesList, valuesListSizes);
+        IWriteBatch IWriteBatch.MergevCf(IntPtr columnFamily, int numKeys, IntPtr keysList, IntPtr keysListSizes, int numValues, IntPtr valuesList, IntPtr valuesListSizes)
+            => MergevCf(columnFamily, numKeys, keysList, keysListSizes, numValues, valuesList, valuesListSizes);
+        IWriteBatch IWriteBatch.Delete(byte[] key, ColumnFamilyHandle cf)
+            => Delete(key, cf);
+        IWriteBatch IWriteBatch.Delete(byte[] key, ulong klen, ColumnFamilyHandle cf)
+            => Delete(key, klen, cf);
+        IWriteBatch IWriteBatch.DeleteRange(byte[] startKey, ulong sklen, byte[] endKey, ulong eklen, ColumnFamilyHandle cf)
+            => DeleteRange(startKey, sklen, endKey, eklen, cf);
+        IWriteBatch IWriteBatch.PutLogData(byte[] blob, ulong len)
+            => PutLogData(blob, len);
+        IWriteBatch IWriteBatch.Iterate(IntPtr state, WriteBatchIteratePutCallback put, WriteBatchIterateDeleteCallback deleted)
+            => Iterate(state, put, deleted);
     }
 }
