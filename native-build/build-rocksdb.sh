@@ -112,7 +112,7 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 
 		mkdir -p build
 		(cd build && {
-			cmake -G "Visual Studio 14 2015 Win64" -DOPTDBG=1 -DGFLAGS=0 -DSNAPPY=1 -DPORTABLE=1 -DAVX2=0 .. || fail "Running cmake failed"
+			cmake -G "Visual Studio 14 2015 Win64" -DOPTDBG=1 -DGFLAGS=0 -DSNAPPY=1 -DPORTABLE=1 -DWITH_AVX2=0 .. || fail "Running cmake failed"
 			update_vcxproj || warn "failed to patch vcxproj files for static vc runtime"
 		}) || fail "cmake build generation failed"
 
