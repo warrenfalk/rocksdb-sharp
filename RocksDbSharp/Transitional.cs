@@ -82,6 +82,14 @@ namespace Transitional
 #else
             => Marshal.GetFunctionPointerForDelegate((Delegate)(object)func);
 #endif
+
+        public static string GetBaseDirectory()
+#if NETSTANDARD1_6
+            => AppContext.BaseDirectory;
+#else
+            => AppDomain.CurrentDomain.BaseDirectory;
+#endif
+
     }
 
     internal static class TransitionalExtensions
@@ -89,6 +97,14 @@ namespace Transitional
 #if NET40 || NETSTANDARD1_6
         public static long GetLongLength<T>(this T[] array, int dimension) => array.GetLength(dimension);
 #endif
+
+        public static T CreateDelegate<T>(this MethodInfo methodInfo)
+#if NET40
+            => (T)(object)Delegate.CreateDelegate(typeof(T), methodInfo);
+#else
+            => (T)(object)methodInfo.CreateDelegate(typeof(T));
+#endif
+
 
 #if NET40
         public static TypeInfo CreateTypeInfo(this TypeBuilder builder)

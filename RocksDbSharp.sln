@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.3
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleExampleLowLevel", "examples\SimpleExampleLowLevel\SimpleExampleLowLevel.csproj", "{904017BB-5660-418B-B132-46EA6DF54788}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RocksDbSharpTest", "tests\RocksDbSharpTest\RocksDbSharpTest.csproj", "{044901FD-A7BA-48A9-A5BE-8CB40A13CE02}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RocksDbSharp", "RocksDbSharp\RocksDbSharp.csproj", "{53056B3C-FAC0-41ED-9C5B-8BA41DF85F61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RocksDbNative", "RocksDbNative\RocksDbNative.csproj", "{5DE4B734-CD28-435A-A552-257FDCCDE50A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{53056B3C-FAC0-41ED-9C5B-8BA41DF85F61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53056B3C-FAC0-41ED-9C5B-8BA41DF85F61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53056B3C-FAC0-41ED-9C5B-8BA41DF85F61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DE4B734-CD28-435A-A552-257FDCCDE50A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DE4B734-CD28-435A-A552-257FDCCDE50A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DE4B734-CD28-435A-A552-257FDCCDE50A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DE4B734-CD28-435A-A552-257FDCCDE50A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

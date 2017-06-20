@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>RocksDbNative</Title>
+    <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
+    <Version>5.4.6.7</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <Description>Native RocksDb Binaries (Install RocksDbSharp package for managed wraper)</Description>
+    <Authors>Warren Falk</Authors>
+    <Company>Warren Falk</Company>
+    <Product>Warren Falk</Product>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/warrenfalk/rocksdb-sharp/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/warrenfalk/rocksdb-sharp</PackageProjectUrl>
+    <PackageIconUrl>http://rocksdb.org/static/logo.svg</PackageIconUrl>
+    <RepositoryUrl>https://github.com/warrenfalk/rocksdb-sharp.git</RepositoryUrl>
+    <PackageTags>rocksdb leveldb embedded database</PackageTags>
+    <Copyright>Copyright 2016</Copyright>
+    <PackageReleaseNotes>Native RocksDb Binaries (Install RocksDbSharp package for managed wraper)</PackageReleaseNotes>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="native\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>build\native\</PackagePath>
+    </None>
+    <None Remove="pack\**" />
+    <None Include="pack\RocksDbNative.targets">
+      <Pack>true</Pack>
+      <PackagePath>build\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <Target Name="BeforeBuild">
+    <Error Text="The RocksDbSharp native binaries could not be found.  Run the download script (download-native.cmd or download-native.sh in the RocksDbSharp project folder)" Condition="!Exists('native\amd64\rocksdb.dll')" />
+  </Target>
+</Project>

@@ -1,6 +1,6 @@
 Make sure version number is propagated everywhere
-Check .nuspec files and edit any release info
-Run build-andpack.cmd
+Check .csproj files and edit any release info
+Run build-and-pack.cmd
 
 Verify that both packs worked, if possible, by copying them to the local nuget source and then installing them in a test project
 Go to nuget and upload through the interface

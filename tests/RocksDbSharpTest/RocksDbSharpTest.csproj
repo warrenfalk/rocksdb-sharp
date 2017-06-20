@@ -12,6 +12,7 @@
     <PackageReference Include="xunit.runner.console" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\RocksDbNative\RocksDbNative.csproj" />
     <ProjectReference Include="..\..\RocksDbSharp\RocksDbSharp.csproj" />
   </ItemGroup>
 

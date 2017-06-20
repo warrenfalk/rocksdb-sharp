@@ -360,7 +360,24 @@ namespace NativeImport
                 "",
             };
 
+            // If the RocksDbNative package is referenced, then dynamically load it here so that it can tell us where the native libraries are
+            string nativeCodeBase = null;
+            try
+            {
+                var nativeLibName = new AssemblyName("RocksDbNative");
+                var native = Assembly.Load(nativeLibName);
+                var nativePkgClass = native.GetTypes().First(t => t.FullName == "RocksDbSharp.NativePackage");
+                var getCodeBaseMethod = nativePkgClass.GetMethod("GetCodeBase");
+                var getCodeBase = getCodeBaseMethod.CreateDelegate<Func<string>>();
+                nativeCodeBase = getCodeBase();
+            }
+            catch (Exception)
+            {
+            }
+
             var basePaths = new string[] {
+                nativeCodeBase,
+                Path.GetDirectoryName(UriToPath(Transitional.CurrentFramework.GetBaseDirectory())),
                 Path.GetDirectoryName(UriToPath(Assembly.GetEntryAssembly()?.CodeBase)),
                 Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location),
                 Path.GetDirectoryName(UriToPath(typeof(PosixImporter).GetTypeInfo().Assembly.CodeBase)),
@@ -401,7 +418,7 @@ namespace NativeImport
                 return t;
             }
 
-            throw new NativeLoadException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:" + string.Join("\n", search.Select(s => $"{s.Path}: ({s.Error.GetType().Name}) {s.Error.Message}")), null);
+            throw new NativeLoadException("Unable to locate rocksdb native library, either install it, or use RocksDbNative nuget package\nSearched:\n" + string.Join("\n", search.Select(s => $"{s.Path}: ({s.Error.GetType().Name}) {s.Error.Message}")), null);
         }
 
         private static string UriToPath(string uriString)

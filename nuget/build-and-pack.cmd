@@ -9,21 +9,30 @@ popd
 
 cd ..
 
-echo "Downloading native..."
-call download-native.cmd
+REM echo "Downloading native..."
+REM call download-native.cmd
 
 nuget restore
-@if %errorlevel% neq 0 exit /b %errorlevel%
+@if %errorlevel% neq 0 goto oops
 
-msbuild /p:Configuration=Release RocksDbSharp\RocksDbSharp.csproj
-@if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild /p:Configuration=Release /t:Rebuild,Pack RocksDbNative\RocksDbNative.csproj
+@if %errorlevel% neq 0 goto oops
 
-cd nuget
+msbuild /p:Configuration=Release /t:Rebuild,Pack RocksDbSharp\RocksDbSharp.csproj
+@if %errorlevel% neq 0 goto oops
 
-nuget pack RocksDbSharp.nuspec
-@if %errorlevel% neq 0 exit /b %errorlevel%
+move /y RocksDbSharp\bin\Release\*.nupkg .\nuget\
+@if %errorlevel% neq 0 goto oops
 
-nuget pack RocksDbNative.nuspec
-@if %errorlevel% neq 0 exit /b %errorlevel%
+move /y RocksDbNative\bin\Release\*.nupkg .\nuget\
+@if %errorlevel% neq 0 goto oops
 
+:good
 popd
+exit /b 0
+
+:oops
+set rval=%errorlevel%
+echo "ERROR"
+popd
+exit /b %rval%

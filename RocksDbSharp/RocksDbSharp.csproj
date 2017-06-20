@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Title>RocksDbSharp</Title>
     <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <Version>5.4.6.0</Version>
+    <Version>5.4.6.7</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
     <Description>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)</Description>
-    <AssemblyVersion>5.4.6.0</AssemblyVersion>
-    <FileVersion>5.4.6.0</FileVersion>
     <Authors>Warren Falk</Authors>
     <Company>Warren Falk</Company>
     <Product>Warren Falk</Product>
@@ -31,6 +32,10 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.1.2" />
+  </ItemGroup>
+  
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
@@ -43,29 +48,4 @@
     <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\native\amd64\rocksdb.dll">
-      <Link>native\amd64\rocksdb.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\native\amd64\librocksdb.so">
-      <Link>native\amd64\librocksdb.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\native\amd64\librocksdb.dylib">
-      <Link>native\amd64\librocksdb.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\native\i386\librocksdb.so">
-      <Link>native\i386\librocksdb.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\native\i386\librocksdb.dylib">
-      <Link>native\i386\librocksdb.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <Target Name="BeforeBuild">
-    <Error Text="The RocksDbSharp native binaries could not be found.  Run the download script (download-native.cmd or download-native.sh in the RocksDbSharp project folder)" Condition="!Exists('..\native\amd64\rocksdb.dll')" />
-  </Target>
 </Project>
