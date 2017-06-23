@@ -1141,7 +1141,7 @@ public abstract void rocksdb_readoptions_set_snapshot(
 public unsafe abstract void rocksdb_readoptions_set_iterate_upper_bound(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*const*/ byte* key, ulong keylen);
 public abstract void rocksdb_readoptions_set_iterate_upper_bound(
-    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*const*/ byte[] key, ulong keylen);
+    /*(rocksdb_readoptions_t*)*/ IntPtr read_options, /*const*/ IntPtr key, ulong keylen);
 public abstract void rocksdb_readoptions_set_read_tier(
     /*(rocksdb_readoptions_t*)*/ IntPtr read_options, int value);
 public abstract void rocksdb_readoptions_set_tailing(

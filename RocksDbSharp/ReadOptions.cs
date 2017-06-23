@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Transitional;
@@ -9,9 +10,7 @@ namespace RocksDbSharp
 {
     public class ReadOptions
     {
-        #pragma warning disable CS0414
-        private byte[] iterateUpperBound;
-        #pragma warning restore CS0414
+        private IntPtr iterateUpperBound;
 
         public ReadOptions()
         {
@@ -26,6 +25,8 @@ namespace RocksDbSharp
             {
 #if !NODESTROY
                 Native.Instance.rocksdb_readoptions_destroy(Handle);
+                if (iterateUpperBound != IntPtr.Zero)
+                    Marshal.FreeHGlobal(iterateUpperBound);
 #endif
                 Handle = IntPtr.Zero;
             }
@@ -57,14 +58,16 @@ namespace RocksDbSharp
 
         public ReadOptions SetIterateUpperBound(byte[] key, ulong keyLen)
         {
-            iterateUpperBound = key; // necessary because the value will not be copied and so may be gone by the time it is needed
-            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, key, keyLen);
+            if (iterateUpperBound != IntPtr.Zero)
+                Marshal.FreeHGlobal(iterateUpperBound);
+            iterateUpperBound = Marshal.AllocHGlobal(key.Length);
+            Marshal.Copy(key, 0, iterateUpperBound, key.Length);
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, iterateUpperBound, keyLen);
             return this;
         }
 
         public ReadOptions SetIterateUpperBound(byte[] key)
         {
-            iterateUpperBound = key; // necessary because the value will not be copied and so may be gone by the time it is needed
             return SetIterateUpperBound(key, (ulong)key.GetLongLength(0));
         }
 
