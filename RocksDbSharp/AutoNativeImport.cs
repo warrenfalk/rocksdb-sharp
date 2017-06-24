@@ -176,12 +176,6 @@ namespace NativeImport
             {
                 dlerror();
                 IntPtr address = dlsym(lib, entryPoint);
-                if (address == IntPtr.Zero)
-                {
-                    var errPtr = dlerror();
-                    if (errPtr != IntPtr.Zero)
-                        throw new NativeLoadException("dlsym: " + Marshal.PtrToStringAnsi(errPtr), null);
-                }
                 return address;
             }
 
