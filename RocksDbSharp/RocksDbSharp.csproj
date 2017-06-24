@@ -31,10 +31,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.1.2" />
-  </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
     <Reference Include="Microsoft.CSharp" />

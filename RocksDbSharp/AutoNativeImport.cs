@@ -361,7 +361,7 @@ namespace NativeImport
                 var nativeLibName = new AssemblyName("RocksDbNative");
                 var native = Assembly.Load(nativeLibName);
                 var nativePkgClass = native.GetTypes().First(t => t.FullName == "RocksDbSharp.NativePackage");
-                var getCodeBaseMethod = nativePkgClass.GetMethod("GetCodeBase");
+                var getCodeBaseMethod = nativePkgClass.GetTypeInfo().GetMethod("GetCodeBase");
                 var getCodeBase = getCodeBaseMethod.CreateDelegate<Func<string>>();
                 nativeCodeBase = getCodeBase();
             }
