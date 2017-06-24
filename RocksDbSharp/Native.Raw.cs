@@ -333,10 +333,19 @@ public unsafe abstract void rocksdb_compact_range(/*rocksdb_t**/ IntPtr db,
               ulong start_key_len,
             /*(const char*)*/ byte* limit_key,
               ulong limit_key_len);
+public unsafe abstract void rocksdb_compact_range(/*rocksdb_t**/ IntPtr db,
+            /*(const char*)*/ byte[] start_key,
+              ulong start_key_len,
+            /*(const char*)*/ byte[] limit_key,
+              ulong limit_key_len);
 
 public unsafe abstract void rocksdb_compact_range_cf(
     /*rocksdb_t**/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
     /*(const char*)*/ byte* start_key, ulong start_key_len, /*(const char*)*/ byte* limit_key,
+    ulong limit_key_len);
+public unsafe abstract void rocksdb_compact_range_cf(
+    /*rocksdb_t**/ IntPtr db, /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family,
+    /*(const char*)*/ byte[] start_key, ulong start_key_len, /*(const char*)*/ byte[] limit_key,
     ulong limit_key_len);
 
 public unsafe abstract void rocksdb_compact_range_opt(

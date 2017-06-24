@@ -296,6 +296,14 @@ namespace RocksDbSharpTest
                     Assert.Equal("un", oneDbOut);
                 }
             }
+
+            // compact range
+            {
+                using (var db = RocksDb.Open(options, path, columnFamilies))
+                {
+                    db.CompactRange("o", "tw");
+                }
+            }
         }
 
         class IntegerStringComparator : StringComparatorBase
