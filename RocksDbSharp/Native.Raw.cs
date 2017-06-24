@@ -526,8 +526,10 @@ public abstract void rocksdb_writebatch_rollback_to_save_point(
 public abstract /*(rocksdb_writebatch_wi_t*)*/ IntPtr rocksdb_writebatch_wi_create(
                                                        /*(size_t)*/ ulong reserved_bytes,
                                                        /*(unsigned char)*/ bool overwrite_keys);
+#if false // not actually implemented
 public abstract /*(rocksdb_writebatch_wi_t*)*/ IntPtr rocksdb_writebatch_wi_create_from(
     /*(const char*)*/ byte[] rep, /*(size_t)*/ ulong size);
+#endif
 public abstract void rocksdb_writebatch_wi_destroy(
     /*(rocksdb_writebatch_wi_t*)*/ IntPtr b);
 public abstract void rocksdb_writebatch_wi_clear(/*(rocksdb_writebatch_wi_t*)*/ IntPtr b);

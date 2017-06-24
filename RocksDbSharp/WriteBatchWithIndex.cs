@@ -16,11 +16,6 @@ namespace RocksDbSharp
         {
         }
 
-        public WriteBatchWithIndex(byte[] rep, long size = -1)
-            : this(Native.Instance.rocksdb_writebatch_wi_create_from(rep, (ulong)(size < 0 ? rep.Length : size)))
-        {
-        }
-
         private WriteBatchWithIndex(IntPtr handle)
         {
             this.handle = handle;
