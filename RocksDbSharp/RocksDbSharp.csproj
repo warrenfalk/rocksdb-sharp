@@ -4,7 +4,7 @@
     <Title>RocksDbSharp</Title>
     <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <Version>5.4.6.7</Version>
+    <Version>5.4.6.9</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Description>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)</Description>
