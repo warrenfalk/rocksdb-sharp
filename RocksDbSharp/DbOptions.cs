@@ -588,5 +588,15 @@ namespace RocksDbSharp
             return this;
         }
 
+        /// <summary>
+        /// Sets Merge Operator for the database.
+        /// </summary>
+        public DbOptions SetMergeOperator(IMergeOperator mergeOperator)
+        {
+            if (mergeOperator == null)
+                throw new ArgumentNullException(nameof(mergeOperator));
+            Native.Instance.rocksdb_options_set_merge_operator(Handle, mergeOperator.Handle);
+            return this;
+        }
     }
 }

@@ -82,6 +82,43 @@ namespace RocksDbSharp
             }
         }
 
+        public void rocksdb_merge(
+            /*rocksdb_t**/ IntPtr db,
+            /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+            string key,
+            string val,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key, v = val)
+                {
+                    int klength = key.Length;
+                    int vlength = val.Length;
+                    int bklength = encoding.GetByteCount(k, klength);
+                    int bvlength = encoding.GetByteCount(v, vlength);
+                    var buffer = Marshal.AllocHGlobal(bklength + bvlength);
+                    byte* bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+                    byte* bv = bk + bklength;
+                    encoding.GetBytes(v, vlength, bv, bvlength);
+
+                    if (cf == null)
+                        rocksdb_merge(db, writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+                    else
+                        rocksdb_merge_cf(db, writeOptions, cf.Handle, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
         public string rocksdb_get(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_readoptions_t**/ IntPtr read_options,
