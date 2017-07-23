@@ -104,6 +104,36 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_merge(
+            /*rocksdb_t**/ IntPtr db,
+            /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+            string key,
+            string val,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            rocksdb_merge(db, writeOptions, key, val, out IntPtr errptr, cf, encoding);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_merge(
+            IntPtr db,
+            IntPtr writeOptions,
+            byte[] key,
+            long keyLength,
+            byte[] value,
+            long valueLength,
+            ColumnFamilyHandle cf)
+        {
+            IntPtr errptr;
+            if (cf == null)
+                rocksdb_merge(db, writeOptions, key, keyLength, value, valueLength, out errptr);
+            else
+                rocksdb_merge_cf(db, writeOptions, cf.Handle, key, keyLength, value, valueLength, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
 
         public string rocksdb_get(
             /*rocksdb_t**/ IntPtr db,

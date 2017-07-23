@@ -23,11 +23,24 @@ namespace RocksDbSharpTest
 
             var options = new DbOptions()
                 .SetCreateIfMissing(true)
-                .EnableStatistics();
+                .EnableStatistics()
+                .SetMergeOperator(new TestConcatMergeOperator());
 
             // Using standard open
             using (var db = RocksDb.Open(options, path))
             {
+                db.Put("mergable", "a");
+                db.Merge("mergable", "b");
+                db.Merge("mergable", "c");
+                Assert.Equal("abc", db.Get("mergable"));
+                db.Remove("mergable");
+
+                db.Merge("mergable2", "a");
+                db.Merge("mergable2", "b");
+                db.Merge("mergable2", "c");
+                Assert.Equal("abc", db.Get("mergable2"));
+                db.Remove("mergable2");
+
                 // With strings
                 string value = db.Get("key");
                 db.Put("key", "value");

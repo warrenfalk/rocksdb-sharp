@@ -43,6 +43,20 @@ namespace RocksDbSharp
 public delegate void WriteBatchIteratePutCallback(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ ulong vlen);
 //void (*deleted)(void*, const char* k, /*(size_t)*/ ulong klen)
 public delegate void WriteBatchIterateDeleteCallback(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen);
+public delegate void MergeOperatorDestructorCallback(IntPtr s);
+//char* (*full_merge)(void*, /*const*/ byte* key, size_t key_length, const char* existing_value, size_t existing_value_length, const char* const* operands_list, const size_t* operands_list_length, int num_operands, unsigned char* success, size_t* new_value_length),
+public unsafe delegate /*char* */ byte* MergeOperatorFullMergeCallback(IntPtr s, /*const byte* */ byte* key, /*(size_t)*/UIntPtr key_length,
+/*const char* */ byte* existing_value, /* size_t existing_value_length */UIntPtr existing_value_length,
+/*const char* const* */ byte** operands_list, /*const size_t**/UIntPtr* operands_length_list, int num_operands,
+/*unsigned char* */ [MarshalAs(UnmanagedType.U1), Out]out bool success, /*size_t* */out UIntPtr new_value_length);
+//char* (*partial_merge)(void*, /*const*/ byte* key, size_t key_length, const char* const* operands_list, const size_t* operands_list_length, int num_operands, unsigned char* success, size_t* new_value_length),
+public unsafe delegate /*char* */ byte* MergeOperatorPartialMergeCallback(IntPtr s, /*const byte* */ byte* key, /*(size_t)*/UIntPtr key_length,
+/*const char* const* */ byte** operands_list, /*const size_t**/UIntPtr* operands_length_list, int num_operands, /*unsigned char* */[MarshalAs(UnmanagedType.U1), Out]out bool success/* IntPtr success*/, /*size_t* */out UIntPtr new_value_length);
+//void (*delete_value)(void*, /*const*/ byte* value, size_t value_length),
+public delegate void MergeOperatorDeleteValueCallback(IntPtr s, /*const byte* */ IntPtr key, /*(size_t)*/UIntPtr key_length);
+//const char* (*name)(void*));
+public delegate /*const char* */ IntPtr MergeOperatorNameCallback(IntPtr s);
+
 public abstract partial class Native
 {
 /* BEGIN c.h */
@@ -219,10 +233,19 @@ public unsafe abstract void rocksdb_merge(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte* key,
     ulong keylen, /*const*/ byte* val, ulong vallen, out IntPtr errptr);
 
+public abstract void rocksdb_merge(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions, /*const*/ byte[] key,
+    long keylen, /*const*/ byte[] val, long vallen, out IntPtr errptr);
+
 public unsafe abstract void rocksdb_merge_cf(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
     /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte* key,
     ulong keylen, /*const*/ byte* val, ulong vallen, out IntPtr errptr);
+
+public abstract void rocksdb_merge_cf(
+    /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+    /*(rocksdb_column_family_handle_t*)*/ IntPtr column_family, /*const*/ byte[] key,
+    long keylen, /*const*/ byte[] val, long vallen, out IntPtr errptr);
 
 public abstract void rocksdb_write(
     /*rocksdb_t**/ IntPtr db, /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
@@ -1116,26 +1139,12 @@ public abstract /* rocksdb_filterpolicy_t* */ IntPtr rocksdb_filterpolicy_create
 #endregion
 
 #region Merge Operator
-#if ROCKSDB_MERGE_OPERATOR
 
 public abstract /* rocksdb_mergeoperator_t* */ IntPtr rocksdb_mergeoperator_create(
-    void* state, void (*destructor)(void*),
-    char* (*full_merge)(void*, /*const*/ byte* key, size_t key_length,
-                        const char* existing_value,
-                        size_t existing_value_length,
-                        const char* const* operands_list,
-                        const size_t* operands_list_length, int num_operands,
-                        unsigned char* success, size_t* new_value_length),
-    char* (*partial_merge)(void*, /*const*/ byte* key, size_t key_length,
-                           const char* const* operands_list,
-                           const size_t* operands_list_length, int num_operands,
-                           unsigned char* success, size_t* new_value_length),
-    void (*delete_value)(void*, /*const*/ byte* value, size_t value_length),
-    const char* (*name)(void*));
+    IntPtr state, MergeOperatorDestructorCallback destructor, MergeOperatorFullMergeCallback full_merge, MergeOperatorPartialMergeCallback partial_merge, MergeOperatorDeleteValueCallback delete_value, MergeOperatorNameCallback name);
 public abstract void rocksdb_mergeoperator_destroy(
-    rocksdb_mergeoperator_t*);
+    /*rocksdb_mergeoperator_t*)*/IntPtr mergeoperator);
 
-#endif
 #endregion
 
 #region Read options

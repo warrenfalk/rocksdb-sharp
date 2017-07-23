@@ -170,6 +170,21 @@ namespace RocksDbSharp
             Native.Instance.rocksdb_put(Handle, (writeOptions ?? DefaultWriteOptions).Handle, key, keyLength, value, valueLength, cf);
         }
 
+        public void Merge(string key, string value, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null, Encoding encoding = null)
+        {
+            Native.Instance.rocksdb_merge(Handle, (writeOptions ?? DefaultWriteOptions).Handle, key, value, cf, encoding ?? DefaultEncoding);
+        }
+
+        public void Merge(byte[] key, byte[] value, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
+        {
+            Merge(key, key.GetLongLength(0), value, value.GetLongLength(0), cf, writeOptions);
+        }
+
+        public void Merge(byte[] key, long keyLength, byte[] value, long valueLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
+        {
+            Native.Instance.rocksdb_merge(Handle, (writeOptions ?? DefaultWriteOptions).Handle, key, keyLength, value, valueLength, cf);
+        }
+
         public Iterator NewIterator(ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
             IntPtr iteratorHandle = cf == null
