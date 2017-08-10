@@ -840,6 +840,8 @@ public abstract void rocksdb_options_set_compression_options(
     /* rocksdb_options_t* */ IntPtr options, int p1, int p2, int p3, int p4);
 public abstract void rocksdb_options_set_prefix_extractor(
             /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_slicetransform_t*)*/ IntPtr slice_transform);
+public abstract void rocksdb_options_set_skip_stats_update_on_db_open(
+    /*rocksdb_options_t* */IntPtr options, bool value);
 public abstract void rocksdb_options_set_num_levels(
     /* rocksdb_options_t* */ IntPtr options, int value);
 public abstract void rocksdb_options_set_level0_file_num_compaction_trigger(/* rocksdb_options_t* */ IntPtr options, int value);

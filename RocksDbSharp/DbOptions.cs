@@ -150,6 +150,16 @@ namespace RocksDbSharp
             Native.Instance.rocksdb_options_enable_statistics(Handle);
             return this;
         }
+        /// <summary>
+        /// Skips Status Update on DBOpen, useful for increasing DB Open time on slower disks
+        /// default: false
+        /// </summary>
+        /// <returns></returns>
+        public DbOptions SkipStatsUpdateOnOpen(bool val = false)
+        {
+            Native.Instance.rocksdb_options_set_skip_stats_update_on_db_open(Handle, val);
+            return this;
+        }
 
         /// <summary>
         /// Constructs and returns a string containing statistics if statistics have been enabled
