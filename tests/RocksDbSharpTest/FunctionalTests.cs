@@ -166,6 +166,25 @@ namespace RocksDbSharpTest
                 db.Put("tres", "three", cf: reverse);
             }
 
+            // Test Cf Delete
+            using (var db = RocksDb.Open(optionsCf, path, columnFamilies))
+            {
+                var reverse = db.GetColumnFamily("reverse");
+
+                db.Put("cuatro", "four", cf: reverse);
+                db.Put("cinco", "five", cf: reverse);
+
+                Assert.Equal("four", db.Get("cuatro", cf: reverse));
+                Assert.Equal("five", db.Get("cinco", cf: reverse));
+
+                byte[] keyBytes = Encoding.UTF8.GetBytes("cuatro");
+                db.Remove(keyBytes, reverse);
+                db.Remove("cinco", reverse);
+
+                Assert.Null(db.Get("cuatro", cf: reverse));
+                Assert.Null(db.Get("cinco", cf: reverse));
+            }
+
             // Test list
             {
                 var list = RocksDb.ListColumnFamilies(optionsCf, path);
