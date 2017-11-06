@@ -33,14 +33,14 @@ namespace RocksDbSharp
             string name
             )
         {
-            var result = rocksdb_list_column_families(options, name, out ulong lencf, out IntPtr errptr);
+            var result = rocksdb_list_column_families(options, name, out UIntPtr lencf, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
-            IntPtr[] ptrs = new IntPtr[lencf];
+            IntPtr[] ptrs = new IntPtr[(ulong)lencf];
             Marshal.Copy(result, ptrs, 0, (int)lencf);
             rocksdb_list_column_families_destroy(result, lencf);
-            string[] strings = new string[lencf];
-            for (ulong i = 0; i < lencf; i++)
+            string[] strings = new string[(ulong)lencf];
+            for (ulong i = 0; i < (ulong)lencf; i++)
                 strings[i] = Marshal.PtrToStringAnsi(ptrs[i]);
             return strings;
         }
@@ -71,9 +71,9 @@ namespace RocksDbSharp
                     encoding.GetBytes(v, vlength, bv, bvlength);
 
                     if (cf == null)
-                        rocksdb_put(db, writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+                        rocksdb_put(db, writeOptions, bk, new UIntPtr((uint)bklength), bv, new UIntPtr((uint)bvlength), out errptr);
                     else
-                        rocksdb_put_cf(db, writeOptions, cf.Handle, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+                        rocksdb_put_cf(db, writeOptions, cf.Handle, bk, new UIntPtr((uint)bklength), bv, new UIntPtr((uint)bvlength), out errptr);
 #if DEBUG
                     Zero(bk, bklength);
 #endif
@@ -103,8 +103,8 @@ namespace RocksDbSharp
                     encoding.GetBytes(k, klength, bk, bklength);
 
                     var resultPtr = cf == null
-                        ? rocksdb_get(db, read_options, bk, bklength, out long bvlength, out errptr)
-                        : rocksdb_get_cf(db, read_options, cf.Handle, bk, bklength, out bvlength, out errptr);
+                        ? rocksdb_get(db, read_options, bk, new UIntPtr((uint)bklength), out UIntPtr bvlength, out errptr)
+                        : rocksdb_get_cf(db, read_options, cf.Handle, bk, new UIntPtr((uint)bklength), out bvlength, out errptr);
 #if DEBUG
                     Zero(bk, bklength);
 #endif
@@ -115,7 +115,7 @@ namespace RocksDbSharp
                     if (resultPtr == IntPtr.Zero)
                         return null;
 
-                    return MarshalAndFreeRocksDbString(resultPtr, bvlength, encoding);
+                    return MarshalAndFreeRocksDbString(resultPtr, (long)bvlength, encoding);
                 }
             }
         }
@@ -140,13 +140,13 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf = null)
         {
             var resultPtr = cf == null
-                ? rocksdb_get(db, read_options, key, keyLength, out long valueLength, out errptr)
-                : rocksdb_get_cf(db, read_options, cf.Handle, key, keyLength, out valueLength, out errptr);
+                ? rocksdb_get(db, read_options, key, new UIntPtr((ulong)keyLength), out UIntPtr valueLength, out errptr)
+                : rocksdb_get_cf(db, read_options, cf.Handle, key, new UIntPtr((ulong)keyLength), out valueLength, out errptr);
             if (errptr != IntPtr.Zero)
                 return null;
             if (resultPtr == IntPtr.Zero)
                 return null;
-            var result = new byte[valueLength];
+            var result = new byte[(ulong)valueLength];
             Marshal.Copy(resultPtr, result, 0, (int)valueLength);
             rocksdb_free(resultPtr);
             return result;
@@ -174,11 +174,12 @@ namespace RocksDbSharp
             KeyValuePair<byte[], byte[]>[] values = null,
             ColumnFamilyHandle[] cf = null)
         {
-            int count = numKeys == 0 ? keys.Length : (int)numKeys;
+            uint count = numKeys == 0 ? (uint)keys.Length : (uint)numKeys;
             GCHandle[] pinned = new GCHandle[count];
             IntPtr[] keyPtrs = new IntPtr[count];
             IntPtr[] valuePtrs = new IntPtr[count];
-            ulong[] valueLengths = new ulong[count];
+            UIntPtr[] valueLengths = new UIntPtr[count];
+            UIntPtr[] keyLengthsConverted = new UIntPtr[count];
 
             if (values == null)
                 values = new KeyValuePair<byte[], byte[]>[count];
@@ -186,9 +187,13 @@ namespace RocksDbSharp
                 errptrs = new IntPtr[count];
             if (keyLengths == null)
             {
-                keyLengths = new ulong[count];
                 for (int i = 0; i < count; i++)
-                    keyLengths[i] = (ulong)keys[i].Length;
+                    keyLengthsConverted[i] = new UIntPtr((uint)keys[i].Length);
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                    keyLengthsConverted[i] = new UIntPtr((uint)keyLengths[i]);
             }
 
             // first we have to pin and take the address of each key
@@ -200,14 +205,14 @@ namespace RocksDbSharp
             }
             if (cf == null)
             {
-                rocksdb_multi_get(db, read_options, (ulong)count, keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
+                rocksdb_multi_get(db, read_options, new UIntPtr(count), keyPtrs, keyLengthsConverted, valuePtrs, valueLengths, errptrs);
             }
             else
             {
                 IntPtr[] cfhs = new IntPtr[cf.Length];
                 for (int i = 0; i < count; i++)
                     cfhs[i] = cf[i].Handle;
-                rocksdb_multi_get_cf(db, read_options, cfhs, (ulong)count, keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
+                rocksdb_multi_get_cf(db, read_options, cfhs, new UIntPtr(count), keyPtrs, keyLengthsConverted, valuePtrs, valueLengths, errptrs);
             }
             // unpin the keys
             foreach (var gch in pinned)
@@ -219,7 +224,7 @@ namespace RocksDbSharp
                 var valuePtr = valuePtrs[i];
                 if (valuePtr != IntPtr.Zero)
                 {
-                    var valueLength = valueLengths[i];
+                    var valueLength = (ulong)valueLengths[i];
                     byte[] value = new byte[valueLength];
                     Marshal.Copy(valuePtr, value, 0, (int)valueLength);
                     values[i] = new KeyValuePair<byte[], byte[]>(keys[i], value);
@@ -256,11 +261,11 @@ namespace RocksDbSharp
         {
             if (encoding == null)
                 encoding = Encoding.UTF8;
-            int count = numKeys == 0 ? keys.Length : (int)numKeys;
+            uint count = numKeys == 0 ? (uint)keys.Length : (uint)numKeys;
             IntPtr[] keyPtrs = new IntPtr[count];
-            var keyLengths = new ulong[count];
+            UIntPtr[] keyLengths = new UIntPtr[count];
             IntPtr[] valuePtrs = new IntPtr[count];
-            ulong[] valueLengths = new ulong[count];
+            UIntPtr[] valueLengths = new UIntPtr[count];
 
             if (values == null)
                 values = new KeyValuePair<string, string>[count];
@@ -278,19 +283,19 @@ namespace RocksDbSharp
                     var bk = Marshal.AllocHGlobal(bklength);
                     encoding.GetBytes(k, klength, (byte*)bk.ToPointer(), bklength);
                     keyPtrs[i] = bk;
-                    keyLengths[i] = (ulong)bklength;
+                    keyLengths[i] = new UIntPtr((uint)bklength);
                 }
             }
             if (cf == null)
             {
-                rocksdb_multi_get(db, read_options, (ulong)count, keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
+                rocksdb_multi_get(db, read_options, new UIntPtr(count), keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
             }
             else
             {
                 IntPtr[] cfhs = new IntPtr[cf.Length];
                 for (int i = 0; i < count; i++)
                     cfhs[i] = cf[i].Handle;
-                rocksdb_multi_get_cf(db, read_options, cfhs, (ulong)count, keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
+                rocksdb_multi_get_cf(db, read_options, cfhs, new UIntPtr(count), keyPtrs, keyLengths, valuePtrs, valueLengths, errptrs);
             }
             // free the buffers allocated for each encoded key
             foreach (var keyPtr in keyPtrs)
@@ -325,15 +330,16 @@ namespace RocksDbSharp
         {
             var bkey = (encoding ?? Encoding.UTF8).GetBytes(key);
             if (cf == null)
-                rocksdb_delete(db, writeOptions, bkey, bkey.GetLongLength(0), out errptr);
+                rocksdb_delete(db, writeOptions, bkey, new UIntPtr((uint)bkey.GetLongLength(0)), out errptr);
             else
-                rocksdb_delete_cf(db, writeOptions, cf.Handle, bkey, bkey.GetLongLength(0), out errptr);
+                rocksdb_delete_cf(db, writeOptions, cf.Handle, bkey, new UIntPtr((uint)bkey.GetLongLength(0)), out errptr);
         }
 
         public string rocksdb_options_statistics_get_string_marshaled(IntPtr opts)
         {
             return MarshalNullTermAsciiStr(rocksdb_options_statistics_get_string(opts));
         }
+
 
         public void rocksdb_writebatch_put(IntPtr writeOptions, string key, string val, Encoding encoding)
         {
@@ -353,13 +359,41 @@ namespace RocksDbSharp
                     byte* bv = bk + bklength;
                     encoding.GetBytes(v, vlength, bv, bvlength);
 
-                    rocksdb_writebatch_put(writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength);
+                    rocksdb_writebatch_put(writeOptions, bk, new UIntPtr((uint)bklength), bv, new UIntPtr((uint)bvlength));
 #if DEBUG
                     Zero(bk, bklength);
 #endif
                     Marshal.FreeHGlobal(buffer);
                 }
             }
+        }
+
+        public void rocksdb_writebatch_wi_put(IntPtr writeBatch,
+                                   byte[] key, ulong klen,
+                                   byte[] val, ulong vlen)
+        {
+            rocksdb_writebatch_wi_put(writeBatch, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public unsafe void rocksdb_writebatch_wi_put(IntPtr writeBatch,
+                                                  byte* key, ulong klen,
+                                                  byte* val, ulong vlen)
+        {
+            rocksdb_writebatch_wi_put(writeBatch, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public void rocksdb_writebatch_wi_put_cf(IntPtr writeBatch, IntPtr column_family,
+                                              byte[] key, ulong klen,
+                                              byte[] val, ulong vlen)
+        {
+            rocksdb_writebatch_wi_put_cf(writeBatch, column_family, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public unsafe void rocksdb_writebatch_wi_put_cf(IntPtr writeBatch, IntPtr column_family,
+                                                     byte* key, ulong klen,
+                                                     byte* val, ulong vlen)
+        {
+            rocksdb_writebatch_wi_put_cf(writeBatch, column_family, key, new UIntPtr(klen), val, new UIntPtr(vlen));
         }
 
         public void rocksdb_writebatch_wi_put(IntPtr writeOptions, string key, string val, Encoding encoding)
@@ -380,13 +414,23 @@ namespace RocksDbSharp
                     byte* bv = bk + bklength;
                     encoding.GetBytes(v, vlength, bv, bvlength);
 
-                    rocksdb_writebatch_wi_put(writeOptions, bk, (ulong)bklength, bv, (ulong)bvlength);
+                    rocksdb_writebatch_wi_put(writeOptions, bk, new UIntPtr((uint)bklength), bv, new UIntPtr((uint)bvlength));
 #if DEBUG
                     Zero(bk, bklength);
 #endif
                     Marshal.FreeHGlobal(buffer);
                 }
             }
+        }
+
+        public unsafe void rocksdb_iter_seek(IntPtr iter, byte* key, ulong klen)
+        {
+            rocksdb_iter_seek(iter, key, new UIntPtr(klen));
+        }
+
+        public unsafe void rocksdb_iter_seek(IntPtr iter, byte[] key, ulong klen)
+        {
+            rocksdb_iter_seek(iter, key, new UIntPtr(klen));
         }
 
         public void rocksdb_iter_seek(
@@ -406,7 +450,7 @@ namespace RocksDbSharp
                     byte* bk = (byte*)buffer.ToPointer();
                     encoding.GetBytes(k, klength, bk, bklength);
 
-                    rocksdb_iter_seek(iter, bk, (ulong)bklength);
+                    rocksdb_iter_seek(iter, bk, new UIntPtr((uint)bklength));
 #if DEBUG
                     Zero(bk, bklength);
 #endif
@@ -432,13 +476,23 @@ namespace RocksDbSharp
                     byte* bk = (byte*)buffer.ToPointer();
                     encoding.GetBytes(k, klength, bk, bklength);
 
-                    rocksdb_iter_seek_for_prev(iter, bk, (ulong)bklength);
+                    rocksdb_iter_seek_for_prev(iter, bk, new UIntPtr((uint)bklength));
 #if DEBUG
                     Zero(bk, bklength);
 #endif
                     Marshal.FreeHGlobal(buffer);
                 }
             }
+        }
+
+        public unsafe void  rocksdb_iter_seek_for_prev(IntPtr iter, byte* key, ulong klen)
+        {
+            rocksdb_iter_seek_for_prev(iter, key, new UIntPtr(klen));
+        }
+
+        public unsafe void rocksdb_iter_seek_for_prev(IntPtr iter, byte[] key, ulong klen)
+        {
+            rocksdb_iter_seek_for_prev(iter, key, new UIntPtr(klen));
         }
 
 #if DEBUG
@@ -460,7 +514,7 @@ namespace RocksDbSharp
                 encoding = Encoding.UTF8;
             unsafe
             {
-                var resultPtr = rocksdb_iter_key(iter, out ulong bklength);
+                var resultPtr = rocksdb_iter_key(iter, out UIntPtr bklength);
 
                 return MarshalString(resultPtr, (long)bklength, encoding);
             }
@@ -474,26 +528,185 @@ namespace RocksDbSharp
                 encoding = Encoding.UTF8;
             unsafe
             {
-                var resultPtr = rocksdb_iter_value(iter, out ulong bvlength);
+                var resultPtr = rocksdb_iter_value(iter, out UIntPtr bvlength);
 
                 return MarshalString(resultPtr, (long)bvlength, encoding);
             }
         }
 
+        public unsafe void rocksdb_compact_range(IntPtr db,
+            byte* start_key, long start_key_len,
+            byte* limit_key, long limit_key_len)
+        {
+            rocksdb_compact_range(db,
+                                  start_key, new UIntPtr((ulong)start_key_len),
+                                  limit_key, new UIntPtr((ulong)limit_key_len));
+        }
+        public unsafe void rocksdb_compact_range(IntPtr db,
+            byte[] start_key, long start_key_len,
+            byte[] limit_key, long limit_key_len)
+        {
+            rocksdb_compact_range(db,
+                                  start_key, new UIntPtr((ulong)start_key_len),
+                                  limit_key, new UIntPtr((ulong)limit_key_len));
+        }
+
+        public unsafe void rocksdb_compact_range_cf(IntPtr db, IntPtr column_family,
+            byte* start_key, long start_key_len,
+            byte* limit_key, long limit_key_len)
+        {
+            Native.Instance.rocksdb_compact_range_cf(db, column_family,
+                                                     start_key, new UIntPtr((ulong)start_key_len), 
+                                                     limit_key, new UIntPtr((ulong)limit_key_len));
+        }
+
+        public unsafe void rocksdb_compact_range_cf(IntPtr db, IntPtr column_family,
+            byte[] start_key, long start_key_len,
+            byte[] limit_key, long limit_key_len)
+        {
+            Native.Instance.rocksdb_compact_range_cf(db, column_family,
+                                                     start_key, new UIntPtr((ulong)start_key_len), 
+                                                     limit_key, new UIntPtr((ulong)limit_key_len));
+        }
+
+        public IntPtr rocksdb_writebatch_create_from(byte[] rep, long size)
+        {
+            return rocksdb_writebatch_create_from(rep, new UIntPtr((ulong)size));
+        }
+
+        public void rocksdb_writebatch_put(IntPtr writeBatch,
+                                           byte[] key, ulong klen,
+                                           byte[] val, ulong vlen)
+        {
+            rocksdb_writebatch_put(writeBatch, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public unsafe void rocksdb_writebatch_put(IntPtr writeBatch,
+                                                  byte* key, ulong klen,
+                                                  byte* val, ulong vlen)
+        {
+            rocksdb_writebatch_put(writeBatch, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public void rocksdb_writebatch_put_cf(IntPtr writeBatch, IntPtr column_family,
+                                              byte[] key, ulong klen, 
+                                              byte[] val, ulong vlen)
+        {
+            rocksdb_writebatch_put_cf(writeBatch, column_family, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public unsafe void rocksdb_writebatch_put_cf(IntPtr writeBatch, IntPtr column_family,
+                                                     byte* key, ulong klen,
+                                                     byte* val, ulong vlen)
+        {
+            rocksdb_writebatch_put_cf(writeBatch, column_family, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public void rocksdb_writebatch_merge(IntPtr writeBatch,
+                                             byte[] key, ulong klen,
+                                             byte[] val, ulong vlen)
+        {
+            rocksdb_writebatch_merge(writeBatch, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public unsafe void rocksdb_writebatch_merge(IntPtr writeBatch,
+                                                             byte* key, ulong klen,
+                                                             byte* val, ulong vlen)
+        {
+            rocksdb_writebatch_merge(writeBatch, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public void rocksdb_writebatch_merge_cf(IntPtr writeBatch, IntPtr column_family,
+                                                         byte[] key, ulong klen,
+                                                         byte[] val, ulong vlen)
+        {
+            rocksdb_writebatch_merge_cf(writeBatch, column_family, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public unsafe void rocksdb_writebatch_merge_cf(IntPtr writeBatch, IntPtr column_family,
+                                                                byte* key, ulong klen,
+                                                                byte* val, ulong vlen)
+        {
+            rocksdb_writebatch_merge_cf(writeBatch, column_family, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public void rocksdb_writebatch_delete(IntPtr writeBatch,
+                                              byte[] key, ulong klen)
+        {
+            rocksdb_writebatch_delete(writeBatch, key, new UIntPtr(klen));
+        }
+
+        public unsafe void rocksdb_writebatch_delete(IntPtr writeBatch,
+                                                     byte* key, ulong klen)
+        {
+            rocksdb_writebatch_delete(writeBatch, key, new UIntPtr(klen));
+        }
+
+        public void rocksdb_writebatch_delete_cf(IntPtr writeBatch, IntPtr column_family,
+                                                 byte[] key, ulong klen)
+        {
+            rocksdb_writebatch_delete_cf(writeBatch, column_family, key, new UIntPtr(klen));
+        }
+
+        public unsafe void rocksdb_writebatch_delete_cf(IntPtr writeBatch, IntPtr column_family,
+                                                        byte* key, ulong klen)
+        {
+            rocksdb_writebatch_delete_cf(writeBatch, column_family, key, new UIntPtr(klen));
+        }
+
+        public void rocksdb_writebatch_delete_range(IntPtr b,
+                                                             byte[] start_key, ulong start_key_len,
+                                                             byte[] end_key, ulong end_key_len)
+        {
+            rocksdb_writebatch_delete_range(b, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
+        }
+
+        public unsafe void rocksdb_writebatch_delete_range(IntPtr b,
+                                                                    byte* start_key, ulong start_key_len,
+                                                                    byte* end_key, ulong end_key_len)
+        {
+            rocksdb_writebatch_delete_range(b, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
+        }
+
+        public void rocksdb_writebatch_delete_range_cf(IntPtr b, IntPtr column_family,
+                                                                byte[] start_key, ulong start_key_len,
+                                                                byte[] end_key, ulong end_key_len)
+        {
+            rocksdb_writebatch_delete_range_cf(b, column_family, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
+        }
+
+        public unsafe void rocksdb_writebatch_delete_range_cf(IntPtr b, IntPtr column_family,
+                                                                       byte* start_key, ulong start_key_len,
+                                                                       byte* end_key, ulong end_key_len)
+        {
+            rocksdb_writebatch_delete_range_cf(b, column_family, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
+        }
+
+        public void rocksdb_writebatch_put_log_data(IntPtr writeBatch, byte[] blob, ulong len)
+        {
+            rocksdb_writebatch_put_log_data(writeBatch, blob, new UIntPtr(len));
+        }
+
         public byte[] rocksdb_writebatch_data(IntPtr wbHandle)
         {
-            var resultPtr = rocksdb_writebatch_data(wbHandle, out ulong size);
-            var data = new byte[size];
+            var resultPtr = rocksdb_writebatch_data(wbHandle, out UIntPtr size);
+            var data = new byte[(long)size];
             Marshal.Copy(resultPtr, data, 0, (int)size);
             // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
             // rocksdb_free(resultPtr);
             return data;
         }
 
+        public IntPtr rocksdb_writebatch_wi_create(ulong reserved_bytes,
+                                                   bool overwrite_keys)
+        {
+            return rocksdb_writebatch_wi_create(new UIntPtr(reserved_bytes), overwrite_keys);
+        }
+
         public byte[] rocksdb_writebatch_wi_data(IntPtr wbHandle)
         {
-            var resultPtr = rocksdb_writebatch_wi_data(wbHandle, out ulong size);
-            var data = new byte[size];
+            var resultPtr = rocksdb_writebatch_wi_data(wbHandle, out UIntPtr size);
+            var data = new byte[(long)size];
             Marshal.Copy(resultPtr, data, 0, (int)size);
             // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
             // rocksdb_free(resultPtr);
@@ -502,7 +715,7 @@ namespace RocksDbSharp
 
         public int rocksdb_writebatch_data(IntPtr wbHandle, byte[] buffer, int offset, int length)
         {
-            var resultPtr = rocksdb_writebatch_data(wbHandle, out ulong size);
+            var resultPtr = rocksdb_writebatch_data(wbHandle, out UIntPtr size);
             bool fits = (int)size <= length;
             if (!fits)
             {
@@ -518,7 +731,7 @@ namespace RocksDbSharp
 
         public int rocksdb_writebatch_wi_data(IntPtr wbHandle, byte[] buffer, int offset, int length)
         {
-            var resultPtr = rocksdb_writebatch_wi_data(wbHandle, out ulong size);
+            var resultPtr = rocksdb_writebatch_wi_data(wbHandle, out UIntPtr size);
             bool fits = (int)size <= length;
             if (!fits)
             {
@@ -530,6 +743,34 @@ namespace RocksDbSharp
             // Do not free this memory because it is owned by the write batch and will be freed when it is disposed
             // rocksdb_free(resultPtr);
             return (int)size;
+        }
+
+        public void rocksdb_writebatch_wi_merge(IntPtr writeBatch,
+                                     byte[] key, ulong klen,
+                                     byte[] val, ulong vlen)
+        {
+            rocksdb_writebatch_wi_merge(writeBatch, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public unsafe void rocksdb_writebatch_wi_merge(IntPtr writeBatch,
+                                                             byte* key, ulong klen,
+                                                             byte* val, ulong vlen)
+        {
+            rocksdb_writebatch_wi_merge(writeBatch, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public void rocksdb_writebatch_wi_merge_cf(IntPtr writeBatch, IntPtr column_family,
+                                                         byte[] key, ulong klen,
+                                                         byte[] val, ulong vlen)
+        {
+            rocksdb_writebatch_wi_merge_cf(writeBatch, column_family, key, new UIntPtr(klen), val, new UIntPtr(vlen));
+        }
+
+        public unsafe void rocksdb_writebatch_wi_merge_cf(IntPtr writeBatch, IntPtr column_family,
+                                                                byte* key, ulong klen,
+                                                                byte* val, ulong vlen)
+        {
+            rocksdb_writebatch_wi_merge_cf(writeBatch, column_family, key, new UIntPtr(klen), val, new UIntPtr(vlen));
         }
 
         public string rocksdb_property_value_string(IntPtr db, string propname)
@@ -567,7 +808,7 @@ namespace RocksDbSharp
                     byte* bv = bk + bklength;
                     encoding.GetBytes(v, vlength, bv, bvlength);
 
-                    rocksdb_sstfilewriter_add(writer, bk, (ulong)bklength, bv, (ulong)bvlength, out errptr);
+                    rocksdb_sstfilewriter_add(writer, bk, new UIntPtr((uint)bklength), bv, new UIntPtr((uint)bvlength), out errptr);
 #if DEBUG
                     Zero(bk, bklength);
 #endif
@@ -597,8 +838,8 @@ namespace RocksDbSharp
                     encoding.GetBytes(k, klength, bk, bklength);
 
                     var resultPtr = cf == null
-                        ? rocksdb_writebatch_wi_get_from_batch(wb, options, bk, (ulong)bklength, out ulong bvlength, out errptr)
-                        : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, bk, (ulong)bklength, out bvlength, out errptr);
+                        ? rocksdb_writebatch_wi_get_from_batch(wb, options, bk, new UIntPtr((uint)bklength), out UIntPtr bvlength, out errptr)
+                        : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, bk, new UIntPtr((uint)bklength), out bvlength, out errptr);
 #if DEBUG
                     Zero(bk, bklength);
 #endif
@@ -623,13 +864,13 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf = null)
         {
             var resultPtr = cf == null
-                ? rocksdb_writebatch_wi_get_from_batch(wb, options, key, keyLength, out ulong valueLength, out errptr)
-                : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, key, keyLength, out valueLength, out errptr);
+                ? rocksdb_writebatch_wi_get_from_batch(wb, options, key, new UIntPtr(keyLength), out UIntPtr valueLength, out errptr)
+                : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, key, new UIntPtr(keyLength), out valueLength, out errptr);
             if (errptr != IntPtr.Zero)
                 return null;
             if (resultPtr == IntPtr.Zero)
                 return null;
-            var result = new byte[valueLength];
+            var result = new byte[(long)valueLength];
             Marshal.Copy(resultPtr, result, 0, (int)valueLength);
             rocksdb_free(resultPtr);
             return result;
@@ -657,8 +898,8 @@ namespace RocksDbSharp
                     encoding.GetBytes(k, klength, bk, bklength);
 
                     var resultPtr = cf == null
-                        ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, bk, (ulong)bklength, out ulong bvlength, out errptr)
-                        : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, bk, (ulong)bklength, out bvlength, out errptr);
+                        ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, bk, new UIntPtr((uint)bklength), out UIntPtr bvlength, out errptr)
+                        : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, bk, new UIntPtr((uint)bklength), out bvlength, out errptr);
 #if DEBUG
                     Zero(bk, bklength);
 #endif
@@ -684,16 +925,177 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf = null)
         {
             var resultPtr = cf == null
-                ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, key, keyLength, out ulong valueLength, out errptr)
-                : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, key, keyLength, out valueLength, out errptr);
+                ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, key, new UIntPtr(keyLength), out UIntPtr valueLength, out errptr)
+                : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, key, new UIntPtr(keyLength), out valueLength, out errptr);
             if (errptr != IntPtr.Zero)
                 return null;
             if (resultPtr == IntPtr.Zero)
                 return null;
-            var result = new byte[valueLength];
+            var result = new byte[(ulong)valueLength];
             Marshal.Copy(resultPtr, result, 0, (int)valueLength);
             rocksdb_free(resultPtr);
             return result;
+        }
+
+        public void rocksdb_writebatch_wi_delete(IntPtr writeBatch,
+                                      byte[] key, ulong klen)
+        {
+            rocksdb_writebatch_wi_delete(writeBatch, key, new UIntPtr(klen));
+        }
+
+        public unsafe void rocksdb_writebatch_wi_delete(IntPtr writeBatch,
+                                                     byte* key, ulong klen)
+        {
+            rocksdb_writebatch_wi_delete(writeBatch, key, new UIntPtr(klen));
+        }
+
+        public void rocksdb_writebatch_wi_delete_cf(IntPtr writeBatch, IntPtr column_family,
+                                                 byte[] key, ulong klen)
+        {
+            rocksdb_writebatch_wi_delete_cf(writeBatch, column_family, key, new UIntPtr(klen));
+        }
+
+        public unsafe void rocksdb_writebatch_wi_delete_cf(IntPtr writeBatch, IntPtr column_family,
+                                                        byte* key, ulong klen)
+        {
+            rocksdb_writebatch_wi_delete_cf(writeBatch, column_family, key, new UIntPtr(klen));
+        }
+
+        public void rocksdb_writebatch_wi_delete_range(IntPtr b,
+                                                             byte[] start_key, ulong start_key_len,
+                                                             byte[] end_key, ulong end_key_len)
+        {
+            rocksdb_writebatch_wi_delete_range(b, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
+        }
+
+        public unsafe void rocksdb_writebatch_wi_delete_range(IntPtr b,
+                                                                    byte* start_key, ulong start_key_len,
+                                                                    byte* end_key, ulong end_key_len)
+        {
+            rocksdb_writebatch_wi_delete_range(b, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
+        }
+
+        public void rocksdb_writebatch_wi_delete_range_cf(IntPtr b, IntPtr column_family,
+                                                                byte[] start_key, ulong start_key_len,
+                                                                byte[] end_key, ulong end_key_len)
+        {
+            rocksdb_writebatch_wi_delete_range_cf(b, column_family, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
+        }
+
+        public unsafe void rocksdb_writebatch_wi_delete_range_cf(IntPtr b, IntPtr column_family,
+                                                                       byte* start_key, ulong start_key_len,
+                                                                       byte* end_key, ulong end_key_len)
+        {
+            rocksdb_writebatch_wi_delete_range_cf(b, column_family, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
+        }
+
+        public void rocksdb_options_compaction_readahead_size(IntPtr options, ulong size)
+        {
+            rocksdb_options_compaction_readahead_size(options, new UIntPtr(size));
+        }
+
+        public void rocksdb_options_set_compression_per_level(IntPtr opt, int[] level_values, ulong num_levels)
+        {
+            rocksdb_options_set_compression_per_level(opt, level_values, new UIntPtr(num_levels));
+        }
+
+        public void rocksdb_options_set_write_buffer_size(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_write_buffer_size(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_max_bytes_for_level_multiplier_additional(IntPtr options, int[] level_values, ulong num_levels)
+        {
+            rocksdb_options_set_max_bytes_for_level_multiplier_additional(options, level_values, new UIntPtr(num_levels));
+        }
+
+        public void rocksdb_options_set_soft_pending_compaction_bytes_limit(IntPtr opt, ulong v)
+        {
+            rocksdb_options_set_soft_pending_compaction_bytes_limit(opt, new UIntPtr(v));
+        }
+
+        public void rocksdb_options_set_hash_skip_list_rep(IntPtr options, ulong p1, int p2, int p3)
+        {
+            rocksdb_options_set_hash_skip_list_rep(options, new UIntPtr(p1), p2, p3);
+        }
+
+        public void rocksdb_options_set_hash_link_list_rep(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_hash_link_list_rep(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_arena_block_size(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_arena_block_size(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_hard_pending_compaction_bytes_limit(IntPtr opt, ulong v)
+        {
+            rocksdb_options_set_hard_pending_compaction_bytes_limit(opt, new UIntPtr(v));
+        }
+
+        public void rocksdb_options_set_plain_table_factory(IntPtr options, UInt32 p1, int p2, double p3, ulong p4)
+        {
+            rocksdb_options_set_plain_table_factory(options, p1, p2, p3, new UIntPtr(p4));
+        }
+
+        public void rocksdb_options_set_max_successive_merges(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_max_successive_merges(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_inplace_update_num_locks(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_inplace_update_num_locks(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_memtable_huge_page_size(IntPtr options, ulong size)
+        {
+            rocksdb_options_set_memtable_huge_page_size(options, new UIntPtr(size));
+        }
+
+        public void rocksdb_block_based_options_set_block_size(IntPtr options, ulong blockSize)
+        {
+            rocksdb_block_based_options_set_block_size(options, new UIntPtr(blockSize));
+        }
+
+        public void rocksdb_options_set_max_log_file_size(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_max_log_file_size(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_log_file_time_to_roll(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_log_file_time_to_roll(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_keep_log_file_num(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_keep_log_file_num(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_recycle_log_file_num(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_recycle_log_file_num(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_max_manifest_file_size(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_max_manifest_file_size(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_manifest_preallocation_size(IntPtr options, ulong value)
+        {
+            rocksdb_options_set_manifest_preallocation_size(options, new UIntPtr(value));
+        }
+
+        public void rocksdb_options_set_db_write_buffer_size(IntPtr options,ulong size)
+        {
+            rocksdb_options_set_db_write_buffer_size(options, new UIntPtr(size));
+        }
+        public void rocksdb_writebatch_wi_put_log_data(IntPtr writeBatch, byte[] blob, ulong len)
+        {
+            rocksdb_writebatch_wi_put_log_data(writeBatch, blob, new UIntPtr(len));
         }
 
     }

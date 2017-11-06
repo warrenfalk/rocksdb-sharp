@@ -52,7 +52,7 @@ namespace RocksDbSharp
 
         public unsafe ReadOptions SetIterateUpperBound(byte* key, ulong keylen)
         {
-            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, key, keylen);
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, key, new UIntPtr(keylen));
             return this;
         }
 
@@ -62,7 +62,7 @@ namespace RocksDbSharp
                 Marshal.FreeHGlobal(iterateUpperBound);
             iterateUpperBound = Marshal.AllocHGlobal(key.Length);
             Marshal.Copy(key, 0, iterateUpperBound, key.Length);
-            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, iterateUpperBound, keyLen);
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, iterateUpperBound, new UIntPtr(keyLen));
             return this;
         }
 

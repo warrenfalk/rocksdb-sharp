@@ -244,9 +244,9 @@ namespace RocksDbSharp
         public void CompactRange(byte[] start, byte[] limit, ColumnFamilyHandle cf = null)
         {
             if (cf == null)
-                Native.Instance.rocksdb_compact_range(Handle, start, (ulong)start.GetLongLength(0), limit, (ulong)limit.GetLongLength(0));
+                Native.Instance.rocksdb_compact_range(Handle, start, start.GetLongLength(0), limit, limit.GetLongLength(0));
             else
-                Native.Instance.rocksdb_compact_range_cf(Handle, cf.Handle, start, (ulong)start.GetLongLength(0), limit, (ulong)limit.GetLongLength(0));
+                Native.Instance.rocksdb_compact_range_cf(Handle, cf.Handle, start, start.GetLongLength(0), limit, limit.GetLongLength(0));
         }
 
         public void CompactRange(string start, string limit, ColumnFamilyHandle cf = null, Encoding encoding = null)
