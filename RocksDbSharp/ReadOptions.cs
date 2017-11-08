@@ -52,7 +52,8 @@ namespace RocksDbSharp
 
         public unsafe ReadOptions SetIterateUpperBound(byte* key, ulong keylen)
         {
-            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, key, new UIntPtr(keylen));
+            UIntPtr klen = (UIntPtr)keylen;
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, key, klen);
             return this;
         }
 
@@ -62,7 +63,8 @@ namespace RocksDbSharp
                 Marshal.FreeHGlobal(iterateUpperBound);
             iterateUpperBound = Marshal.AllocHGlobal(key.Length);
             Marshal.Copy(key, 0, iterateUpperBound, key.Length);
-            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, iterateUpperBound, new UIntPtr(keyLen));
+            UIntPtr klen = (UIntPtr)keyLen;
+            Native.Instance.rocksdb_readoptions_set_iterate_upper_bound(Handle, iterateUpperBound, klen);
             return this;
         }
 
@@ -91,7 +93,8 @@ namespace RocksDbSharp
 
         public ReadOptions SetReadaheadSize(ulong size)
         {
-            Native.Instance.rocksdb_readoptions_set_readahead_size(Handle, size);
+            UIntPtr readaheadSize = (UIntPtr)size;
+            Native.Instance.rocksdb_readoptions_set_readahead_size(Handle, readaheadSize);
             return this;
         }
 
