@@ -12,20 +12,33 @@ cd ..
 REM echo "Downloading native..."
 REM call download-native.cmd
 
-nuget restore
+@REM --------------------------------
+@echo Building RocksDbNative
+cd RocksDbNative
+@echo Restoring...
+msbuild /t:Restore
 @if %errorlevel% neq 0 goto oops
+@echo Building...
+msbuild /p:Configuration=Release /t:Rebuild,Pack
+@if %errorlevel% neq 0 goto oops
+@echo Installing...
+move /y bin\Release\*.nupkg ..\nuget\
+@if %errorlevel% neq 0 goto oops
+cd ..
 
-msbuild /p:Configuration=Release /t:Rebuild,Pack RocksDbNative\RocksDbNative.csproj
+@REM --------------------------------
+@echo Building RocksDbSharp
+cd RocksDbSharp
+@echo Restoring...
+msbuild /t:Restore
 @if %errorlevel% neq 0 goto oops
-
-msbuild /p:Configuration=Release /t:Rebuild,Pack RocksDbSharp\RocksDbSharp.csproj
+@echo Building...
+msbuild /p:Configuration=Release /t:Rebuild,Pack
 @if %errorlevel% neq 0 goto oops
-
-move /y RocksDbSharp\bin\Release\*.nupkg .\nuget\
+@echo Installing...
+move /y bin\Release\*.nupkg ..\nuget\
 @if %errorlevel% neq 0 goto oops
-
-move /y RocksDbNative\bin\Release\*.nupkg .\nuget\
-@if %errorlevel% neq 0 goto oops
+cd ..
 
 :good
 popd
