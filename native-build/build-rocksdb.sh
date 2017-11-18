@@ -33,7 +33,7 @@
 # 5. Search through code for old hash and old version number and replace
 # 6. Run this script to build (see README.md for more info)
 
-ROCKSDBVERSION=6e05979
+ROCKSDBVERSION=266ac24
 ROCKSDBVNUM=5.4.6
 ROCKSDBSHARPVNUM=5.4.6.10
 SNAPPYVERSION=37aafc9e
