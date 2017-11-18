@@ -194,3 +194,4 @@ native*/
 rocksdbversion
 version
 
+*.orig
