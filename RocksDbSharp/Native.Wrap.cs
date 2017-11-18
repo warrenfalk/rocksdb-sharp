@@ -215,7 +215,7 @@ namespace RocksDbSharp
             long keylen,
             ColumnFamilyHandle cf)
         {
-            rocksdb_delete_cf(db, writeOptions, cf.Handle, key, keylen, out IntPtr errptr);
+            rocksdb_delete_cf(db, writeOptions, cf.Handle, key, (UIntPtr)keylen, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
