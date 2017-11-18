@@ -67,9 +67,10 @@ namespace RocksDbSharp
             out ulong lencf
             )
         {
-            var result = rocksdb_list_column_families(options, name, out lencf, out IntPtr errptr);
+            var result = rocksdb_list_column_families(options, name, out UIntPtr lencfValue, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
+            lencf = (ulong)lencfValue;
             return result;
         }
 
@@ -96,10 +97,12 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf)
         {
             IntPtr errptr;
+            UIntPtr sklength = (UIntPtr)keyLength;
+            UIntPtr svlength = (UIntPtr)valueLength;
             if (cf == null)
-                rocksdb_put(db, writeOptions, key, keyLength, value, valueLength, out errptr);
+                rocksdb_put(db, writeOptions, key, sklength, value, svlength, out errptr);
             else
-                rocksdb_put_cf(db, writeOptions, cf.Handle, key, keyLength, value, valueLength, out errptr);
+                rocksdb_put_cf(db, writeOptions, cf.Handle, key, sklength, value, svlength, out errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -126,11 +129,13 @@ namespace RocksDbSharp
             out long vallen,
             ColumnFamilyHandle cf)
         {
+            UIntPtr sklength = (UIntPtr)keyLength;
             var result = cf == null
-                ? rocksdb_get(db, read_options, key, keyLength, out vallen, out IntPtr errptr)
-                : rocksdb_get_cf(db, read_options, cf.Handle, key, keyLength, out vallen, out errptr);
+                ? rocksdb_get(db, read_options, key, sklength, out UIntPtr valLength, out IntPtr errptr)
+                : rocksdb_get_cf(db, read_options, cf.Handle, key, sklength, out valLength, out errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
+            vallen = (long)valLength;
             return result;
         }
 
@@ -197,7 +202,8 @@ namespace RocksDbSharp
             /*const*/ byte[] key,
             long keylen)
         {
-            rocksdb_delete(db, writeOptions, key, keylen, out IntPtr errptr);
+            UIntPtr sklength = (UIntPtr)keylen;
+            rocksdb_delete(db, writeOptions, key, sklength, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -224,7 +230,7 @@ namespace RocksDbSharp
 
         public byte[] rocksdb_iter_key(IntPtr iterator)
         {
-            IntPtr buffer = rocksdb_iter_key(iterator, out ulong length);
+            IntPtr buffer = rocksdb_iter_key(iterator, out UIntPtr length);
             byte[] result = new byte[(int)length];
             Marshal.Copy(buffer, result, 0, (int)length);
             // Do not free, this is owned by the iterator and will be freed there
@@ -234,7 +240,7 @@ namespace RocksDbSharp
 
         public byte[] rocksdb_iter_value(IntPtr iterator)
         {
-            IntPtr buffer = rocksdb_iter_value(iterator, out ulong length);
+            IntPtr buffer = rocksdb_iter_value(iterator, out UIntPtr length);
             byte[] result = new byte[(int)length];
             Marshal.Copy(buffer, result, 0, (int)length);
             // Do not free, this is owned by the iterator and will be freed there
@@ -300,14 +306,16 @@ namespace RocksDbSharp
 
         public void rocksdb_ingest_external_file(IntPtr db, string[] file_list, ulong list_len, IntPtr opt)
         {
-            rocksdb_ingest_external_file(db, file_list, list_len, opt, out IntPtr errptr);
+            UIntPtr llen = (UIntPtr)list_len;
+            rocksdb_ingest_external_file(db, file_list, llen, opt, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
 
         public void rocksdb_ingest_external_file_cf(IntPtr db, IntPtr handle, string[] file_list, ulong list_len, IntPtr opt)
         {
-            rocksdb_ingest_external_file_cf(db, handle, file_list, list_len, opt, out IntPtr errptr);
+            UIntPtr llen = (UIntPtr)list_len;
+            rocksdb_ingest_external_file_cf(db, handle, file_list, llen, opt, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -319,7 +327,9 @@ namespace RocksDbSharp
             byte* val,
             ulong vallen)
         {
-            rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
+            UIntPtr sklength = (UIntPtr)keylen;
+            UIntPtr svlength = (UIntPtr)vallen;
+            rocksdb_sstfilewriter_add(writer, key, sklength, val, svlength, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -331,7 +341,9 @@ namespace RocksDbSharp
             byte[] val,
             ulong vallen)
         {
-            rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
+            UIntPtr sklength = (UIntPtr)keylen;
+            UIntPtr svlength = (UIntPtr)vallen;
+            rocksdb_sstfilewriter_add(writer, key, sklength, val, svlength, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
@@ -369,11 +381,13 @@ namespace RocksDbSharp
             out ulong vallen,
             ColumnFamilyHandle cf)
         {
+            UIntPtr sklength = (UIntPtr)keyLength;
             var result = cf == null
-                ? rocksdb_writebatch_wi_get_from_batch(wb, options, key, keyLength, out vallen, out IntPtr errptr)
-                : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, key, keyLength, out vallen, out errptr);
+                ? rocksdb_writebatch_wi_get_from_batch(wb, options, key, sklength, out UIntPtr valLength, out IntPtr errptr)
+                : rocksdb_writebatch_wi_get_from_batch_cf(wb, options, cf.Handle, key, sklength, out valLength, out errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
+            vallen = (ulong)valLength;
             return result;
         }
 
@@ -413,11 +427,13 @@ namespace RocksDbSharp
             out ulong vallen,
             ColumnFamilyHandle cf)
         {
+            UIntPtr sklength = (UIntPtr)keyLength;
             var result = cf == null
-                ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, key, keyLength, out vallen, out IntPtr errptr)
-                : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, key, keyLength, out vallen, out errptr);
+                ? rocksdb_writebatch_wi_get_from_batch_and_db(wb, db, read_options, key, sklength, out UIntPtr valLength, out IntPtr errptr)
+                : rocksdb_writebatch_wi_get_from_batch_and_db_cf(wb, db, read_options, cf.Handle, key, sklength, out valLength, out errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
+            vallen = (ulong)valLength;
             return result;
         }
 

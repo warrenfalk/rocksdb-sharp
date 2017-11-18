@@ -13,7 +13,8 @@ namespace RocksDbSharp
 
         public static SliceTransform CreateFixedPrefix(/*(size_t)*/ ulong fixed_prefix_length)
         {
-            IntPtr handle = Native.Instance.rocksdb_slicetransform_create_fixed_prefix(fixed_prefix_length);
+            UIntPtr fixedPrefix = (UIntPtr)fixed_prefix_length;
+            IntPtr handle = Native.Instance.rocksdb_slicetransform_create_fixed_prefix(fixedPrefix);
             return new SliceTransform(handle);
         }
 

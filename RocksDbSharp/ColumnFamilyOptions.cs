@@ -736,7 +736,7 @@ namespace RocksDbSharp
             return this;
         }
 
-        public ColumnFamilyOptions SetPlainTableFactory(ulong p1, int p2, double p3, ulong p4)
+        public ColumnFamilyOptions SetPlainTableFactory(UInt32 p1, int p2, double p3, ulong p4)
         {
             Native.Instance.rocksdb_options_set_plain_table_factory(Handle, p1, p2, p3, p4);
             return this;
