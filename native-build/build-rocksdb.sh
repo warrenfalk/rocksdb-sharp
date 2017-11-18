@@ -1,8 +1,15 @@
 #!/bin/bash
 # WINDOWS:
 #   If you are in Windows, this is designed to be run from git bash
-#     You therefore should install git bash, Visual Studio 2015, and cmake
+#     You therefore should install git bash, Visual Studio 2017, and cmake
 #     Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
+#    If you encounter errors with CMake look at snappy/build/CMakeFiles/CMakeError.log
+#    	If you see:
+#	     	Cannot open input file 'gdi32.lib'
+#	     		If you have the creators update, this is a bug (ref https://stackoverflow.com/questions/33599723/fatal-error-lnk1104-cannot-open-file-gdi32-lib)
+#	     		A workaround is to open the VS2017 Installer and in "Individual Components" select the 15063 version:
+#			     	[X] Windows 10 SDK (10.0.15063.0) for Desktop C+ [x86 and x64]
+#	     		
 # MAC:
 #   You will need snappy (must build: homebrew version is not universal)
 #     brew install automake
@@ -83,7 +90,7 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		checkout "snappy" "$SNAPPYREMOTE" "$SNAPPYVERSION" "cmake"
 		mkdir -p build
 		(cd build && {
-			cmake -G "Visual Studio 14 2015 Win64" .. || fail "Running cmake on snappy failed"
+			cmake -G "Visual Studio 15 2017 Win64" .. || fail "Running cmake on snappy failed"
 			update_vcxproj || warn "unable to patch snappy for static vc runtime"
 		}) || fail "cmake build generation failed"
 
@@ -112,7 +119,7 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 
 		mkdir -p build
 		(cd build && {
-			cmake -G "Visual Studio 14 2015 Win64" -DOPTDBG=1 -DGFLAGS=0 -DSNAPPY=1 -DPORTABLE=1 -DWITH_AVX2=0 .. || fail "Running cmake failed"
+			cmake -G "Visual Studio 15 2017 Win64" -DOPTDBG=1 -DGFLAGS=0 -DSNAPPY=1 -DPORTABLE=1 -DWITH_AVX2=0 .. || fail "Running cmake failed"
 			update_vcxproj || warn "failed to patch vcxproj files for static vc runtime"
 		}) || fail "cmake build generation failed"
 

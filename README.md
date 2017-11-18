@@ -70,10 +70,10 @@ This is now buildable on Windows thanks to the Bing team at Microsoft who are ac
 #### Prerequisities:
 * Git for Windows (specifically, the git bash environment)
 * CMake
-* Visual Studio 2015 (2012 update 4 might work, but I have not tested it)
+* Visual Studio 2017 (older versions may work but are not tested)
 
 #### Build Instructions:
-1. Open "Developer Command Prompt for VS2015"
+1. Open "Developer Command Prompt for VS2017"
 2. Run git's ```bash.exe```
 3. cd to the ```native-build``` folder within the repository
 4. execute ```./build-rocksdb.sh```
