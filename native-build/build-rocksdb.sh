@@ -24,7 +24,7 @@
 # Instructions for upgrading rocksdb version
 # 1. Fetch the desired version locally with something like:
 #    cd native-build/rocksdb
-#    git fetch https://github.com/facebook/rocksdb.git v4.13
+#    git fetch https://github.com/facebook/rocksdb.git v5.8
 #    git checkout FETCH_HEAD
 #    git push -f warrenfalk HEAD:rocksdb_sharp
 # 2. Get the hash of the commit for the version and replace below
@@ -34,8 +34,8 @@
 # 6. Run this script to build (see README.md for more info)
 
 ROCKSDBVERSION=266ac24
-ROCKSDBVNUM=5.4.6
-ROCKSDBSHARPVNUM=5.4.6.10
+ROCKSDBVNUM=5.8
+ROCKSDBSHARPVNUM=5.8.0.0
 SNAPPYVERSION=37aafc9e
 
 ROCKSDBREMOTE=https://github.com/warrenfalk/rocksdb
