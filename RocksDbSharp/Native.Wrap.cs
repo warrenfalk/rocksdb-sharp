@@ -328,6 +328,13 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_writebatch_pop_save_point(IntPtr writeBatch)
+        {
+            rocksdb_writebatch_pop_save_point(writeBatch, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
         public void rocksdb_writebatch_wi_rollback_to_save_point(IntPtr writeBatch)
         {
             rocksdb_writebatch_wi_rollback_to_save_point(writeBatch, out IntPtr errptr);

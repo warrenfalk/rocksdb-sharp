@@ -263,6 +263,11 @@ namespace RocksDbSharp
             Native.Instance.rocksdb_writebatch_rollback_to_save_point(handle);
         }
 
+        public void PopSavePoint()
+        {
+            Native.Instance.rocksdb_writebatch_pop_save_point(handle);
+        }
+
         IWriteBatch IWriteBatch.Clear()
             => Clear();
         IWriteBatch IWriteBatch.Put(string key, string val, Encoding encoding)
