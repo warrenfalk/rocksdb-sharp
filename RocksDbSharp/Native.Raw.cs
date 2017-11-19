@@ -3,8 +3,8 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version 266ac24
-    https://github.com/facebook/rocksdb/blob/266ac24/include/rocksdb/c.h
+    In particular, it was originally derived from version 8b3b1fe
+    https://github.com/facebook/rocksdb/blob/8b3b1fe/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
     Changes to c.h should be incorporated here.  View those changes by going to the native rocksdb
     source and fetching the desired version like this:
@@ -12,11 +12,11 @@
     git fetch https://github.com/warrenfalk/rocksdb.git rocksdb_sharp
     git fetch https://github.com/facebook/rocksdb.git v5.8
     git checkout FETCH_HEAD
-    git diff 266ac24 HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace 266ac24 with whatever HEAD is
+    git diff 8b3b1fe HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace 8b3b1fe with whatever HEAD is
 
     Or:
-    https://github.com/facebook/rocksdb/compare/266ac24...(version-here)#diff-53c37e7ee364f00f0280f55d1b53dccc
+    https://github.com/facebook/rocksdb/compare/8b3b1fe...(version-here)#diff-53c37e7ee364f00f0280f55d1b53dccc
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
