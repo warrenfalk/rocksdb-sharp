@@ -61,6 +61,25 @@ namespace RocksDbSharp
             return result;
         }
 
+        public /*(rocksdb_checkpoint_t*)*/ IntPtr rocksdb_checkpoint_object_create(
+            /*(rocksdb_t*)*/ IntPtr db)
+        {
+            var result = rocksdb_checkpoint_object_create(db, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public void rocksdb_checkpoint_create(
+            /*(rocksdb_checkpoint_t*)*/ IntPtr checkpoint,
+            /*(const char*)*/ string checkpoint_dir,
+            /*(uint64_t)*/ ulong log_size_for_flush)
+        {
+            rocksdb_checkpoint_create(checkpoint, checkpoint_dir, log_size_for_flush, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
         public IntPtr rocksdb_list_column_families(
             /* const rocksdb_options_t* */ IntPtr options,
             string name,
