@@ -15,11 +15,15 @@ namespace RocksDbSharpTest
         public void FunctionalTest()
         {
             string temp = Path.GetTempPath();
-            var testdb = Path.Combine(temp, "functional_test");
-            string path = Environment.ExpandEnvironmentVariables(testdb);
+            var testdir = Path.Combine(temp, "functional_test");
+            var testdb = Path.Combine(testdir, "main");
+            var testcp = Path.Combine(testdir, "cp");
+            var path = Environment.ExpandEnvironmentVariables(testdb);
+            var cppath = Environment.ExpandEnvironmentVariables(testcp);
 
-            if (Directory.Exists(testdb))
-                Directory.Delete(testdb, true);
+            if (Directory.Exists(testdir))
+                Directory.Delete(testdir, true);
+            Directory.CreateDirectory(testdir);
 
             var options = new DbOptions()
                 .SetCreateIfMissing(true)
@@ -83,6 +87,12 @@ namespace RocksDbSharpTest
                 Assert.Equal("black", db.Get("clubs"));
                 Assert.Null(db.Get("spades"));
 
+                // Save a checkpoint
+                using (var cp = db.Checkpoint())
+                {
+                    cp.Save(cppath);
+                }
+
                 // With bytes
                 var utf8 = Encoding.UTF8;
                 using (WriteBatch batch = new WriteBatch()
@@ -140,7 +150,16 @@ namespace RocksDbSharpTest
                     },
                     actual: multiGetResult
                 );
+            }
 
+            // Test reading checkpointed db
+            using (var cpdb = RocksDb.Open(options, cppath))
+            {
+                Assert.Equal("red", cpdb.Get("diamonds"));
+                Assert.Equal("black", cpdb.Get("clubs"));
+                Assert.Null(cpdb.Get("spades"));
+                // Checkpoint occurred before these changes:
+                Assert.Null(cpdb.Get("four"));
             }
 
             // Test with column families
@@ -323,6 +342,7 @@ namespace RocksDbSharpTest
                     db.CompactRange("o", "tw");
                 }
             }
+
         }
 
         class IntegerStringComparator : StringComparatorBase
