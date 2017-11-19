@@ -51,5 +51,20 @@ namespace RocksDbSharp
         {
             Native.Instance.rocksdb_sstfilewriter_finish(Handle);
         }
+
+        public void Put(byte[] key, byte[] val)
+        {
+            Native.Instance.rocksdb_sstfilewriter_put(Handle, key, (UIntPtr)key.Length, val, (UIntPtr)val.Length);
+        }
+
+        public void Merge(byte[] key, byte[] val)
+        {
+            Native.Instance.rocksdb_sstfilewriter_merge(Handle, key, (UIntPtr)key.Length, val, (UIntPtr)val.Length);
+        }
+
+        public void Delete(byte[] key)
+        {
+            Native.Instance.rocksdb_sstfilewriter_delete(Handle, key, (UIntPtr)key.Length);
+        }
     }
 }

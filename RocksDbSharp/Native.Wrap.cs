@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using size_t = System.UIntPtr;
 
 #pragma warning disable IDE1006 // Intentionally violating naming conventions because this is meant to match the C API
 namespace RocksDbSharp
@@ -394,6 +395,40 @@ namespace RocksDbSharp
             ulong vallen)
         {
             rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_sstfilewriter_put(
+            /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer,
+            /*(const char*)*/ byte[] key,
+            size_t keylen,
+            /*(const char*)*/ byte[] val,
+            size_t vallen)
+        {
+            rocksdb_sstfilewriter_put(writer, key, keylen, val, vallen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_sstfilewriter_merge(
+            /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer,
+            /*(const char*)*/ byte[] key,
+            size_t keylen,
+            /*(const char*)*/ byte[] val,
+            size_t vallen)
+        {
+            rocksdb_sstfilewriter_merge(writer, key, keylen, val, vallen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_sstfilewriter_delete(
+            /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer,
+            /*(const char*)*/ byte[] key,
+            size_t keylen)
+        {
+            rocksdb_sstfilewriter_delete(writer, key, keylen, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
