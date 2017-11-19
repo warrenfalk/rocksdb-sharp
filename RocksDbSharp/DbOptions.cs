@@ -116,6 +116,19 @@ namespace RocksDbSharp
         }
 
         /// <summary>
+        /// If max_open_files is -1, DB will open all files on DB::Open(). You can
+        /// use this option to increase the number of threads used to open the files.
+        /// Default: 16
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public DbOptions SetMaxFileOpeningThreads(int value)
+        {
+            Native.Instance.rocksdb_options_set_max_file_opening_threads(Handle, value);
+            return this;
+        }
+
+        /// <summary>
         /// Once write-ahead logs exceed this size, we will start forcing the flush of
         /// column families whose memtables are backed by the oldest live WAL file
         /// (i.e. the ones that are causing all the space amplification). If set to 0
