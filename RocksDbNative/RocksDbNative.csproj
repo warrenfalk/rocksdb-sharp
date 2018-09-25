@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Title>RocksDbNative</Title>
-    <Version>5.4.6.10</Version>
+    <Version>5.15.10.10</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Description>Native RocksDb Binaries (Install RocksDbSharp package for managed wraper)</Description>

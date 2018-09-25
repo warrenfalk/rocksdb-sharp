@@ -3,20 +3,20 @@
     This is the lowest level access exposed by this library, and probably the lowest level possible.
 
     Most of this file derives directly from the C API header exported by RocksDB.
-    In particular, it was originally derived from version 6e05979
-    https://github.com/facebook/rocksdb/blob/6e05979/include/rocksdb/c.h
+    In particular, it was originally derived from version 7f528b7e7
+    https://github.com/facebook/rocksdb/blob/7f528b7e7/include/rocksdb/c.h
     And this should be treated as an ongoing "port" of that file into idomatic C#.
     Changes to c.h should be incorporated here.  View those changes by going to the native rocksdb
     source and fetching the desired version like this:
     cd native-build/rocksdb
     git fetch https://github.com/warrenfalk/rocksdb.git rocksdb_sharp
-    git fetch https://github.com/facebook/rocksdb.git v5.4.6
+    git fetch https://github.com/facebook/rocksdb.git v5.15.10
     git checkout FETCH_HEAD
-    git diff 6e05979 HEAD -- ./include/rocksdb/c.h
-    And then once the changes are made, come back here and replace 6e05979 with whatever HEAD is
+    git diff 7f528b7e7 HEAD -- ./include/rocksdb/c.h
+    And then once the changes are made, come back here and replace 7f528b7e7 with whatever HEAD is
 
     Or:
-    https://github.com/facebook/rocksdb/compare/6e05979...(version-here)#diff-53c37e7ee364f00f0280f55d1b53dccc
+    https://github.com/facebook/rocksdb/compare/7f528b7e7...(version-here)#diff-53c37e7ee364f00f0280f55d1b53dccc
 
     This file should therefore contain no managed wrapper functions.
     It is permissible to have overloads here where appropriate (such as byte* and byte[] versions).
@@ -63,6 +63,7 @@ typedef struct rocksdb_compactionfiltercontext_t
 typedef struct rocksdb_compactionfilterfactory_t
     rocksdb_compactionfilterfactory_t;
 typedef struct rocksdb_comparator_t      rocksdb_comparator_t;
+typedef struct rocksdb_dbpath_t          rocksdb_dbpath_t;
 typedef struct rocksdb_env_t             rocksdb_env_t;
 typedef struct rocksdb_fifo_compaction_options_t rocksdb_fifo_compaction_options_t;
 typedef struct rocksdb_filelock_t        rocksdb_filelock_t;
@@ -93,6 +94,20 @@ typedef struct rocksdb_envoptions_t      rocksdb_envoptions_t;
 typedef struct rocksdb_ingestexternalfileoptions_t rocksdb_ingestexternalfileoptions_t;
 typedef struct rocksdb_sstfilewriter_t   rocksdb_sstfilewriter_t;
 typedef struct rocksdb_ratelimiter_t     rocksdb_ratelimiter_t;
+typedef struct rocksdb_perfcontext_t     rocksdb_perfcontext_t;
+typedef struct rocksdb_pinnableslice_t rocksdb_pinnableslice_t;
+typedef struct rocksdb_transactiondb_options_t rocksdb_transactiondb_options_t;
+typedef struct rocksdb_transactiondb_t rocksdb_transactiondb_t;
+typedef struct rocksdb_transaction_options_t rocksdb_transaction_options_t;
+typedef struct rocksdb_optimistictransactiondb_t
+    rocksdb_optimistictransactiondb_t;
+typedef struct rocksdb_optimistictransaction_options_t
+    rocksdb_optimistictransaction_options_t;
+typedef struct rocksdb_transaction_t rocksdb_transaction_t;
+typedef struct rocksdb_checkpoint_t rocksdb_checkpoint_t;
+typedef struct rocksdb_wal_iterator_t rocksdb_wal_iterator_t;
+typedef struct rocksdb_wal_readoptions_t rocksdb_wal_readoptions_t;
+
 
 #endif
 #endregion
@@ -106,6 +121,10 @@ public abstract /* rocksdb_t* */ IntPtr rocksdb_open_for_read_only(
     /* const rocksdb_options_t* */ IntPtr options, string name,
     bool error_if_log_file_exist, out IntPtr errptr);
 
+public abstract /* rocksdb_t* */ IntPtr rocksdb_open_with_ttl(
+    /* const rocksdb_options_t* */ IntPtr options, string name,
+    int ttl, /*(char**)*/ out IntPtr errptr);
+    
 public abstract /* rocksdb_backup_engine_t* */ IntPtr rocksdb_backup_engine_open(
     /* const rocksdb_options_t* */ IntPtr options, string path, out IntPtr errptr);
 

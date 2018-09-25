@@ -31,6 +31,16 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
             return result;
         }
+        
+        public IntPtr rocksdb_open_with_ttl(
+            /* const rocksdb_options_t* */ IntPtr options,
+            string name, int ttl)
+        {
+            var result = rocksdb_open_with_ttl(options, name, ttl, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
 
         public IntPtr rocksdb_open_column_families(
             /* const rocksdb_options_t* */ IntPtr options,

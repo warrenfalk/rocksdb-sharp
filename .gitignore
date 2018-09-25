@@ -180,6 +180,9 @@ $RECYCLE.BIN/
 # SASS Compiler cache
 .sass-cache
 
+# Rider
+.idea/
+
 # Visual Studio 2014 CTP
 **/*.sln.ide
 .vs/

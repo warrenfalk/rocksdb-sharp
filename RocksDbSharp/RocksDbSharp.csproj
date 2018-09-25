@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Title>RocksDbSharp</Title>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <Version>5.4.6.10</Version>
+    <Version>5.15.10.10</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Description>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)</Description>
