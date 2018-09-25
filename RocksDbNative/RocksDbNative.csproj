@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Title>RocksDbNative</Title>
-    <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
     <Version>5.4.6.10</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
@@ -18,8 +16,9 @@
     <Copyright>Copyright 2016</Copyright>
     <PackageReleaseNotes>Native RocksDb Binaries (Install RocksDbSharp package for managed wraper)</PackageReleaseNotes>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <None Include="native\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -32,7 +31,6 @@
       <PackagePath>build\</PackagePath>
     </None>
   </ItemGroup>
-
   <Target Name="BeforeBuild">
     <Error Text="The RocksDbSharp native binaries could not be found.  Run the download script (download-native.cmd or download-native.sh in the RocksDbSharp project folder)" Condition="!Exists('native\amd64\rocksdb.dll')" />
   </Target>
