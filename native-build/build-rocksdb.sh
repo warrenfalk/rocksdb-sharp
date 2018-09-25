@@ -27,9 +27,9 @@
 # 6. Run this script to build (see README.md for more info)
 
 #ROCKSDBVERSION=6e0597951
-ROCKSDBVERSION=tags/v5.4.6
-ROCKSDBVNUM=5.4.6
-ROCKSDBSHARPVNUM=5.4.6.10
+ROCKSDBVERSION=tags/v5.15.10
+ROCKSDBVNUM=5.15.10
+ROCKSDBSHARPVNUM=5.15.10.10
 SNAPPYVERSION=37aafc9e
 
 ROCKSDBREMOTE=https://github.com/facebook/rocksdb
@@ -95,9 +95,11 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 	}) || fail "Snappy build failed"
 
 
-	mkdir -p rocksdb || fail "unable to create rocksdb directory"
+	#mkdir -p rocksdb || fail "unable to create rocksdb directory"
+	rm -rf rocksdb
+	git clone "$ROCKSDBREMOTE" || fail "unable to clone rocksdb"
 	(cd rocksdb && {
-		git fetch "$ROCKSDBREMOTE" --tags
+		
 		git checkout "$ROCKSDBVERSION"
 		#checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocksdb_sharp"
 
@@ -222,7 +224,7 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		}
 		cmd //c "msbuild build/rocksdb.sln /p:Configuration=Release /m:$CONCURRENCY" || fail "Rocksdb release build failed"
 		git checkout -- thirdparty.inc
-		mkdir -p ../../native/amd64 && cp -v ./build/Release/rocksdb.dll ../../native/amd64/rocksdb.dll
+		mkdir -p ../../native/amd64 && cp -v ./build/Release/rocksdb_shared.dll ../../native/amd64/rocksdb.dll
 		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -v ./build/Release/rocksdb.dll ../../native-${ROCKSDBVERSION}/amd64/rocksdb.dll
 	}) || fail "rocksdb build failed"
 elif [[ $OSDETECT == *"Darwin"* ]]; then
@@ -273,7 +275,7 @@ else
 		CFLAGS="${CFLAGS}" PORTABLE=1 make -j$CONCURRENCY shared_lib || fail "64-bit build failed"
 		strip librocksdb${LIBEXT}
 		mkdir -p ../../native/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native/amd64/librocksdb${LIBEXT}
-		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/amd64/librocksdb${LIBEXT}
+		#mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/amd64/librocksdb${LIBEXT}
 		echo "----- Build 32 bit --------------------------------------------------"
 		make clean
 		CFLAGS="${CFLAGS} -m32" PORTABLE=1 make -j$CONCURRENCY shared_lib || fail "32-bit build failed"
