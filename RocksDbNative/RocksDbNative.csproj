@@ -31,6 +31,23 @@
       <PackagePath>build\</PackagePath>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <None Update="native\amd64\librocksdb.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="native\amd64\librocksdb.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="native\amd64\rocksdb.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="native\i386\librocksdb.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="native\i386\librocksdb.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Target Name="BeforeBuild">
     <Error Text="The RocksDbSharp native binaries could not be found.  Run the download script (download-native.cmd or download-native.sh in the RocksDbSharp project folder)" Condition="!Exists('native\amd64\rocksdb.dll')" />
   </Target>
