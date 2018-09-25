@@ -1213,9 +1213,9 @@ public abstract void rocksdb_flushoptions_set_wait(
 
 public abstract /* rocksdb_cache_t* */ IntPtr rocksdb_cache_create_lru(
     size_t capacity);
-public abstract void rocksdb_cache_destroy(rocksdb_cache_t* cache);
+public abstract void rocksdb_cache_destroy(/*rocksdb_cache_t**/ IntPtr cache);
 public abstract void rocksdb_cache_set_capacity(
-    rocksdb_cache_t* cache, size_t capacity);
+    /*rocksdb_cache_t**/ IntPtr cache, size_t capacity);
 public abstract /*(size_t)*/ ulong
 rocksdb_cache_get_usage(/*(rocksdb_cache_t*)*/ IntPtr cache);
 public abstract /*(size_t)*/ ulong

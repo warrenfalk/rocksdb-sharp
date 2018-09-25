@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Title>RocksDbSharp</Title>
-    <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Version>5.4.6.10</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
@@ -19,23 +17,20 @@
     <Copyright>Copyright 2016</Copyright>
     <PackageReleaseNotes>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)</PackageReleaseNotes>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard1.6|AnyCPU'">
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ROCKSDB_CACHE</DefineConstants>
   </PropertyGroup>
-  
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-
   <!-- Move all packages here that complain about compatibility with net40 -->
   <ItemGroup Condition="'$(TargetFramework)' != 'net40'">
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
@@ -43,5 +38,4 @@
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
   </ItemGroup>
-
 </Project>
