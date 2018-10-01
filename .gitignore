@@ -187,10 +187,6 @@ $RECYCLE.BIN/
 **/*.sln.ide
 .vs/
 
-amd64/rocksdb.dll
-native/**/*.dll
-native/
-native*/
 *.xz
 *.zip
 *.userprefs
