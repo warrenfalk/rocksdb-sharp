@@ -51,8 +51,11 @@ namespace NativeImport
 
     public static class Importers
     {
-        public static INativeLibImporter Windows = new WindowsImporter();
-        public static INativeLibImporter Posix = new PosixImporter();
+        private static Lazy<WindowsImporter> WindowsShared { get; } = new Lazy<WindowsImporter>(() => new WindowsImporter());
+        private static Lazy<PosixImporter> PosixShared { get; } = new Lazy<PosixImporter>(() => new PosixImporter());
+
+        public static INativeLibImporter Windows => WindowsShared.Value;
+        public static INativeLibImporter Posix => PosixShared.Value;
 
         static object GetDelegate(INativeLibImporter importer, IntPtr lib, string entryPoint, Type delegateType)
         {
