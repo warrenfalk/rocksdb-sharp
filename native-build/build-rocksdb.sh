@@ -26,13 +26,13 @@
 # 5. Search through code for old hash and old version number and replace
 # 6. Run this script to build (see README.md for more info)
 
-ROCKSDBVERSION=6e05979
+ROCKSDBVERSION=v5.17.2
 ROCKSDBVNUM=5.4.6
 ROCKSDBSHARPVNUM=5.4.6.11
 SNAPPYVERSION=37aafc9e
 
-ROCKSDBREMOTE=https://github.com/warrenfalk/rocksdb
-SNAPPYREMOTE=https://github.com/warrenfalk/snappy
+ROCKSDBREMOTE=https://github.com/facebook/rocksdb
+SNAPPYREMOTE=https://github.com/google/snappy
 
 CONCURRENCY=8
 
@@ -96,7 +96,7 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
-		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocksdb_sharp"
+		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION"
 
 		git checkout -- thirdparty.inc
 		patch -N < ../rocksdb.thirdparty.inc.patch || warn "Patching of thirdparty.inc failed"
@@ -256,7 +256,7 @@ else
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
-		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "rocksdb_sharp"
+		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION"
 
 		export CFLAGS
 		export LDFLAGS
