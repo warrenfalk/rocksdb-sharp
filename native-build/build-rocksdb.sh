@@ -1,7 +1,7 @@
 #!/bin/bash
 # WINDOWS:
 #   If you are in Windows, this is designed to be run from git bash
-#     You therefore should install git bash, Visual Studio 2015, and cmake
+#     You therefore should install git bash, Visual Studio 2017, and cmake
 #     Your best bet in Windows is to open a Developer Command Prompt and then run bash from there.
 # MAC:
 #   You will need snappy (must build: homebrew version is not universal)
@@ -29,7 +29,7 @@
 ROCKSDBVERSION=v5.17.2
 ROCKSDBVNUM=5.4.6
 ROCKSDBSHARPVNUM=5.4.6.11
-SNAPPYVERSION=37aafc9e
+SNAPPYVERSION=1.1.7
 
 ROCKSDBREMOTE=https://github.com/facebook/rocksdb
 SNAPPYREMOTE=https://github.com/google/snappy
@@ -80,10 +80,10 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 
 	mkdir -p snappy || fail "unable to create snappy directory"
 	(cd snappy && {
-		checkout "snappy" "$SNAPPYREMOTE" "$SNAPPYVERSION" "cmake"
+		checkout "snappy" "$SNAPPYREMOTE" "$SNAPPYVERSION"
 		mkdir -p build
 		(cd build && {
-			cmake -G "Visual Studio 14 2015 Win64" .. || fail "Running cmake on snappy failed"
+			cmake -G "Visual Studio 15 2017 Win64" -DSNAPPY_BUILD_TESTS=0 .. || fail "Running cmake on snappy failed"
 			update_vcxproj || warn "unable to patch snappy for static vc runtime"
 		}) || fail "cmake build generation failed"
 
@@ -102,17 +102,11 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		patch -N < ../rocksdb.thirdparty.inc.patch || warn "Patching of thirdparty.inc failed"
 		rm -f thirdparty.inc.rej thirdparty.inc.orig
 
-		# The following was necessary to get it to stop trying to build the tools
-		# which doesn't work because of relative paths to GFLAGS library
-		git checkout -- CMakeLists.txt
-		patch -N < ../rocksdb.nobuildtools.patch || warn "Patching of CMakeLists.txt failed"
-		rm -f CMakeLists.txt.rej CMakeLists.txt.orig
-
 		sed -i 's/\/MD/\/MT/g' CMakeLists.txt
 
 		mkdir -p build
 		(cd build && {
-			cmake -G "Visual Studio 14 2015 Win64" -DOPTDBG=1 -DGFLAGS=0 -DSNAPPY=1 -DPORTABLE=1 -DWITH_AVX2=0 .. || fail "Running cmake failed"
+			cmake -G "Visual Studio 15 2017 Win64" -DOPTDBG=1 -DGFLAGS=0 -DSNAPPY=1 -DPORTABLE=1 -DWITH_TOOLS=0 .. || fail "Running cmake failed"
 			update_vcxproj || warn "failed to patch vcxproj files for static vc runtime"
 		}) || fail "cmake build generation failed"
 
@@ -219,8 +213,8 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 		}
 		cmd //c "msbuild build/rocksdb.sln /p:Configuration=Release /m:$CONCURRENCY" || fail "Rocksdb release build failed"
 		git checkout -- thirdparty.inc
-		mkdir -p ../../native/amd64 && cp -v ./build/Release/rocksdb.dll ../../native/amd64/rocksdb.dll
-		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -v ./build/Release/rocksdb.dll ../../native-${ROCKSDBVERSION}/amd64/rocksdb.dll
+		mkdir -p ../../native/amd64 && cp -v ./build/Release/rocksdb-shared.dll ../../native/amd64/rocksdb.dll
+		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -v ./build/Release/rocksdb-shared.dll ../../native-${ROCKSDBVERSION}/amd64/rocksdb.dll
 	}) || fail "rocksdb build failed"
 elif [[ $OSDETECT == *"Darwin"* ]]; then
 	fail "Mac OSX build is not yet operational"
