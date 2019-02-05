@@ -17,7 +17,7 @@
     <Copyright>Copyright 2016</Copyright>
     <PackageReleaseNotes>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)</PackageReleaseNotes>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard1.6|AnyCPU'">
