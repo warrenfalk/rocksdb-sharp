@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Title>RocksDbNative</Title>
     <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
-    <Version>5.4.6.10</Version>
+    <Version>5.17.2.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Description>Native RocksDb Binaries (Install RocksDbSharp package for managed wraper)</Description>
