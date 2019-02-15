@@ -27,8 +27,8 @@
 # 6. Run this script to build (see README.md for more info)
 
 ROCKSDBVERSION=v5.17.2
-ROCKSDBVNUM=5.4.6
-ROCKSDBSHARPVNUM=5.4.6.11
+ROCKSDBVNUM=5.17.2
+ROCKSDBSHARPVNUM=5.17.1.0
 SNAPPYVERSION=1.1.7
 
 ROCKSDBREMOTE=https://github.com/facebook/rocksdb
@@ -58,8 +58,9 @@ checkout() {
 	FETCHREF="$4"
 	test -d .git || git init
 	test -d .git || fail "unable to initialize $NAME repository"
+	echo git fetch "$REMOTE" "${FETCHREF}"
 	git fetch "$REMOTE" "${FETCHREF}" || fail "Unable to fetch latest ${FETCHREF} from {$REMOTE}"
-	git checkout "$VERSION" || fail "Unable to checkout $NAME version ${VERSION}"
+	git checkout FETCH_HEAD || fail "Unable to checkout $NAME version ${VERSION}"
 }
 
 update_vcxproj(){
@@ -80,7 +81,7 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 
 	mkdir -p snappy || fail "unable to create snappy directory"
 	(cd snappy && {
-		checkout "snappy" "$SNAPPYREMOTE" "$SNAPPYVERSION"
+		checkout "snappy" "$SNAPPYREMOTE" "$SNAPPYVERSION" "$SNAPPYVERSION"
 		mkdir -p build
 		(cd build && {
 			cmake -G "Visual Studio 15 2017 Win64" -DSNAPPY_BUILD_TESTS=0 .. || fail "Running cmake on snappy failed"
@@ -96,7 +97,7 @@ if [[ $OSINFO == *"MSYS"* || $OSINFO == *"MINGW"* ]]; then
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
-		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION"
+		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "$ROCKSDBVERSION"
 
 		git checkout -- thirdparty.inc
 		patch -N < ../rocksdb.thirdparty.inc.patch || warn "Patching of thirdparty.inc failed"
@@ -222,7 +223,9 @@ else
 	echo "Assuming a posix-like environment"
 	if [ "$(uname)" == "Darwin" ]; then
 		echo "Mac (Darwin) detected"
-		CFLAGS=-I/usr/local/include
+		export CC=gcc-8
+		export CXX=g++-8
+		CFLAGS="-I/usr/local/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
 		LDFLAGS="-L/usr/local/lib"
 		LIBEXT=.dylib
 	else
@@ -230,11 +233,13 @@ else
 		LIBEXT=.so
 	fi
 	# Linux Dependencies
-	#sudo apt-get install gcc-5-multilib g++-5-multilib
-	#sudo apt-get install libsnappy-dev:i386 libbz2-dev:i386 libsnappy-dev libbz2-dev
+	#sudo apt-get install libsnappy-dev libbz2-dev libz-dev
 
 	# Mac Dependencies
-	#brew install snappy --universal
+	## (Note: gcc 8.2 worked below)
+	# xcode-select --install
+	# brew install gcc
+	# brew install snappy
     # Don't have universal version of lz4 through brew, have to build manually
 	# git clone git@github.com:Cyan4973/lz4.git
 	# make -C lz4/lib
@@ -250,27 +255,35 @@ else
 
 	mkdir -p rocksdb || fail "unable to create rocksdb directory"
 	(cd rocksdb && {
-		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION"
+		checkout "rocksdb" "$ROCKSDBREMOTE" "$ROCKSDBVERSION" "$ROCKSDBVERSION"
 
 		export CFLAGS
 		export LDFLAGS
+		export ROCKSDB_DISABLE_GFLAGS=1
 		(. ./build_tools/build_detect_platform detected~; {
 			grep detected~ -e '-DSNAPPY' &> /dev/null || fail "failed to detect snappy, install libsnappy-dev"
 			grep detected~ -e '-DZLIB' &> /dev/null || fail "failed to detect zlib, install libzlib-dev"
 			grep detected~ -e '-DGFLAGS' &> /dev/null && fail "gflags detected, see https://github.com/facebook/rocksdb/issues/2310" || true
 		}) || fail "dependency detection failed"
+
 		echo "----- Build 64 bit --------------------------------------------------"
 		make clean
 		CFLAGS="${CFLAGS}" PORTABLE=1 make -j$CONCURRENCY shared_lib || fail "64-bit build failed"
 		strip librocksdb${LIBEXT}
 		mkdir -p ../../native/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native/amd64/librocksdb${LIBEXT}
 		mkdir -p ../../native-${ROCKSDBVERSION}/amd64 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/amd64/librocksdb${LIBEXT}
-		echo "----- Build 32 bit --------------------------------------------------"
-		make clean
-		CFLAGS="${CFLAGS} -m32" PORTABLE=1 make -j$CONCURRENCY shared_lib || fail "32-bit build failed"
-		strip librocksdb${LIBEXT}
-		mkdir -p ../../native/i386 && cp -vL ./librocksdb${LIBEXT} ../../native/i386/librocksdb${LIBEXT}
-		mkdir -p ../../native-${ROCKSDBVERSION}/i386 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/i386/librocksdb${LIBEXT}
+
+		# This no longer seems to work on a mac, so I'm removing support for it
+		# If someone wants to try to fix this, then I'm happy to take a PR
+		# 32-bit linux dependencies:
+		# sudo apt-get install gcc-5-multilib g++-5-multilib
+		# sudo apt-get install libsnappy-dev:i386 libbz2-dev:i386 libz-dev:i386
+		#echo "----- Build 32 bit --------------------------------------------------"
+		#make clean
+		#CFLAGS="${CFLAGS} -m32" PORTABLE=1 make -j$CONCURRENCY shared_lib || fail "32-bit build failed"
+		#strip librocksdb${LIBEXT}
+		#mkdir -p ../../native/i386 && cp -vL ./librocksdb${LIBEXT} ../../native/i386/librocksdb${LIBEXT}
+		#mkdir -p ../../native-${ROCKSDBVERSION}/i386 && cp -vL ./librocksdb${LIBEXT} ../../native-${ROCKSDBVERSION}/i386/librocksdb${LIBEXT}
 
 
 	}) || fail "rocksdb build failed"
