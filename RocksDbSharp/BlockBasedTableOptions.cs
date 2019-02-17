@@ -73,6 +73,13 @@ namespace RocksDbSharp
             return this;
         }
 
+        public BlockBasedTableOptions SetBlockCache(Cache blockCache)
+        {
+            References.BlockCache = blockCache.Handle;
+            Native.Instance.rocksdb_block_based_options_set_block_cache(Handle, blockCache.Handle);
+            return this;
+        }
+
         public BlockBasedTableOptions SetBlockCacheCompressed(IntPtr blockCacheCompressed)
         {
             Native.Instance.rocksdb_block_based_options_set_block_cache_compressed(Handle, blockCacheCompressed);
