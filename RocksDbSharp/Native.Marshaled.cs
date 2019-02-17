@@ -1067,7 +1067,7 @@ namespace RocksDbSharp
             rocksdb_options_compaction_readahead_size(options, new UIntPtr(size));
         }
 
-        public void rocksdb_options_set_compression_per_level(IntPtr opt, int[] level_values, ulong num_levels)
+        public void rocksdb_options_set_compression_per_level(IntPtr opt, Compression[] level_values, ulong num_levels)
         {
             rocksdb_options_set_compression_per_level(opt, level_values, new UIntPtr(num_levels));
         }

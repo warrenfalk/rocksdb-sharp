@@ -6,10 +6,6 @@ using Transitional;
 
 namespace RocksDbSharp
 {
-    public unsafe delegate int CompareFunc(IntPtr state, byte* a, ulong alen, byte* b, ulong blen);
-    public delegate void DestroyFunc(IntPtr state);
-    public delegate string GetNameFunc(IntPtr state);
-
     public interface Comparator
     {
         IntPtr Handle { get; }
@@ -19,23 +15,25 @@ namespace RocksDbSharp
     {
         public IntPtr Handle { get; protected set; }
         public virtual string Name { get; }
-
-        private DestroyFunc _destroy;
+        private IntPtr NamePtr { get; }
 
         public unsafe ComparatorBase(string name = null, IntPtr state = default(IntPtr))
         {
             Name = name ?? GetType().FullName;
-            _destroy = s => this.Destroy(s);
+            var nameBytes = Encoding.UTF8.GetBytes(name + "\0");
+            NamePtr = Marshal.AllocHGlobal(nameBytes.Length);
+            Marshal.Copy(nameBytes, 0, NamePtr, nameBytes.Length);
             Handle = Native.Instance.rocksdb_comparator_create(
                 state: IntPtr.Zero,
-                destructor: CurrentFramework.GetFunctionPointerForDelegate(_destroy),
-                compare: CurrentFramework.GetFunctionPointerForDelegate<CompareFunc>(Compare),
-                getName: CurrentFramework.GetFunctionPointerForDelegate<GetNameFunc>(GetName)
+                destructor: Destroy,
+                compare: Compare,
+                name: GetNamePtr
             );
         }
 
         ~ComparatorBase()
         {
+            Marshal.FreeHGlobal(NamePtr);
             if (Handle != IntPtr.Zero)
             {
 #if !NODESTROY
@@ -45,13 +43,13 @@ namespace RocksDbSharp
             }
         }
 
-        public abstract unsafe int Compare(IntPtr state, byte* a, ulong alen, byte* b, ulong blen);
+        public abstract unsafe int Compare(IntPtr state, IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen);
 
         public virtual void Destroy(IntPtr state)
         {
         }
 
-        protected virtual string GetName(IntPtr state) => Name;
+        private IntPtr GetNamePtr(IntPtr state) => NamePtr;
     }
 
     public abstract class StringComparatorBase : ComparatorBase
@@ -64,10 +62,10 @@ namespace RocksDbSharp
             Encoding = encoding ?? Encoding.UTF8;
         }
 
-        public override unsafe int Compare(IntPtr state, byte* a, ulong alen, byte* b, ulong blen)
+        public override unsafe int Compare(IntPtr state, IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen)
         {
-            var astr = Encoding.GetString(a, (int)alen);
-            var bstr = Encoding.GetString(b, (int)blen);
+            var astr = Encoding.GetString((byte*)a, (int)alen);
+            var bstr = Encoding.GetString((byte*)b, (int)blen);
             return Compare(state, astr, bstr);
         }
 

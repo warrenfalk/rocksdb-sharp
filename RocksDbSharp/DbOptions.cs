@@ -148,7 +148,7 @@ namespace RocksDbSharp
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public DbOptions SetWalRecoveryMode(WalRecoveryMode mode)
+        public DbOptions SetWalRecoveryMode(Recovery mode)
         {
             Native.Instance.rocksdb_options_set_wal_recovery_mode(Handle, mode);
             return this;
