@@ -8,68 +8,30 @@ namespace RocksDbSharp
 {
     public interface Comparator
     {
-        IntPtr Handle { get; }
+        string Name { get; }
+        int Compare(IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen);
     }
 
-    public abstract class ComparatorBase : Comparator
-    {
-        public IntPtr Handle { get; protected set; }
-        public virtual string Name { get; }
-        private IntPtr NamePtr { get; }
-
-        public unsafe ComparatorBase(string name = null, IntPtr state = default(IntPtr))
-        {
-            Name = name ?? GetType().FullName;
-            var nameBytes = Encoding.UTF8.GetBytes(name + "\0");
-            NamePtr = Marshal.AllocHGlobal(nameBytes.Length);
-            Marshal.Copy(nameBytes, 0, NamePtr, nameBytes.Length);
-            Handle = Native.Instance.rocksdb_comparator_create(
-                state: IntPtr.Zero,
-                destructor: Destroy,
-                compare: Compare,
-                name: GetNamePtr
-            );
-        }
-
-        ~ComparatorBase()
-        {
-            Marshal.FreeHGlobal(NamePtr);
-            if (Handle != IntPtr.Zero)
-            {
-#if !NODESTROY
-                Native.Instance.rocksdb_comparator_destroy(Handle);
-#endif
-                Handle = IntPtr.Zero;
-            }
-        }
-
-        public abstract unsafe int Compare(IntPtr state, IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen);
-
-        public virtual void Destroy(IntPtr state)
-        {
-        }
-
-        private IntPtr GetNamePtr(IntPtr state) => NamePtr;
-    }
-
-    public abstract class StringComparatorBase : ComparatorBase
+    public abstract class StringComparatorBase : Comparator
     {
         public Encoding Encoding { get; }
 
+        public string Name { get; }
+
         public StringComparatorBase(Encoding encoding = null, string name = null, IntPtr state = default(IntPtr))
-            : base(name, state)
         {
+            Name = name ?? typeof(StringComparatorBase).Name;
             Encoding = encoding ?? Encoding.UTF8;
         }
 
-        public override unsafe int Compare(IntPtr state, IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen)
+        public abstract int Compare(string a, string b);
+
+        public unsafe int Compare(IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen)
         {
             var astr = Encoding.GetString((byte*)a, (int)alen);
             var bstr = Encoding.GetString((byte*)b, (int)blen);
-            return Compare(state, astr, bstr);
+            return Compare(astr, bstr);
         }
-
-        public abstract int Compare(IntPtr state, string a, string b);
     }
 
     public class StringComparator : StringComparatorBase
@@ -89,6 +51,6 @@ namespace RocksDbSharp
         {
         }
 
-        public override int Compare(IntPtr state, string a, string b) => CompareFunc(a, b);
+        public override int Compare(string a, string b) => CompareFunc(a, b);
     }
 }
