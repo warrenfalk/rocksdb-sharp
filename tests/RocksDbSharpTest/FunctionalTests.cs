@@ -247,25 +247,31 @@ namespace RocksDbSharpTest
 
             // Test SstFileWriter
             {
+                using (var writer = new SstFileWriter())
+                {
+                }
+
                 var envOpts = new EnvOptions();
                 var ioOpts = new ColumnFamilyOptions();
-                var sst = new SstFileWriter(envOpts, ioOpts);
-                var filename = Path.Combine(temp, "test.sst");
-                if (File.Exists(filename))
-                    File.Delete(filename);
-                sst.Open(filename);
-                sst.Add("four", "quatro");
-                sst.Add("one", "uno");
-                sst.Add("two", "dos");
-                sst.Finish();
-
-                using (var db = RocksDb.Open(options, path, columnFamilies))
+                using (var sst = new SstFileWriter(envOpts, ioOpts))
                 {
-                    Assert.NotEqual("four", db.Get("four"));
-                    var ingestOptions = new IngestExternalFileOptions()
-                        .SetMoveFiles(true);
-                    db.IngestExternalFiles(new string[] { filename }, ingestOptions);
-                    Assert.Equal("quatro", db.Get("four"));
+                    var filename = Path.Combine(temp, "test.sst");
+                    if (File.Exists(filename))
+                        File.Delete(filename);
+                    sst.Open(filename);
+                    sst.Add("four", "quatro");
+                    sst.Add("one", "uno");
+                    sst.Add("two", "dos");
+                    sst.Finish();
+
+                    using (var db = RocksDb.Open(options, path, columnFamilies))
+                    {
+                        Assert.NotEqual("four", db.Get("four"));
+                        var ingestOptions = new IngestExternalFileOptions()
+                            .SetMoveFiles(true);
+                        db.IngestExternalFiles(new string[] { filename }, ingestOptions);
+                        Assert.Equal("quatro", db.Get("four"));
+                    }
                 }
             }
 

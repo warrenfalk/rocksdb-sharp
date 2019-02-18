@@ -15,10 +15,10 @@ namespace RocksDbSharp
         {
             if (envOptions == null)
                 envOptions = new EnvOptions();
-            var ioOptionsHandle = ioOptions?.Handle ?? IntPtr.Zero;
+            var opts = ioOptions ?? new ColumnFamilyOptions();
             References.EnvOptions = envOptions;
             References.IoOptions = ioOptions;
-            Handle = Native.Instance.rocksdb_sstfilewriter_create(envOptions.Handle, ioOptionsHandle);
+            Handle = Native.Instance.rocksdb_sstfilewriter_create(envOptions.Handle, opts.Handle);
         }
 
         public void Dispose()
