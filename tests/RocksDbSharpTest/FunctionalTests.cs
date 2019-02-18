@@ -271,19 +271,19 @@ namespace RocksDbSharpTest
 
             // test comparator
             unsafe {
-                var comparator = new IntegerStringComparator();
-
                 var opts = new ColumnFamilyOptions()
-                    .SetComparator(comparator);
+                    .SetComparator(new IntegerStringComparator());
 
                 var filename = Path.Combine(temp, "test.sst");
                 if (File.Exists(filename))
                     File.Delete(filename);
-                var sst = new SstFileWriter(ioOptions: opts);
-                sst.Open(filename);
-                sst.Add("111", "111");
-                sst.Add("1001", "1001"); // this order is only allowed using an integer comparator
-                sst.Finish();
+                using (var sst = new SstFileWriter(ioOptions: opts))
+                {
+                    sst.Open(filename);
+                    sst.Add("111", "111");
+                    sst.Add("1001", "1001"); // this order is only allowed using an integer comparator
+                    sst.Finish();
+                }
             }
 
             // test write batch with index
@@ -349,7 +349,7 @@ namespace RocksDbSharpTest
         {
             Comparison<long> Comparer { get; } = Comparer<long>.Default.Compare;
 
-            public override int Compare(IntPtr state, string a, string b)
+            public override int Compare(string a, string b)
                 => Comparer(long.TryParse(a, out long avalue) ? avalue : 0, long.TryParse(b, out long bvalue) ? bvalue : 0);
         }
     }

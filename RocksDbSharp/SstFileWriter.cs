@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RocksDbSharp
 {
-    public class SstFileWriter
+    public class SstFileWriter : IDisposable
     {
         public IntPtr Handle { get; protected set; }
 
@@ -21,14 +21,13 @@ namespace RocksDbSharp
             Handle = Native.Instance.rocksdb_sstfilewriter_create(envOptions.Handle, ioOptionsHandle);
         }
 
-        ~SstFileWriter()
+        public void Dispose()
         {
             if (Handle != IntPtr.Zero)
             {
-#if !NODESTROY
-                Native.Instance.rocksdb_sstfilewriter_destroy(Handle);
-#endif
+                var handle = Handle;
                 Handle = IntPtr.Zero;
+                Native.Instance.rocksdb_sstfilewriter_destroy(handle);
             }
         }
 
