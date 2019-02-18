@@ -61,18 +61,7 @@ namespace NativeImport
         {
             IntPtr procAddress = importer.GetProcAddress(lib, entryPoint);
             if (procAddress == IntPtr.Zero)
-            {
-                var invokeMethod = delegateType.GetTypeInfo().GetMethod("Invoke");
-                var parameters = invokeMethod.GetParameters().Select(p => Expression.Parameter(p.ParameterType)).ToArray();
-                var returnType = invokeMethod.ReturnType;
-                var errorMessage = string.Format("Unable to get address of {0} ({1})", entryPoint, delegateType);
-                Action throwAction = () => throw new NativeLoadException(errorMessage, null);
-                var callThrowExpr = Expression.Constant(throwAction, typeof(Action));
-                var defaultExpr = Expression.Default(returnType);
-                var block = Expression.Block(returnType, Expression.Invoke(callThrowExpr), defaultExpr);
-                var lambda = Expression.Lambda(delegateType, block, parameters);
-                return lambda.Compile();
-            }
+                return null;
             var method = typeof(CurrentFramework).GetTypeInfo().GetMethod(nameof(CurrentFramework.GetDelegateForFunctionPointer)).MakeGenericMethod(delegateType);
             return method.Invoke(null, new object[] { procAddress });
         }
@@ -240,7 +229,7 @@ namespace NativeImport
                 MethodInfo = m,
                 DelegateType = delegateMap[GetMethodSig(m)],
             }).ToArray();
-            var fields = delegates.Select((d, i) => typeBuilder.DefineField($"{d.MethodInfo.Name}_func_{i}", d.DelegateType, FieldAttributes.Private)).ToArray();
+            var delegateFields = delegates.Select((d, i) => typeBuilder.DefineField($"{d.MethodInfo.Name}_func_{i}", d.DelegateType, FieldAttributes.Private)).ToArray();
 
             // Create the constructor which will initialize the importer and library handle
             // and also use the importer to populate each of the delegate fields
@@ -266,7 +255,7 @@ namespace NativeImport
 
                 var getDelegateMethod = typeof(INativeLibImporter).GetTypeInfo().GetMethod("GetDelegate");
                 // Initialize each delegate field
-                for (int i = 0; i < fields.Length; i++)
+                for (int i = 0; i < delegateFields.Length; i++)
                 {
                     var delegateType = delegates[i].DelegateType;
 
@@ -280,7 +269,7 @@ namespace NativeImport
                     il.Emit(OpCodes.Call, typeof(System.Type).GetTypeInfo().GetMethod("GetTypeFromHandle")); // typeof()
                     il.Emit(OpCodes.Callvirt, getDelegateMethod); // importer.GetDelegate()
                     il.Emit(OpCodes.Isinst, delegateType); // as <delegate type>
-                    il.Emit(OpCodes.Stfld, fields[i]);
+                    il.Emit(OpCodes.Stfld, delegateFields[i]);
                 }
 
                 // End of constructor
@@ -313,21 +302,25 @@ namespace NativeImport
                 il.Emit(OpCodes.Ret);
             }
 
+            var nativeFunctionMissingExceptionConstructor = typeof(NativeFunctionMissingException).GetTypeInfo().GetConstructor(new[] { typeof(string) });
             // Now override each method from the base class
-            for (int i = 0; i < fields.Length; i++)
+            for (int i = 0; i < delegateFields.Length; i++)
             {
                 var baseMethod = delegates[i].MethodInfo;
                 var args = baseMethod.GetParameters();
                 var omethod = typeBuilder.DefineMethod(
-                    baseMethod.Name, 
-                    (baseMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot)) | MethodAttributes.Virtual, 
-                    baseMethod.CallingConvention, 
-                    baseMethod.ReturnType, 
+                    baseMethod.Name,
+                    (baseMethod.Attributes & ~(MethodAttributes.Abstract | MethodAttributes.NewSlot)) | MethodAttributes.Virtual,
+                    baseMethod.CallingConvention,
+                    baseMethod.ReturnType,
                     args.Select(arg => arg.ParameterType).ToArray()
                 );
                 var il = omethod.GetILGenerator();
                 il.Emit(OpCodes.Ldarg_0); // this
-                il.Emit(OpCodes.Ldfld, fields[i]); // {field}
+                il.Emit(OpCodes.Ldfld, delegateFields[i]); // {field}
+                il.Emit(OpCodes.Dup);
+                var error = il.DefineLabel();
+                il.Emit(OpCodes.Brfalse_S, error);
                 if (args.Length >= 1)
                     il.Emit(OpCodes.Ldarg_1);
                 if (args.Length >= 2)
@@ -339,6 +332,10 @@ namespace NativeImport
                 il.Emit(OpCodes.Tailcall);
                 il.Emit(OpCodes.Callvirt, delegates[i].DelegateType.GetTypeInfo().GetMethod("Invoke"));
                 il.Emit(OpCodes.Ret);
+                il.MarkLabel(error);
+                il.Emit(OpCodes.Ldstr, baseMethod.ToString());
+                il.Emit(OpCodes.Newobj, nativeFunctionMissingExceptionConstructor);
+                il.Emit(OpCodes.Throw);
             }
 
             var type = typeBuilder.CreateTypeInfo();
@@ -451,6 +448,19 @@ namespace NativeImport
             return typeBuilder.CreateTypeInfo();
         }
 
+    }
+
+    public class NativeFunctionMissingException : Exception
+    {
+        public NativeFunctionMissingException()
+            : base("Failed to find entry point")
+        {
+        }
+
+        public NativeFunctionMissingException(string entryPoint)
+            : base($"Failed to find entry point for {entryPoint}", null)
+        {
+        }
     }
 
     public class NativeLoadException : Exception
