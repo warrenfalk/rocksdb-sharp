@@ -50,6 +50,22 @@ namespace RocksDbSharp
             return this;
         }
 
+        /// <summary>
+        /// Enforce that the iterator only iterates over the same prefix as the seek.
+        /// This option is effective only for prefix seeks, i.e. prefix_extractor is
+        /// non-null for the column family and total_order_seek is false.  Unlike
+        /// iterate_upper_bound, prefix_same_as_start only works within a prefix
+        /// but in both directions.
+        /// Default: false
+        /// </summary>
+        /// <param name="prefixSameAsStart"></param>
+        /// <returns></returns>
+        public ReadOptions SetPrefixSameAsStart(bool prefixSameAsStart)
+        {
+            Native.Instance.rocksdb_readoptions_set_prefix_same_as_start(Handle, prefixSameAsStart);
+            return this;
+        }
+
         public unsafe ReadOptions SetIterateUpperBound(byte* key, ulong keylen)
         {
             UIntPtr klen = (UIntPtr)keylen;
