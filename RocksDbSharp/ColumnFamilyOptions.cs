@@ -5,13 +5,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Transitional;
 
 namespace RocksDbSharp
 {
     public class ColumnFamilyOptions : OptionsHandle
     {
-        Comparator Comparator { get; set; }
-        IntPtr ComparatorStatePtr { get; set; }
+        ComparatorReferences ComparatorRef { get; set; }
 
         public ColumnFamilyOptions SetBlockBasedTableFactory(BlockBasedTableOptions table_options)
         {
@@ -169,19 +169,26 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetComparator(Comparator comparator)
         {
-            // Hold onto the reference to the comparator
-            Comparator = comparator;
-
             // Allocate some memory for the name bytes
             var name = comparator.Name ?? comparator.GetType().FullName;
             var nameBytes = Encoding.UTF8.GetBytes(name + "\0");
             var namePtr = Marshal.AllocHGlobal(nameBytes.Length);
             Marshal.Copy(nameBytes, 0, namePtr, nameBytes.Length);
 
+            // Hold onto a reference to everything that needs to stay alive
+            ComparatorRef = new ComparatorReferences
+            {
+                GetComparator = () => comparator,
+                CompareDelegate = Comparator_Compare,
+                DestructorDelegate = Comparator_Destroy,
+                NameDelegate = Comparator_GetNamePtr,
+            };
+
             // Allocate the state
             var state = new ComparatorState
             {
                 NamePtr = namePtr,
+                GetComparatorPtr = CurrentFramework.GetFunctionPointerForDelegate<GetComparator>(ComparatorRef.GetComparator)
             };
             var statePtr = Marshal.AllocHGlobal(Marshal.SizeOf(state));
             Marshal.StructureToPtr(state, statePtr, false);
@@ -189,31 +196,45 @@ namespace RocksDbSharp
             // Create the comparator
             IntPtr handle = Native.Instance.rocksdb_comparator_create(
                 state: statePtr,
-                destructor: Comparator_Destroy,
-                compare: Comparator_Compare,
-                name: Comparator_GetNamePtr
+                destructor: ComparatorRef.DestructorDelegate,
+                compare: ComparatorRef.CompareDelegate,
+                name: ComparatorRef.NameDelegate
             );
-
-            ComparatorStatePtr = statePtr;
 
             return SetComparator(handle);
         }
 
-        private unsafe int Comparator_Compare(IntPtr state, IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen)
-            => Comparator.Compare(a, alen, b, blen);
+        delegate Comparator GetComparator();
+        private class ComparatorReferences
+        {
+            public GetComparator GetComparator { get; set; }
+            public DestructorDelegate DestructorDelegate { get; set; }
+            public CompareDelegate CompareDelegate { get; set; }
+            public NameDelegate NameDelegate { get; set; }
+        }
 
-        private unsafe void Comparator_Destroy(IntPtr state)
+        private unsafe int Comparator_Compare(IntPtr state, IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen)
+        {
+            var getComparatorPtr = (*((ComparatorState*)state)).GetComparatorPtr;
+            var getComparator = CurrentFramework.GetDelegateForFunctionPointer<GetComparator>(getComparatorPtr);
+            var comparator = getComparator();
+            return comparator.Compare(a, alen, b, blen);
+        }
+
+        private unsafe static void Comparator_Destroy(IntPtr state)
         {
             var namePtr = (*((ComparatorState*)state)).NamePtr;
             Marshal.FreeHGlobal(namePtr);
             Marshal.FreeHGlobal(state);
         }
-        private unsafe IntPtr Comparator_GetNamePtr(IntPtr state)
+
+        private unsafe static IntPtr Comparator_GetNamePtr(IntPtr state)
             => (*((ComparatorState*)state)).NamePtr;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct ComparatorState
         {
+            public IntPtr GetComparatorPtr { get; set; }
             public IntPtr NamePtr { get; set; }
         }
 
