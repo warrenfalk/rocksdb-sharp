@@ -61,6 +61,9 @@ namespace RocksDbSharpTest
                 Assert.Equal(8, length);
                 Assert.Equal(new byte[] { 0, 1, 2, 3, 4 }, buffer.Take((int)Math.Min(buffer.Length, length)));
 
+                length = db.Get(Encoding.UTF8.GetBytes("bogus"), buffer, 0, buffer.Length);
+                Assert.Equal(-1, length);
+
                 // Write batches
                 // With strings
                 using (WriteBatch batch = new WriteBatch()
