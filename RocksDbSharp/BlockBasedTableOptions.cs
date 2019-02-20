@@ -75,7 +75,7 @@ namespace RocksDbSharp
 
         public BlockBasedTableOptions SetBlockCache(Cache blockCache)
         {
-            References.BlockCache = blockCache.Handle;
+            References.BlockCache = blockCache;
             Native.Instance.rocksdb_block_based_options_set_block_cache(Handle, blockCache.Handle);
             return this;
         }

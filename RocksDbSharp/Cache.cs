@@ -22,9 +22,6 @@ namespace RocksDbSharp
             }
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="bits_per_key">Bits per key.</param>
         public static Cache CreateLru(ulong capacity)
         {
             IntPtr handle = Native.Instance.rocksdb_cache_create_lru(new UIntPtr(capacity));
