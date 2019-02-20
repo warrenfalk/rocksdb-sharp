@@ -59,6 +59,10 @@ namespace Transitional
 #if NETSTANDARD1_6
         {           
             int vlength = enc.GetCharCount((byte*)value, length);
+            if (vlength == 0)
+            {
+                return string.Empty;
+            }
             fixed (char* v = new char[vlength])
             {
                 enc.GetChars((byte*)value, length, v, vlength);
