@@ -198,9 +198,22 @@ namespace NativeImport
             }
         }
 
+        private static string GetRuntimeId(Architecture processArchitecture)
+        {
+            var arch = processArchitecture.ToString().ToLower();
+            var os =
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" :
+                "win";
+            return $"{os}-{arch}";
+        }
+
+
+
         public static T Import<T>(INativeLibImporter importer, string libName, string version, bool suppressUnload) where T : class
         {
             var subdir = GetArchName(RuntimeInformation.ProcessArchitecture);
+            var runtimeId = GetRuntimeId(RuntimeInformation.ProcessArchitecture);
 
             var assemblyName = new AssemblyName("DynamicLink");
             var assemblyBuilder = CurrentFramework.DefineDynamicAssembly(assemblyName, System.Reflection.Emit.AssemblyBuilderAccess.Run);
@@ -348,6 +361,7 @@ namespace NativeImport
             // try to load locally
             var paths = new[]
             {
+                Path.Combine("runtimes", runtimeId, "native"),
                 Path.Combine("native", subdir),
                 "native",
                 subdir,
