@@ -129,8 +129,8 @@ namespace RocksDbSharp
             unsafe
             {
                 var ptr = Native.Instance.rocksdb_get(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, out long valLength, cf);
-                valLength = Math.Min(length, valLength);
-                Marshal.Copy(ptr, buffer, (int)offset, (int)valLength);
+                var copyLength = Math.Min(length, valLength);
+                Marshal.Copy(ptr, buffer, (int)offset, (int)copyLength);
                 Native.Instance.rocksdb_free(ptr);
                 return valLength;
             }
