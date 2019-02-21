@@ -12,6 +12,7 @@ namespace RocksDbSharp
     public class ColumnFamilyOptions : OptionsHandle
     {
         ComparatorReferences ComparatorRef { get; set; }
+        MergeOperatorReferences MergeOperatorRef { get; set; }
 
         public ColumnFamilyOptions SetBlockBasedTableFactory(BlockBasedTableOptions table_options)
         {
@@ -235,6 +236,111 @@ namespace RocksDbSharp
         private struct ComparatorState
         {
             public IntPtr GetComparatorPtr { get; set; }
+            public IntPtr NamePtr { get; set; }
+        }
+
+        /// <summary>
+        /// REQUIRES: The client must provide a merge operator if Merge operation
+        /// needs to be accessed. Calling Merge on a DB without a merge operator
+        /// would result in Status::NotSupported. The client must ensure that the
+        /// merge operator supplied here has the same name and *exactly* the same
+        /// semantics as the merge operator provided to previous open calls on
+        /// the same DB. The only exception is reserved for upgrade, where a DB
+        /// previously without a merge operator is introduced to Merge operation
+        /// for the first time. It's necessary to specify a merge operator when
+        /// openning the DB in this case.
+        /// Default: nullptr
+        /// </summary>
+        public ColumnFamilyOptions SetMergeOperator(MergeOperator mergeOperator)
+        {
+            // Allocate some memory for the name bytes
+            var name = mergeOperator.Name ?? mergeOperator.GetType().FullName;
+            var nameBytes = Encoding.UTF8.GetBytes(name + "\0");
+            var namePtr = Marshal.AllocHGlobal(nameBytes.Length);
+            Marshal.Copy(nameBytes, 0, namePtr, nameBytes.Length);
+
+            // Hold onto a reference to everything that needs to stay alive
+            MergeOperatorRef = new MergeOperatorReferences
+            {
+                GetMergeOperator = () => mergeOperator,
+                DestructorDelegate = MergeOperator_Destroy,
+                NameDelegate = MergeOperator_GetNamePtr,
+                DeleteValueDelegate = MergeOperator_DeleteValue,
+                FullMergeDelegate = MergeOperator_FullMerge,
+                PartialMergeDelegate = MergeOperator_PartialMerge,
+            };
+
+            // Allocate the state
+            var state = new MergeOperatorState
+            {
+                NamePtr = namePtr,
+                GetMergeOperatorPtr = CurrentFramework.GetFunctionPointerForDelegate<GetMergeOperator>(MergeOperatorRef.GetMergeOperator)
+            };
+            var statePtr = Marshal.AllocHGlobal(Marshal.SizeOf(state));
+            Marshal.StructureToPtr(state, statePtr, false);
+
+            // Create the merge operator
+            IntPtr handle = Native.Instance.rocksdb_mergeoperator_create(
+                state: statePtr,
+                destructor: MergeOperatorRef.DestructorDelegate,
+                delete_value: MergeOperatorRef.DeleteValueDelegate,
+                full_merge: MergeOperatorRef.FullMergeDelegate,
+                partial_merge: MergeOperatorRef.PartialMergeDelegate,
+                name: MergeOperatorRef.NameDelegate
+            );
+
+            return SetMergeOperator(handle);
+        }
+
+        private static MergeOperator GetMergeOperatorFromPtr(IntPtr getMergeOperatorPtr)
+        {
+            var getMergeOperator = CurrentFramework.GetDelegateForFunctionPointer<GetMergeOperator>(getMergeOperatorPtr);
+            return getMergeOperator();
+        }
+
+        private unsafe static IntPtr MergeOperator_PartialMerge(IntPtr state, IntPtr key, UIntPtr keyLength, IntPtr operandsList, IntPtr operandsListLength, int numOperands, IntPtr success, IntPtr newValueLength)
+        {
+            var mergeOperator = GetMergeOperatorFromPtr((*((MergeOperatorState*)state)).GetMergeOperatorPtr);
+            return mergeOperator.PartialMerge(key, keyLength, operandsList, operandsListLength, numOperands, success, newValueLength);
+        }
+
+        private unsafe static IntPtr MergeOperator_FullMerge(IntPtr state, IntPtr key, UIntPtr keyLength, IntPtr existingValue, UIntPtr existingValueLength, IntPtr operandsList, IntPtr operandsListLength, int numOperands, IntPtr success, IntPtr newValueLength)
+        {
+            var mergeOperator = GetMergeOperatorFromPtr((*((MergeOperatorState*)state)).GetMergeOperatorPtr);
+            return mergeOperator.FullMerge(key, keyLength, existingValue, existingValueLength, operandsList, operandsListLength, numOperands, success, newValueLength);
+        }
+
+        private unsafe static void MergeOperator_DeleteValue(IntPtr state, IntPtr value, UIntPtr valueLength)
+        {
+            var mergeOperator = GetMergeOperatorFromPtr((*((MergeOperatorState*)state)).GetMergeOperatorPtr);
+            mergeOperator.DeleteValue(value, valueLength);
+        }
+
+        delegate MergeOperator GetMergeOperator();
+        private class MergeOperatorReferences
+        {
+            public GetMergeOperator GetMergeOperator { get; set; }
+            public DestructorDelegate DestructorDelegate { get; set; }
+            public NameDelegate NameDelegate { get; set; }
+            public DeleteValueDelegate DeleteValueDelegate { get; set; }
+            public FullMergeDelegate FullMergeDelegate { get; set; }
+            public PartialMergeDelegate PartialMergeDelegate { get; set; }
+        }
+
+        private unsafe static void MergeOperator_Destroy(IntPtr state)
+        {
+            var namePtr = (*((MergeOperatorState*)state)).NamePtr;
+            Marshal.FreeHGlobal(namePtr);
+            Marshal.FreeHGlobal(state);
+        }
+
+        private unsafe static IntPtr MergeOperator_GetNamePtr(IntPtr state)
+            => (*((MergeOperatorState*)state)).NamePtr;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MergeOperatorState
+        {
+            public IntPtr GetMergeOperatorPtr { get; set; }
             public IntPtr NamePtr { get; set; }
         }
 

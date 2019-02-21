@@ -375,6 +375,28 @@ namespace RocksDbSharpTest
 
             }
 
+            // Smoke test MergeOperator
+            {
+                var dbname = "test-merge-operator";
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+                var optsTest = (DbOptions)new RocksDbSharp.DbOptions()
+                  .SetCreateIfMissing(true)
+                  .SetMergeOperator(MergeOperators.Create(
+                      name: "test-merge-operator",
+                      partialMerge: (key, keyLength, operandsList, operandsListLength, numOperands, success, newValueLength) => IntPtr.Zero,
+                      fullMerge: (key, keyLength, existingValue, existingValueLength, operandsList, operandsListLength, numOperands, success, newValueLength) => IntPtr.Zero,
+                      deleteValue: (value, valueLength) => { }
+                  ));
+                GC.Collect();
+                using (var db = RocksDbSharp.RocksDb.Open(optsTest, dbname))
+                {
+                }
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+
+            }
+
             // Test that GC does not cause access violation on Comparers
             {
                 var dbname = "test-av-error";
