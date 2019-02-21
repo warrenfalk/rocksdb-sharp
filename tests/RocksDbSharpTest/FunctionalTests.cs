@@ -359,25 +359,27 @@ namespace RocksDbSharpTest
 
             // Smoke test various options
             {
-                if (Directory.Exists("test-options"))
-                    Directory.Delete("test-options", true);
+                var dbname = "test-options";
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
                 var optsTest = (DbOptions)new RocksDbSharp.DbOptions()
                   .SetCreateIfMissing(true)
                   .SetCreateMissingColumnFamilies(true)
                   .SetBlockBasedTableFactory(new BlockBasedTableOptions().SetBlockCache(Cache.CreateLru(1024 * 1024)));
                 GC.Collect();
-                using (var db = RocksDbSharp.RocksDb.Open(optsTest, "test-av-error", columnFamilies))
+                using (var db = RocksDbSharp.RocksDb.Open(optsTest, dbname))
                 {
                 }
-                if (Directory.Exists("test-options"))
-                    Directory.Delete("test-options", true);
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
 
             }
 
             // Test that GC does not cause access violation on Comparers
             {
-                if (Directory.Exists("test-av-error"))
-                    Directory.Delete("test-av-error", true);
+                var dbname = "test-av-error";
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
                 options = new RocksDbSharp.DbOptions()
                   .SetCreateIfMissing(true)
                   .SetCreateMissingColumnFamilies(true);
@@ -389,11 +391,11 @@ namespace RocksDbSharpTest
                     },
                 };
                 GC.Collect();
-                using (var db = RocksDbSharp.RocksDb.Open(options, "test-av-error", columnFamilies))
+                using (var db = RocksDbSharp.RocksDb.Open(options, dbname, columnFamilies))
                 {
                 }
-                if (Directory.Exists("test-av-error"))
-                    Directory.Delete("test-av-error", true);
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
             }
 
         }
