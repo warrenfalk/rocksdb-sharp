@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,6 +10,8 @@ namespace RocksDbSharp
 {
     public class ColumnFamilyOptions : OptionsHandle
     {
+        Comparator Comparator { get; set; }
+        IntPtr ComparatorStatePtr { get; set; }
 
         public ColumnFamilyOptions SetBlockBasedTableFactory(BlockBasedTableOptions table_options)
         {
@@ -156,8 +159,63 @@ namespace RocksDbSharp
             return this;
         }
 
+        /// <summary>
+        /// Comparator used to define the order of keys in the table.
+        /// Default: a comparator that uses lexicographic byte-wise ordering
+        ///
+        /// REQUIRES: The client must ensure that the comparator supplied
+        /// here has the same name and orders keys *exactly* the same as the
+        /// comparator provided to previous open calls on the same DB.
+        /// </summary>
         public ColumnFamilyOptions SetComparator(Comparator comparator)
-            => SetComparator(comparator.Handle);
+        {
+            // Hold onto the reference to the comparator
+            Comparator = comparator;
+
+            // Allocate some memory for the name bytes
+            var name = comparator.Name ?? comparator.GetType().FullName;
+            var nameBytes = Encoding.UTF8.GetBytes(name + "\0");
+            var namePtr = Marshal.AllocHGlobal(nameBytes.Length);
+            Marshal.Copy(nameBytes, 0, namePtr, nameBytes.Length);
+
+            // Allocate the state
+            var state = new ComparatorState
+            {
+                NamePtr = namePtr,
+            };
+            var statePtr = Marshal.AllocHGlobal(Marshal.SizeOf(state));
+            Marshal.StructureToPtr(state, statePtr, false);
+
+            // Create the comparator
+            IntPtr handle = Native.Instance.rocksdb_comparator_create(
+                state: statePtr,
+                destructor: Comparator_Destroy,
+                compare: Comparator_Compare,
+                name: Comparator_GetNamePtr
+            );
+
+            ComparatorStatePtr = statePtr;
+
+            return SetComparator(handle);
+        }
+
+        private unsafe int Comparator_Compare(IntPtr state, IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen)
+            => Comparator.Compare(a, alen, b, blen);
+
+        private unsafe void Comparator_Destroy(IntPtr state)
+        {
+            var namePtr = (*((ComparatorState*)state)).NamePtr;
+            Marshal.FreeHGlobal(namePtr);
+            Marshal.FreeHGlobal(state);
+        }
+        private unsafe IntPtr Comparator_GetNamePtr(IntPtr state)
+            => (*((ComparatorState*)state)).NamePtr;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct ComparatorState
+        {
+            public IntPtr NamePtr { get; set; }
+        }
 
         /// <summary>
         /// REQUIRES: The client must provide a merge operator if Merge operation
