@@ -40,10 +40,19 @@ namespace RocksDbSharp
 {
     using size_t = System.UIntPtr;
 
+    public delegate void PutDelegate(IntPtr p0, IntPtr k, size_t klen, IntPtr v, size_t vlen);
+    public delegate void DeletedDelegate(IntPtr p0, IntPtr k, size_t klen);
+    public delegate void DestructorDelegate(IntPtr p0);
+    public delegate IntPtr NameDelegate(IntPtr p0);
+    public delegate int CompareDelegate(IntPtr p0, IntPtr a, size_t alen, IntPtr b, size_t blen);
+
     //void (*put)(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ UIntPtr klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ UIntPtr vlen),
+    [Obsolete("Use PutDelegate")]
     public delegate void WriteBatchIteratePutCallback(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ size_t klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ size_t vlen);
 //void (*deleted)(void*, const char* k, /*(size_t)*/ UIntPtr klen)
+[Obsolete("Use DeletedDelegate")]
 public delegate void WriteBatchIterateDeleteCallback(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ size_t klen);
+
 public abstract partial class Native
 {
 /* BEGIN c.h */
@@ -567,12 +576,19 @@ public unsafe abstract void rocksdb_writebatch_delete_rangev_cf(
     /*(const size_t)*/ IntPtr end_keys_list_sizes);
 public abstract void rocksdb_writebatch_put_log_data(
     /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, byte[] blob, UIntPtr len);
+[Obsolete("Use PutDelegate and DeletedDelegate overload")]
 public abstract void rocksdb_writebatch_iterate(
     /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(void*)*/ IntPtr state,
     //void (*put)(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ ulong vlen),
     WriteBatchIteratePutCallback put,
     //void (*deleted)(void*, const char* k, /*(size_t)*/ ulong klen)
     WriteBatchIterateDeleteCallback deleted);
+public abstract void rocksdb_writebatch_iterate(
+    /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(void*)*/ IntPtr state,
+    //void (*put)(IntPtr s, /*(const char*)*/ IntPtr k, /*(size_t)*/ ulong klen, /*(const char*)*/ IntPtr v, /*(size_t)*/ ulong vlen),
+    PutDelegate put,
+    //void (*deleted)(void*, const char* k, /*(size_t)*/ ulong klen)
+    DeletedDelegate deleted);
 public abstract /* const char* */ IntPtr rocksdb_writebatch_data(
     /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch, /*(size_t*)*/ out size_t size);
 public abstract void rocksdb_writebatch_set_save_point(
@@ -691,11 +707,17 @@ public abstract void rocksdb_writebatch_wi_put_log_data(
     /*(rocksdb_writebatch_wi_t*)*/ IntPtr b, /*(const char*)*/ byte[] blob, /*(size_t)*/ size_t len);
 public abstract void rocksdb_writebatch_wi_put_log_data(
     /*(rocksdb_writebatch_wi_t*)*/ IntPtr b, /*(const char*)*/ IntPtr blob, /*(size_t)*/ size_t len);
+[Obsolete("Use PutDelegate and DeletedDelegate overload")]
 public abstract void rocksdb_writebatch_wi_iterate(
     /*(rocksdb_writebatch_wi_t*)*/ IntPtr b,
     /*(void*)*/ IntPtr state,
     /*(void (*put)(void*, const char* k, size_t klen, const char* v, size_t vlen))*/ WriteBatchIteratePutCallback put,
     /*(void (*deleted)(void*, const char* k, size_t klen))*/ WriteBatchIterateDeleteCallback deleted);
+public abstract void rocksdb_writebatch_wi_iterate(
+    /*(rocksdb_writebatch_wi_t*)*/ IntPtr b,
+    /*(void*)*/ IntPtr state,
+    /*(void (*put)(void*, const char* k, size_t klen, const char* v, size_t vlen))*/ PutDelegate put,
+    /*(void (*deleted)(void*, const char* k, size_t klen))*/ DeletedDelegate deleted);
 public abstract /*(const char*)*/ IntPtr rocksdb_writebatch_wi_data(
     /*(rocksdb_writebatch_wi_t*)*/ IntPtr b,
     /*(size_t*)*/ out size_t size);
@@ -809,9 +831,15 @@ public abstract void rocksdb_block_based_options_set_format_version(
     /*(rocksdb_block_based_table_options_t*)*/ IntPtr bbto, int format_version);
 }
 public enum BlockBasedTableIndexType {
+  [Obsolete("Use Binary")]
   BinarySearch = 0,
+  Binary = 0,
+  [Obsolete("Use Hash")]
   HashSearch = 1,
+  Hash = 1,
+  [Obsolete("Use TwoLevelIndex")]
   TwoLevelIndexSearch = 2,
+  TwoLevelIndex = 2,
 };
 public abstract partial class Native {
 public abstract void rocksdb_block_based_options_set_index_type(
@@ -936,8 +964,6 @@ public abstract void rocksdb_options_set_max_bytes_for_level_multiplier_addition
             /* rocksdb_options_t* */ IntPtr options, /*(int*)*/ int[] level_values, UIntPtr num_levels);
 public abstract void rocksdb_options_enable_statistics(
     /* rocksdb_options_t* */ IntPtr options);
-public abstract void rocksdb_options_set_skip_stats_update_on_db_open(
-    /* rocksdb_options_t* */ IntPtr opt, /* unsigned char */ bool val);
 
 /* returns a pointer to a malloc()-ed, null terminated string */
 public abstract /* char* */ IntPtr rocksdb_options_statistics_get_string(
@@ -1073,6 +1099,14 @@ public abstract void rocksdb_options_set_report_bg_io_stats(
             /* rocksdb_options_t* */ IntPtr options, int value);
 
 }
+public enum Recovery
+{
+    TolerateCorruptedTailRecords = 0,
+    AbsoluteConsistency = 1,
+    PointInTime = 2,
+    SkipAnyCorruptedRecords = 3,
+}
+[Obsolete("Use Recovery")]
 public enum WalRecoveryMode {  
   rocksdb_tolerate_corrupted_tail_records_recovery = 0,
   rocksdb_absolute_consistency_recovery = 1,
@@ -1080,10 +1114,24 @@ public enum WalRecoveryMode {
   rocksdb_skip_any_corrupted_records_recovery = 3
 }
 public abstract partial class Native {
+[Obsolete("Use Recovery enum")]
 public abstract void rocksdb_options_set_wal_recovery_mode(
     /* rocksdb_options_t* */ IntPtr options, WalRecoveryMode mode);
+public abstract void rocksdb_options_set_wal_recovery_mode(
+    /* rocksdb_options_t* */ IntPtr options, Recovery mode);
 }
-
+public enum Compression
+{
+    No = 0,
+    Snappy = 1,
+    Zlib = 2,
+    Bz2 = 3,
+    Lz4 = 4,
+    Lz4hc = 5,
+    Xpress = 6,
+    Zstd = 7,
+}
+[Obsolete("Use Compression")]
 public enum CompressionTypeEnum {
   rocksdb_no_compression = 0,
   rocksdb_snappy_compression = 1,
@@ -1095,17 +1143,30 @@ public enum CompressionTypeEnum {
   rocksdb_zstd_compression = 7
 }
 public abstract partial class Native {
+[Obsolete("Use Compression enum")]
 public abstract void rocksdb_options_set_compression(
             /* rocksdb_options_t* */ IntPtr options, CompressionTypeEnum value);
+public abstract void rocksdb_options_set_compression(
+            /* rocksdb_options_t* */ IntPtr options, Compression value);
 }
+public enum Compaction
+{
+    Level = 0,
+    Universal = 1,
+    Fifo = 2,
+}
+[Obsolete("Use Compaction")]
 public enum CompactionStyleEnum {
   rocksdb_level_compaction = 0,
   rocksdb_universal_compaction = 1,
   rocksdb_fifo_compaction = 2,
 }
 public abstract partial class Native {
+[Obsolete("Use Compaction enum")]
 public abstract void rocksdb_options_set_compaction_style(
     /* rocksdb_options_t* */ IntPtr options, CompactionStyleEnum value);
+public abstract void rocksdb_options_set_compaction_style(
+    /* rocksdb_options_t* */ IntPtr options, Compaction value);
 public abstract void rocksdb_options_set_universal_compaction_options(
             /* rocksdb_options_t* */ IntPtr options, /*(rocksdb_universal_compaction_options_t*)*/ IntPtr universal_compaction_options);
 public abstract void rocksdb_options_set_fifo_compaction_options(
@@ -1275,6 +1336,11 @@ public abstract /* rocksdb_comparator_t* */ IntPtr rocksdb_comparator_create(
                    /*(int (*compare)(void*, const char* a, size_t alen, const char* b,
                                   size_t blen))*/ IntPtr compare,
     /*(const char* (*name)(void*))*/ IntPtr getName);
+public abstract /* rocksdb_comparator_t* */ IntPtr rocksdb_comparator_create(
+    /*(void*)*/ IntPtr state, /*(void (*destructor)(void*))*/ DestructorDelegate destructor,
+                   /*(int (*compare)(void*, const char* a, size_t alen, const char* b,
+                                  size_t blen))*/ CompareDelegate compare,
+    /*(const char* (*name)(void*))*/ NameDelegate name);
 public abstract void rocksdb_comparator_destroy(
     /*(rocksdb_comparator_t*)*/IntPtr comparator);
 
@@ -1416,19 +1482,17 @@ public abstract void rocksdb_flushoptions_set_wait(
 #endregion
 
 #region Cache
-#if ROCKSDB_CACHE
 
 public abstract /* rocksdb_cache_t* */ IntPtr rocksdb_cache_create_lru(
     size_t capacity);
-public abstract void rocksdb_cache_destroy(rocksdb_cache_t* cache);
+public abstract void rocksdb_cache_destroy(/* rocksdb_cache_t* */ IntPtr cache);
 public abstract void rocksdb_cache_set_capacity(
-    rocksdb_cache_t* cache, size_t capacity);
-public abstract /*(size_t)*/ ulong
+    /* rocksdb_cache_t* */ IntPtr cache, size_t capacity);
+public abstract /*(size_t)*/ UIntPtr
 rocksdb_cache_get_usage(/*(rocksdb_cache_t*)*/ IntPtr cache);
-public abstract /*(size_t)*/ ulong
+public abstract /*(size_t)*/ UIntPtr
 rocksdb_cache_get_pinned_usage(/*(rocksdb_cache_t*)*/ IntPtr cache);
 
-#endif
 #endregion
 
 #region DBPath

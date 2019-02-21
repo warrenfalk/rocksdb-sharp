@@ -270,7 +270,14 @@ namespace RocksDbSharp
             return this;
         }
 
+        [Obsolete("Use PutDelegate and DeletedDelegate")]
         public WriteBatchWithIndex Iterate(IntPtr state, WriteBatchIteratePutCallback put, WriteBatchIterateDeleteCallback deleted)
+        {
+            Native.Instance.rocksdb_writebatch_wi_iterate(handle, state, put, deleted);
+            return this;
+        }
+
+        public WriteBatchWithIndex Iterate(IntPtr state, PutDelegate put, DeletedDelegate deleted)
         {
             Native.Instance.rocksdb_writebatch_wi_iterate(handle, state, put, deleted);
             return this;
@@ -340,7 +347,10 @@ namespace RocksDbSharp
             => DeleteRange(startKey, sklen, endKey, eklen, cf);
         IWriteBatch IWriteBatch.PutLogData(byte[] blob, ulong len)
             => PutLogData(blob, len);
+        [Obsolete("Use PutDelegate and DeletedDelegate")]
         IWriteBatch IWriteBatch.Iterate(IntPtr state, WriteBatchIteratePutCallback put, WriteBatchIterateDeleteCallback deleted)
+            => Iterate(state, put, deleted);
+        IWriteBatch IWriteBatch.Iterate(IntPtr state, PutDelegate put, DeletedDelegate deleted)
             => Iterate(state, put, deleted);
     }
 }
