@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using byte_ptr = System.IntPtr;
 using int_ptr = System.IntPtr;
@@ -20,6 +20,7 @@ using const_char_ptr_ptr = System.IntPtr;
 using const_size_t_ptr = System.IntPtr;
 using void_ptr = System.IntPtr;
 using size_t_ptr = System.IntPtr;
+using delegate_ptr = System.IntPtr;
 
 #pragma warning disable IDE1006 // Intentionally violating naming conventions because this is meant to match the C API
 namespace RocksDbSharp
@@ -1258,6 +1259,12 @@ namespace RocksDbSharp
         public abstract void rocksdb_writebatch_iterate(
             rocksdb_writebatch_t_ptr writebatch,
             void_ptr state,
+            delegate_ptr put,
+            delegate_ptr deleted);
+
+        public abstract void rocksdb_writebatch_iterate(
+            rocksdb_writebatch_t_ptr writebatch,
+            void_ptr state,
             PutDelegate put,
             DeletedDelegate deleted);
 
@@ -1624,6 +1631,12 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_t_ptr writebatch_wi,
             byte[] blob,
             size_t len);
+
+        public abstract void rocksdb_writebatch_wi_iterate(
+            rocksdb_writebatch_wi_t_ptr b,
+            void_ptr state,
+            delegate_ptr put,
+            delegate_ptr deleted);
 
         public abstract void rocksdb_writebatch_wi_iterate(
             rocksdb_writebatch_wi_t_ptr b,
@@ -2373,6 +2386,12 @@ namespace RocksDbSharp
     {
         public abstract rocksdb_compactionfilter_t_ptr rocksdb_compactionfilter_create(
             void_ptr state,
+            delegate_ptr destructor,
+            delegate_ptr filter,
+            delegate_ptr name);
+
+        public abstract rocksdb_compactionfilter_t_ptr rocksdb_compactionfilter_create(
+            void_ptr state,
             DestructorDelegate destructor,
             FilterDelegate filter,
             NameDelegate name);
@@ -2402,6 +2421,12 @@ namespace RocksDbSharp
     {
         public abstract rocksdb_compactionfilterfactory_t_ptr rocksdb_compactionfilterfactory_create(
             void_ptr state,
+            delegate_ptr destructor,
+            delegate_ptr create_compaction_filter,
+            delegate_ptr name);
+
+        public abstract rocksdb_compactionfilterfactory_t_ptr rocksdb_compactionfilterfactory_create(
+            void_ptr state,
             DestructorDelegate destructor,
             CreateCompactionFilterDelegate create_compaction_filter,
             NameDelegate name);
@@ -2416,6 +2441,12 @@ namespace RocksDbSharp
     {
         public abstract rocksdb_comparator_t_ptr rocksdb_comparator_create(
             void_ptr state,
+            delegate_ptr destructor,
+            delegate_ptr compare,
+            delegate_ptr name);
+
+        public abstract rocksdb_comparator_t_ptr rocksdb_comparator_create(
+            void_ptr state,
             DestructorDelegate destructor,
             CompareDelegate compare,
             NameDelegate name);
@@ -2428,6 +2459,14 @@ namespace RocksDbSharp
     #region Filter policy
     public partial class Native
     {
+        public abstract rocksdb_filterpolicy_t_ptr rocksdb_filterpolicy_create(
+            void_ptr state,
+            delegate_ptr destructor,
+            delegate_ptr create_filter,
+            delegate_ptr key_may_match,
+            delegate_ptr delete_filter,
+            delegate_ptr name);
+
         public abstract rocksdb_filterpolicy_t_ptr rocksdb_filterpolicy_create(
             void_ptr state,
             DestructorDelegate destructor,
@@ -2450,6 +2489,14 @@ namespace RocksDbSharp
     #region Merge Operator
     public partial class Native
     {
+        public abstract rocksdb_mergeoperator_t_ptr rocksdb_mergeoperator_create(
+            void_ptr state,
+            delegate_ptr destructor,
+            delegate_ptr full_merge,
+            delegate_ptr partial_merge,
+            delegate_ptr delete_value,
+            delegate_ptr name);
+
         public abstract rocksdb_mergeoperator_t_ptr rocksdb_mergeoperator_create(
             void_ptr state,
             DestructorDelegate destructor,
@@ -2814,6 +2861,14 @@ namespace RocksDbSharp
     #region SliceTransform
     public partial class Native
     {
+        public abstract rocksdb_slicetransform_t_ptr rocksdb_slicetransform_create(
+            void_ptr state,
+            delegate_ptr destructor,
+            delegate_ptr transform,
+            delegate_ptr in_domain,
+            delegate_ptr in_range,
+            delegate_ptr name);
+
         public abstract rocksdb_slicetransform_t_ptr rocksdb_slicetransform_create(
             void_ptr state,
             DestructorDelegate destructor,
