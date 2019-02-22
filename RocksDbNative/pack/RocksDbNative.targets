@@ -23,14 +23,6 @@
       <Link>native\amd64\librocksdb.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="$(MSBuildThisFileDirectory)native\i386\librocksdb.so">
-      <Link>native\i386\librocksdb.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(MSBuildThisFileDirectory)native\i386\librocksdb.dylib">
-      <Link>native\i386\librocksdb.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
 
   </ItemGroup>
 </Project>
