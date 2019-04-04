@@ -11,7 +11,7 @@
     <Authors>Warren Falk</Authors>
     <Company>Warren Falk</Company>
     <Product>Warren Falk</Product>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/warrenfalk/rocksdb-sharp/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/warrenfalk/rocksdb-sharp</PackageProjectUrl>
     <PackageIconUrl>http://rocksdb.org/static/logo.svg</PackageIconUrl>
     <RepositoryUrl>https://github.com/warrenfalk/rocksdb-sharp.git</RepositoryUrl>
