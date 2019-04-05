@@ -375,6 +375,21 @@ namespace RocksDbSharpTest
 
             }
 
+            // Smoke test OpenWithTtl
+            {
+                var dbname = "test-with-ttl";
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+                var optsTest = (DbOptions)new RocksDbSharp.DbOptions()
+                  .SetCreateIfMissing(true)
+                  .SetCreateMissingColumnFamilies(true);
+                using (var db = RocksDbSharp.RocksDb.OpenWithTtl(optsTest, dbname, 1))
+                {
+                }
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+            }
+
             // Smoke test MergeOperator
             {
                 var dbname = "test-merge-operator";

@@ -51,6 +51,12 @@ namespace RocksDbSharp
             return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
         }
 
+        public static RocksDb OpenWithTtl(OptionsHandle options, string path, int ttlSeconds)
+        {
+            IntPtr db = Native.Instance.rocksdb_open_with_ttl(options.Handle, path, ttlSeconds);
+            return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
+        }
+
         public static RocksDb Open(DbOptions options, string path, ColumnFamilies columnFamilies)
         {
             string[] cfnames = columnFamilies.Names.ToArray();
