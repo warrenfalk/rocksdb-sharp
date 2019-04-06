@@ -1171,5 +1171,26 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_put_log_data(writeBatch, blob, new UIntPtr(len));
         }
 
+        public byte[] rocksdb_iter_key(IntPtr iterator)
+        {
+            IntPtr buffer = rocksdb_iter_key(iterator, out UIntPtr length);
+            byte[] result = new byte[(int)length];
+            Marshal.Copy(buffer, result, 0, (int)length);
+            // Do not free, this is owned by the iterator and will be freed there
+            //rocksdb_free(buffer);
+            return result;
+        }
+
+        public byte[] rocksdb_iter_value(IntPtr iterator)
+        {
+            IntPtr buffer = rocksdb_iter_value(iterator, out UIntPtr length);
+            byte[] result = new byte[(int)length];
+            Marshal.Copy(buffer, result, 0, (int)length);
+            // Do not free, this is owned by the iterator and will be freed there
+            //rocksdb_free(buffer);
+            return result;
+        }
+
+
     }
 }
