@@ -31,7 +31,7 @@ namespace RocksDbSharp
 
         public BlockBasedTableOptions SetBlockSize(ulong blockSize)
         {
-            Native.Instance.rocksdb_block_based_options_set_block_size(Handle, blockSize);
+            Native.Instance.rocksdb_block_based_options_set_block_size(Handle, (UIntPtr)blockSize);
             return this;
         }
 

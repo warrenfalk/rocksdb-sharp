@@ -142,7 +142,7 @@ namespace RocksDbSharp
         //// </summary>
         public ColumnFamilyOptions SetCompactionReadaheadSize(ulong size)
         {
-            Native.Instance.rocksdb_options_compaction_readahead_size(Handle, size);
+            Native.Instance.rocksdb_options_compaction_readahead_size(Handle, (UIntPtr)size);
             return this;
         }
 
@@ -423,7 +423,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetWriteBufferSize(ulong value)
         {
-            Native.Instance.rocksdb_options_set_write_buffer_size(Handle, value);
+            Native.Instance.rocksdb_options_set_write_buffer_size(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -676,7 +676,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetMaxBytesForLevelMultiplierAdditional(int[] levelValues, ulong numLevels)
         {
-            Native.Instance.rocksdb_options_set_max_bytes_for_level_multiplier_additional(Handle, levelValues, numLevels);
+            Native.Instance.rocksdb_options_set_max_bytes_for_level_multiplier_additional(Handle, levelValues, (UIntPtr)numLevels);
             return this;
         }
 
@@ -776,7 +776,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetSoftPendingCompactionBytesLimit(ulong value)
         {
-            Native.Instance.rocksdb_options_set_soft_pending_compaction_bytes_limit(Handle, value);
+            Native.Instance.rocksdb_options_set_soft_pending_compaction_bytes_limit(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -788,7 +788,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetHardPendingCompactionBytesLimit(ulong value)
         {
-            Native.Instance.rocksdb_options_set_hard_pending_compaction_bytes_limit(Handle, value);
+            Native.Instance.rocksdb_options_set_hard_pending_compaction_bytes_limit(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -819,7 +819,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetArenaBlockSize(ulong value)
         {
-            Native.Instance.rocksdb_options_set_arena_block_size(Handle, value);
+            Native.Instance.rocksdb_options_set_arena_block_size(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -910,19 +910,19 @@ namespace RocksDbSharp
 
         public ColumnFamilyOptions SetHashSkipListRep(ulong p1, int p2, int p3)
         {
-            Native.Instance.rocksdb_options_set_hash_skip_list_rep(Handle, p1, p2, p3);
+            Native.Instance.rocksdb_options_set_hash_skip_list_rep(Handle, (UIntPtr)p1, p2, p3);
             return this;
         }
 
         public ColumnFamilyOptions SetHashLinkListRep(ulong value)
         {
-            Native.Instance.rocksdb_options_set_hash_link_list_rep(Handle, value);
+            Native.Instance.rocksdb_options_set_hash_link_list_rep(Handle, (UIntPtr)value);
             return this;
         }
 
         public ColumnFamilyOptions SetPlainTableFactory(UInt32 p1, int p2, double p3, ulong p4)
         {
-            Native.Instance.rocksdb_options_set_plain_table_factory(Handle, p1, p2, p3, p4);
+            Native.Instance.rocksdb_options_set_plain_table_factory(Handle, p1, p2, p3, (UIntPtr)p4);
             return this;
         }
 
@@ -970,7 +970,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetMaxSuccessiveMerges(ulong value)
         {
-            Native.Instance.rocksdb_options_set_max_successive_merges(Handle, value);
+            Native.Instance.rocksdb_options_set_max_successive_merges(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -1015,7 +1015,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetInplaceUpdateNumLocks(ulong value)
         {
-            Native.Instance.rocksdb_options_set_inplace_update_num_locks(Handle, value);
+            Native.Instance.rocksdb_options_set_inplace_update_num_locks(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -1091,7 +1091,7 @@ namespace RocksDbSharp
         /// </summary>
         public ColumnFamilyOptions SetMemtableHugePageSize(ulong size)
         {
-            Native.Instance.rocksdb_options_set_memtable_huge_page_size(Handle, size);
+            Native.Instance.rocksdb_options_set_memtable_huge_page_size(Handle, (UIntPtr)size);
             return this;
         }
 

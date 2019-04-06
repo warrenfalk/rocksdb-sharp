@@ -201,9 +201,9 @@ namespace RocksDbSharp
         public void Remove(byte[] key, long keyLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
         {
             if (cf == null)
-                Native.Instance.rocksdb_delete(Handle, (writeOptions ?? DefaultWriteOptions).Handle, key, keyLength);
+                Native.Instance.rocksdb_delete(Handle, (writeOptions ?? DefaultWriteOptions).Handle, key, (UIntPtr)keyLength);
             else
-                Native.Instance.rocksdb_delete_cf(Handle, (writeOptions ?? DefaultWriteOptions).Handle, key, keyLength, cf);
+                Native.Instance.rocksdb_delete_cf(Handle, (writeOptions ?? DefaultWriteOptions).Handle, cf.Handle, key, (UIntPtr)keyLength);
         }
 
         public void Put(string key, string value, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null, Encoding encoding = null)
@@ -287,17 +287,17 @@ namespace RocksDbSharp
         public void IngestExternalFiles(string[] files, IngestExternalFileOptions ingestOptions, ColumnFamilyHandle cf = null)
         {
             if (cf == null)
-                Native.Instance.rocksdb_ingest_external_file(Handle, files, (ulong)files.Length, ingestOptions.Handle);
+                Native.Instance.rocksdb_ingest_external_file(Handle, files, (UIntPtr)files.GetLongLength(0), ingestOptions.Handle);
             else
-                Native.Instance.rocksdb_ingest_external_file_cf(Handle, cf.Handle, files, (ulong)files.Length, ingestOptions.Handle);
+                Native.Instance.rocksdb_ingest_external_file_cf(Handle, cf.Handle, files, (UIntPtr)files.GetLongLength(0), ingestOptions.Handle);
         }
 
         public void CompactRange(byte[] start, byte[] limit, ColumnFamilyHandle cf = null)
         {
             if (cf == null)
-                Native.Instance.rocksdb_compact_range(Handle, start, start.GetLongLength(0), limit, limit.GetLongLength(0));
+                Native.Instance.rocksdb_compact_range(Handle, start, (UIntPtr)start.GetLongLength(0), limit, (UIntPtr)limit.GetLongLength(0));
             else
-                Native.Instance.rocksdb_compact_range_cf(Handle, cf.Handle, start, start.GetLongLength(0), limit, limit.GetLongLength(0));
+                Native.Instance.rocksdb_compact_range_cf(Handle, cf.Handle, start, (UIntPtr)start.GetLongLength(0), limit, (UIntPtr)limit.GetLongLength(0));
         }
 
         public void CompactRange(string start, string limit, ColumnFamilyHandle cf = null, Encoding encoding = null)

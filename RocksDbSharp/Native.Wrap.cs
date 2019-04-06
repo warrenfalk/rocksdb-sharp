@@ -134,6 +134,7 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        [Obsolete("Use UIntPtr version instead")]
         public void rocksdb_delete(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
@@ -146,6 +147,7 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        [Obsolete("Use UIntPtr version instead")]
         public void rocksdb_delete_cf(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
@@ -158,6 +160,7 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        [Obsolete("Use UIntPtr version instead")]
         public void rocksdb_ingest_external_file(IntPtr db, string[] file_list, ulong list_len, IntPtr opt)
         {
             UIntPtr llen = (UIntPtr)list_len;
@@ -166,6 +169,7 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        [Obsolete("Use UIntPtr version instead")]
         public void rocksdb_ingest_external_file_cf(IntPtr db, IntPtr handle, string[] file_list, ulong list_len, IntPtr opt)
         {
             UIntPtr llen = (UIntPtr)list_len;
@@ -174,7 +178,8 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
-        public unsafe void rocksdb_sstfilewriter_add(
+        [Obsolete("Use UIntPtr version instead")]
+        public void rocksdb_sstfilewriter_add(
             IntPtr writer,
             byte[] key,
             ulong keylen,
@@ -191,11 +196,9 @@ namespace RocksDbSharp
         public unsafe void rocksdb_sstfilewriter_add(
             IntPtr writer,
             string key,
-            ulong keylen,
-            string val,
-            ulong vallen)
+            string val)
         {
-            rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
+            rocksdb_sstfilewriter_add(writer, key, val, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
