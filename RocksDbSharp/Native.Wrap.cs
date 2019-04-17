@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using size_t = System.UIntPtr;
 
 #pragma warning disable IDE1006 // Intentionally violating naming conventions because this is meant to match the C API
 namespace RocksDbSharp
@@ -31,12 +32,13 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
             return result;
         }
-        
+
         public IntPtr rocksdb_open_with_ttl(
             /* const rocksdb_options_t* */ IntPtr options,
-            string name, int ttl)
+            string name,
+            int ttlSeconds)
         {
-            var result = rocksdb_open_with_ttl(options, name, ttl, out IntPtr errptr);
+            var result = rocksdb_open_with_ttl(options, name, ttlSeconds, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -69,6 +71,25 @@ namespace RocksDbSharp
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
+        }
+
+        public /*(rocksdb_checkpoint_t*)*/ IntPtr rocksdb_checkpoint_object_create(
+            /*(rocksdb_t*)*/ IntPtr db)
+        {
+            var result = rocksdb_checkpoint_object_create(db, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public void rocksdb_checkpoint_create(
+            /*(rocksdb_checkpoint_t*)*/ IntPtr checkpoint,
+            /*(const char*)*/ string checkpoint_dir,
+            /*(uint64_t)*/ ulong log_size_for_flush)
+        {
+            rocksdb_checkpoint_create(checkpoint, checkpoint_dir, log_size_for_flush, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
         }
 
         public IntPtr rocksdb_list_column_families(
@@ -319,6 +340,13 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_writebatch_pop_save_point(IntPtr writeBatch)
+        {
+            rocksdb_writebatch_pop_save_point(writeBatch, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
         public void rocksdb_writebatch_wi_rollback_to_save_point(IntPtr writeBatch)
         {
             rocksdb_writebatch_wi_rollback_to_save_point(writeBatch, out IntPtr errptr);
@@ -378,6 +406,40 @@ namespace RocksDbSharp
             ulong vallen)
         {
             rocksdb_sstfilewriter_add(writer, key, keylen, val, vallen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_sstfilewriter_put(
+            /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer,
+            /*(const char*)*/ byte[] key,
+            size_t keylen,
+            /*(const char*)*/ byte[] val,
+            size_t vallen)
+        {
+            rocksdb_sstfilewriter_put(writer, key, keylen, val, vallen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_sstfilewriter_merge(
+            /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer,
+            /*(const char*)*/ byte[] key,
+            size_t keylen,
+            /*(const char*)*/ byte[] val,
+            size_t vallen)
+        {
+            rocksdb_sstfilewriter_merge(writer, key, keylen, val, vallen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_sstfilewriter_delete(
+            /*(rocksdb_sstfilewriter_t*)*/ IntPtr writer,
+            /*(const char*)*/ byte[] key,
+            size_t keylen)
+        {
+            rocksdb_sstfilewriter_delete(writer, key, keylen, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }

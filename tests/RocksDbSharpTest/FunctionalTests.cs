@@ -15,11 +15,15 @@ namespace RocksDbSharpTest
         public void FunctionalTest()
         {
             string temp = Path.GetTempPath();
-            var testdb = Path.Combine(temp, "functional_test");
-            string path = Environment.ExpandEnvironmentVariables(testdb);
+            var testdir = Path.Combine(temp, "functional_test");
+            var testdb = Path.Combine(testdir, "main");
+            var testcp = Path.Combine(testdir, "cp");
+            var path = Environment.ExpandEnvironmentVariables(testdb);
+            var cppath = Environment.ExpandEnvironmentVariables(testcp);
 
-            if (Directory.Exists(testdb))
-                Directory.Delete(testdb, true);
+            if (Directory.Exists(testdir))
+                Directory.Delete(testdir, true);
+            Directory.CreateDirectory(testdir);
 
             var options = new DbOptions()
                 .SetCreateIfMissing(true)
@@ -52,6 +56,14 @@ namespace RocksDbSharpTest
                 Assert.Equal(8, length);
                 Assert.Equal(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, buffer.Take((int)length).ToList());
 
+                buffer = new byte[5];
+                length = db.Get(Encoding.UTF8.GetBytes("key"), buffer, 0, buffer.Length);
+                Assert.Equal(8, length);
+                Assert.Equal(new byte[] { 0, 1, 2, 3, 4 }, buffer.Take((int)Math.Min(buffer.Length, length)));
+
+                length = db.Get(Encoding.UTF8.GetBytes("bogus"), buffer, 0, buffer.Length);
+                Assert.Equal(-1, length);
+
                 // Write batches
                 // With strings
                 using (WriteBatch batch = new WriteBatch()
@@ -82,6 +94,12 @@ namespace RocksDbSharpTest
                 Assert.Equal("red", db.Get("diamonds"));
                 Assert.Equal("black", db.Get("clubs"));
                 Assert.Null(db.Get("spades"));
+
+                // Save a checkpoint
+                using (var cp = db.Checkpoint())
+                {
+                    cp.Save(cppath);
+                }
 
                 // With bytes
                 var utf8 = Encoding.UTF8;
@@ -140,7 +158,16 @@ namespace RocksDbSharpTest
                     },
                     actual: multiGetResult
                 );
+            }
 
+            // Test reading checkpointed db
+            using (var cpdb = RocksDb.Open(options, cppath))
+            {
+                Assert.Equal("red", cpdb.Get("diamonds"));
+                Assert.Equal("black", cpdb.Get("clubs"));
+                Assert.Null(cpdb.Get("spades"));
+                // Checkpoint occurred before these changes:
+                Assert.Null(cpdb.Get("four"));
             }
 
             // Test with column families
@@ -228,43 +255,49 @@ namespace RocksDbSharpTest
 
             // Test SstFileWriter
             {
+                using (var writer = new SstFileWriter())
+                {
+                }
+
                 var envOpts = new EnvOptions();
                 var ioOpts = new ColumnFamilyOptions();
-                var sst = new SstFileWriter(envOpts, ioOpts);
-                var filename = Path.Combine(temp, "test.sst");
-                if (File.Exists(filename))
-                    File.Delete(filename);
-                sst.Open(filename);
-                sst.Add("four", "quatro");
-                sst.Add("one", "uno");
-                sst.Add("two", "dos");
-                sst.Finish();
-
-                using (var db = RocksDb.Open(options, path, columnFamilies))
+                using (var sst = new SstFileWriter(envOpts, ioOpts))
                 {
-                    Assert.NotEqual("four", db.Get("four"));
-                    var ingestOptions = new IngestExternalFileOptions()
-                        .SetMoveFiles(true);
-                    db.IngestExternalFiles(new string[] { filename }, ingestOptions);
-                    Assert.Equal("quatro", db.Get("four"));
+                    var filename = Path.Combine(temp, "test.sst");
+                    if (File.Exists(filename))
+                        File.Delete(filename);
+                    sst.Open(filename);
+                    sst.Add("four", "quatro");
+                    sst.Add("one", "uno");
+                    sst.Add("two", "dos");
+                    sst.Finish();
+
+                    using (var db = RocksDb.Open(options, path, columnFamilies))
+                    {
+                        Assert.NotEqual("four", db.Get("four"));
+                        var ingestOptions = new IngestExternalFileOptions()
+                            .SetMoveFiles(true);
+                        db.IngestExternalFiles(new string[] { filename }, ingestOptions);
+                        Assert.Equal("quatro", db.Get("four"));
+                    }
                 }
             }
 
             // test comparator
             unsafe {
-                var comparator = new IntegerStringComparator();
-
                 var opts = new ColumnFamilyOptions()
-                    .SetComparator(comparator);
+                    .SetComparator(new IntegerStringComparator());
 
                 var filename = Path.Combine(temp, "test.sst");
                 if (File.Exists(filename))
                     File.Delete(filename);
-                var sst = new SstFileWriter(ioOptions: opts);
-                sst.Open(filename);
-                sst.Add("111", "111");
-                sst.Add("1001", "1001"); // this order is only allowed using an integer comparator
-                sst.Finish();
+                using (var sst = new SstFileWriter(ioOptions: opts))
+                {
+                    sst.Open(filename);
+                    sst.Add("111", "111");
+                    sst.Add("1001", "1001"); // this order is only allowed using an integer comparator
+                    sst.Finish();
+                }
             }
 
             // test write batch with index
@@ -323,13 +356,92 @@ namespace RocksDbSharpTest
                     db.CompactRange("o", "tw");
                 }
             }
+
+            // Smoke test various options
+            {
+                var dbname = "test-options";
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+                var optsTest = (DbOptions)new RocksDbSharp.DbOptions()
+                  .SetCreateIfMissing(true)
+                  .SetCreateMissingColumnFamilies(true)
+                  .SetBlockBasedTableFactory(new BlockBasedTableOptions().SetBlockCache(Cache.CreateLru(1024 * 1024)));
+                GC.Collect();
+                using (var db = RocksDbSharp.RocksDb.Open(optsTest, dbname))
+                {
+                }
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+
+            }
+
+            // Smoke test OpenWithTtl
+            {
+                var dbname = "test-with-ttl";
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+                var optsTest = (DbOptions)new RocksDbSharp.DbOptions()
+                  .SetCreateIfMissing(true)
+                  .SetCreateMissingColumnFamilies(true);
+                using (var db = RocksDbSharp.RocksDb.OpenWithTtl(optsTest, dbname, 1))
+                {
+                }
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+            }
+
+            // Smoke test MergeOperator
+            {
+                var dbname = "test-merge-operator";
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+                var optsTest = (DbOptions)new RocksDbSharp.DbOptions()
+                  .SetCreateIfMissing(true)
+                  .SetMergeOperator(MergeOperators.Create(
+                      name: "test-merge-operator",
+                      partialMerge: (key, keyLength, operandsList, operandsListLength, numOperands, success, newValueLength) => IntPtr.Zero,
+                      fullMerge: (key, keyLength, existingValue, existingValueLength, operandsList, operandsListLength, numOperands, success, newValueLength) => IntPtr.Zero,
+                      deleteValue: (value, valueLength) => { }
+                  ));
+                GC.Collect();
+                using (var db = RocksDbSharp.RocksDb.Open(optsTest, dbname))
+                {
+                }
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+
+            }
+
+            // Test that GC does not cause access violation on Comparers
+            {
+                var dbname = "test-av-error";
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+                options = new RocksDbSharp.DbOptions()
+                  .SetCreateIfMissing(true)
+                  .SetCreateMissingColumnFamilies(true);
+                var sc = new RocksDbSharp.StringComparator(StringComparer.InvariantCultureIgnoreCase);
+                columnFamilies = new RocksDbSharp.ColumnFamilies
+                {
+                     { "cf1", new RocksDbSharp.ColumnFamilyOptions()
+                        .SetComparator(sc)
+                    },
+                };
+                GC.Collect();
+                using (var db = RocksDbSharp.RocksDb.Open(options, dbname, columnFamilies))
+                {
+                }
+                if (Directory.Exists(dbname))
+                    Directory.Delete(dbname, true);
+            }
+
         }
 
         class IntegerStringComparator : StringComparatorBase
         {
             Comparison<long> Comparer { get; } = Comparer<long>.Default.Compare;
 
-            public override int Compare(IntPtr state, string a, string b)
+            public override int Compare(string a, string b)
                 => Comparer(long.TryParse(a, out long avalue) ? avalue : 0, long.TryParse(b, out long bvalue) ? bvalue : 0);
         }
     }

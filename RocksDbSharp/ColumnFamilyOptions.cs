@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Transitional;
 
 namespace RocksDbSharp
 {
     public class ColumnFamilyOptions : OptionsHandle
     {
+        ComparatorReferences ComparatorRef { get; set; }
+        MergeOperatorReferences MergeOperatorRef { get; set; }
 
         public ColumnFamilyOptions SetBlockBasedTableFactory(BlockBasedTableOptions table_options)
         {
@@ -156,8 +160,189 @@ namespace RocksDbSharp
             return this;
         }
 
+        /// <summary>
+        /// Comparator used to define the order of keys in the table.
+        /// Default: a comparator that uses lexicographic byte-wise ordering
+        ///
+        /// REQUIRES: The client must ensure that the comparator supplied
+        /// here has the same name and orders keys *exactly* the same as the
+        /// comparator provided to previous open calls on the same DB.
+        /// </summary>
         public ColumnFamilyOptions SetComparator(Comparator comparator)
-            => SetComparator(comparator.Handle);
+        {
+            // Allocate some memory for the name bytes
+            var name = comparator.Name ?? comparator.GetType().FullName;
+            var nameBytes = Encoding.UTF8.GetBytes(name + "\0");
+            var namePtr = Marshal.AllocHGlobal(nameBytes.Length);
+            Marshal.Copy(nameBytes, 0, namePtr, nameBytes.Length);
+
+            // Hold onto a reference to everything that needs to stay alive
+            ComparatorRef = new ComparatorReferences
+            {
+                GetComparator = () => comparator,
+                CompareDelegate = Comparator_Compare,
+                DestructorDelegate = Comparator_Destroy,
+                NameDelegate = Comparator_GetNamePtr,
+            };
+
+            // Allocate the state
+            var state = new ComparatorState
+            {
+                NamePtr = namePtr,
+                GetComparatorPtr = CurrentFramework.GetFunctionPointerForDelegate<GetComparator>(ComparatorRef.GetComparator)
+            };
+            var statePtr = Marshal.AllocHGlobal(Marshal.SizeOf(state));
+            Marshal.StructureToPtr(state, statePtr, false);
+
+            // Create the comparator
+            IntPtr handle = Native.Instance.rocksdb_comparator_create(
+                state: statePtr,
+                destructor: ComparatorRef.DestructorDelegate,
+                compare: ComparatorRef.CompareDelegate,
+                name: ComparatorRef.NameDelegate
+            );
+
+            return SetComparator(handle);
+        }
+
+        delegate Comparator GetComparator();
+        private class ComparatorReferences
+        {
+            public GetComparator GetComparator { get; set; }
+            public DestructorDelegate DestructorDelegate { get; set; }
+            public CompareDelegate CompareDelegate { get; set; }
+            public NameDelegate NameDelegate { get; set; }
+        }
+
+        private unsafe int Comparator_Compare(IntPtr state, IntPtr a, UIntPtr alen, IntPtr b, UIntPtr blen)
+        {
+            var getComparatorPtr = (*((ComparatorState*)state)).GetComparatorPtr;
+            var getComparator = CurrentFramework.GetDelegateForFunctionPointer<GetComparator>(getComparatorPtr);
+            var comparator = getComparator();
+            return comparator.Compare(a, alen, b, blen);
+        }
+
+        private unsafe static void Comparator_Destroy(IntPtr state)
+        {
+            var namePtr = (*((ComparatorState*)state)).NamePtr;
+            Marshal.FreeHGlobal(namePtr);
+            Marshal.FreeHGlobal(state);
+        }
+
+        private unsafe static IntPtr Comparator_GetNamePtr(IntPtr state)
+            => (*((ComparatorState*)state)).NamePtr;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct ComparatorState
+        {
+            public IntPtr GetComparatorPtr { get; set; }
+            public IntPtr NamePtr { get; set; }
+        }
+
+        /// <summary>
+        /// REQUIRES: The client must provide a merge operator if Merge operation
+        /// needs to be accessed. Calling Merge on a DB without a merge operator
+        /// would result in Status::NotSupported. The client must ensure that the
+        /// merge operator supplied here has the same name and *exactly* the same
+        /// semantics as the merge operator provided to previous open calls on
+        /// the same DB. The only exception is reserved for upgrade, where a DB
+        /// previously without a merge operator is introduced to Merge operation
+        /// for the first time. It's necessary to specify a merge operator when
+        /// openning the DB in this case.
+        /// Default: nullptr
+        /// </summary>
+        public ColumnFamilyOptions SetMergeOperator(MergeOperator mergeOperator)
+        {
+            // Allocate some memory for the name bytes
+            var name = mergeOperator.Name ?? mergeOperator.GetType().FullName;
+            var nameBytes = Encoding.UTF8.GetBytes(name + "\0");
+            var namePtr = Marshal.AllocHGlobal(nameBytes.Length);
+            Marshal.Copy(nameBytes, 0, namePtr, nameBytes.Length);
+
+            // Hold onto a reference to everything that needs to stay alive
+            MergeOperatorRef = new MergeOperatorReferences
+            {
+                GetMergeOperator = () => mergeOperator,
+                DestructorDelegate = MergeOperator_Destroy,
+                NameDelegate = MergeOperator_GetNamePtr,
+                DeleteValueDelegate = MergeOperator_DeleteValue,
+                FullMergeDelegate = MergeOperator_FullMerge,
+                PartialMergeDelegate = MergeOperator_PartialMerge,
+            };
+
+            // Allocate the state
+            var state = new MergeOperatorState
+            {
+                NamePtr = namePtr,
+                GetMergeOperatorPtr = CurrentFramework.GetFunctionPointerForDelegate<GetMergeOperator>(MergeOperatorRef.GetMergeOperator)
+            };
+            var statePtr = Marshal.AllocHGlobal(Marshal.SizeOf(state));
+            Marshal.StructureToPtr(state, statePtr, false);
+
+            // Create the merge operator
+            IntPtr handle = Native.Instance.rocksdb_mergeoperator_create(
+                state: statePtr,
+                destructor: MergeOperatorRef.DestructorDelegate,
+                delete_value: MergeOperatorRef.DeleteValueDelegate,
+                full_merge: MergeOperatorRef.FullMergeDelegate,
+                partial_merge: MergeOperatorRef.PartialMergeDelegate,
+                name: MergeOperatorRef.NameDelegate
+            );
+
+            return SetMergeOperator(handle);
+        }
+
+        private static MergeOperator GetMergeOperatorFromPtr(IntPtr getMergeOperatorPtr)
+        {
+            var getMergeOperator = CurrentFramework.GetDelegateForFunctionPointer<GetMergeOperator>(getMergeOperatorPtr);
+            return getMergeOperator();
+        }
+
+        private unsafe static IntPtr MergeOperator_PartialMerge(IntPtr state, IntPtr key, UIntPtr keyLength, IntPtr operandsList, IntPtr operandsListLength, int numOperands, IntPtr success, IntPtr newValueLength)
+        {
+            var mergeOperator = GetMergeOperatorFromPtr((*((MergeOperatorState*)state)).GetMergeOperatorPtr);
+            return mergeOperator.PartialMerge(key, keyLength, operandsList, operandsListLength, numOperands, success, newValueLength);
+        }
+
+        private unsafe static IntPtr MergeOperator_FullMerge(IntPtr state, IntPtr key, UIntPtr keyLength, IntPtr existingValue, UIntPtr existingValueLength, IntPtr operandsList, IntPtr operandsListLength, int numOperands, IntPtr success, IntPtr newValueLength)
+        {
+            var mergeOperator = GetMergeOperatorFromPtr((*((MergeOperatorState*)state)).GetMergeOperatorPtr);
+            return mergeOperator.FullMerge(key, keyLength, existingValue, existingValueLength, operandsList, operandsListLength, numOperands, success, newValueLength);
+        }
+
+        private unsafe static void MergeOperator_DeleteValue(IntPtr state, IntPtr value, UIntPtr valueLength)
+        {
+            var mergeOperator = GetMergeOperatorFromPtr((*((MergeOperatorState*)state)).GetMergeOperatorPtr);
+            mergeOperator.DeleteValue(value, valueLength);
+        }
+
+        delegate MergeOperator GetMergeOperator();
+        private class MergeOperatorReferences
+        {
+            public GetMergeOperator GetMergeOperator { get; set; }
+            public DestructorDelegate DestructorDelegate { get; set; }
+            public NameDelegate NameDelegate { get; set; }
+            public DeleteValueDelegate DeleteValueDelegate { get; set; }
+            public FullMergeDelegate FullMergeDelegate { get; set; }
+            public PartialMergeDelegate PartialMergeDelegate { get; set; }
+        }
+
+        private unsafe static void MergeOperator_Destroy(IntPtr state)
+        {
+            var namePtr = (*((MergeOperatorState*)state)).NamePtr;
+            Marshal.FreeHGlobal(namePtr);
+            Marshal.FreeHGlobal(state);
+        }
+
+        private unsafe static IntPtr MergeOperator_GetNamePtr(IntPtr state)
+            => (*((MergeOperatorState*)state)).NamePtr;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MergeOperatorState
+        {
+            public IntPtr GetMergeOperatorPtr { get; set; }
+            public IntPtr NamePtr { get; set; }
+        }
 
         /// <summary>
         /// REQUIRES: The client must provide a merge operator if Merge operation
@@ -206,10 +391,9 @@ namespace RocksDbSharp
         /// and L4 using compression_per_level[3]. Compaction for each level can
         /// change when data grows.
         /// </summary>
-        public ColumnFamilyOptions SetCompressionPerLevel(CompressionTypeEnum[] levelValues, ulong numLevels)
+        public ColumnFamilyOptions SetCompressionPerLevel(Compression[] levelValues, UIntPtr numLevels)
         {
-            var values = levelValues.Select(x => (int) x).ToArray();
-            Native.Instance.rocksdb_options_set_compression_per_level(Handle, values, numLevels);
+            Native.Instance.rocksdb_options_set_compression_per_level(Handle, levelValues, numLevels);
             return this;
         }
 
@@ -863,7 +1047,7 @@ namespace RocksDbSharp
         /// incompressible, the kSnappyCompression implementation will
         /// efficiently detect that and will switch to uncompressed mode.
         /// </summary>
-        public ColumnFamilyOptions SetCompression(CompressionTypeEnum value)
+        public ColumnFamilyOptions SetCompression(Compression value)
         {
             Native.Instance.rocksdb_options_set_compression(Handle, value);
             return this;
@@ -872,7 +1056,7 @@ namespace RocksDbSharp
         /// <summary>
         /// The compaction style. Default: kCompactionStyleLevel
         /// </summary>
-        public ColumnFamilyOptions SetCompactionStyle(CompactionStyleEnum value)
+        public ColumnFamilyOptions SetCompactionStyle(Compaction value)
         {
             Native.Instance.rocksdb_options_set_compaction_style(Handle, value);
             return this;

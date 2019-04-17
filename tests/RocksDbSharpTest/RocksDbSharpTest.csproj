@@ -2,7 +2,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+<<<<<<< HEAD
     <LangVersion>7.2</LangVersion>
+=======
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+>>>>>>> aad0f20aeda1f92b42478bac495ed2e0a375385b
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />

@@ -51,6 +51,12 @@ namespace RocksDbSharp
             return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
         }
 
+        public static RocksDb OpenWithTtl(OptionsHandle options, string path, int ttlSeconds)
+        {
+            IntPtr db = Native.Instance.rocksdb_open_with_ttl(options.Handle, path, ttlSeconds);
+            return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
+        }
+
         public static RocksDb Open(DbOptions options, string path, ColumnFamilies columnFamilies)
         {
             string[] cfnames = columnFamilies.Names.ToArray();
@@ -81,6 +87,22 @@ namespace RocksDbSharp
                 columnFamilies: cfHandleMap);
         }
 
+        /// <summary>
+        /// Usage:
+        /// <code><![CDATA[
+        /// using (var cp = db.Checkpoint())
+        /// {
+        ///     cp.Save("path/to/checkpoint");
+        /// }
+        /// ]]></code>
+        /// </summary>
+        /// <returns></returns>
+        public Checkpoint Checkpoint()
+        {
+            var checkpoint = Native.Instance.rocksdb_checkpoint_object_create(Handle);
+            return new Checkpoint(checkpoint);
+        }
+
         public void SetOptions(IEnumerable<KeyValuePair<string, string>> options)
         {
             var keys = options.Select(e => e.Key).ToArray();
@@ -103,18 +125,44 @@ namespace RocksDbSharp
             return Native.Instance.rocksdb_get(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, cf);
         }
 
+        /// <summary>
+        /// Reads the contents of the database value associated with <paramref name="key"/>, if present, into the supplied
+        /// <paramref name="buffer"/> at <paramref name="offset"/> up to <paramref name="length"/> bytes, returning the
+        /// length of the value in the database, or -1 if the key is not present.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <param name="cf"></param>
+        /// <param name="readOptions"></param>
+        /// <returns>The actual length of the database field if it exists, otherwise -1</returns>
         public long Get(byte[] key, byte[] buffer, long offset, long length, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
             return Get(key, key.GetLongLength(0), buffer, offset, length, cf, readOptions);
         }
 
+        /// <summary>
+        /// Reads the contents of the database value associated with <paramref name="key"/>, if present, into the supplied
+        /// <paramref name="buffer"/> at <paramref name="offset"/> up to <paramref name="length"/> bytes, returning the
+        /// length of the value in the database, or -1 if the key is not present.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <param name="cf"></param>
+        /// <param name="readOptions"></param>
+        /// <returns>The actual length of the database field if it exists, otherwise -1</returns>
         public long Get(byte[] key, long keyLength, byte[] buffer, long offset, long length, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
             unsafe
             {
                 var ptr = Native.Instance.rocksdb_get(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, out long valLength, cf);
-                valLength = Math.Min(length, valLength);
-                Marshal.Copy(ptr, buffer, (int)offset, (int)valLength);
+                if (ptr == IntPtr.Zero)
+                    return -1;
+                var copyLength = Math.Min(length, valLength);
+                Marshal.Copy(ptr, buffer, (int)offset, (int)copyLength);
                 Native.Instance.rocksdb_free(ptr);
                 return valLength;
             }

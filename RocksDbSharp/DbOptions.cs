@@ -116,6 +116,19 @@ namespace RocksDbSharp
         }
 
         /// <summary>
+        /// If max_open_files is -1, DB will open all files on DB::Open(). You can
+        /// use this option to increase the number of threads used to open the files.
+        /// Default: 16
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public DbOptions SetMaxFileOpeningThreads(int value)
+        {
+            Native.Instance.rocksdb_options_set_max_file_opening_threads(Handle, value);
+            return this;
+        }
+
+        /// <summary>
         /// Once write-ahead logs exceed this size, we will start forcing the flush of
         /// column families whose memtables are backed by the oldest live WAL file
         /// (i.e. the ones that are causing all the space amplification). If set to 0
@@ -135,7 +148,7 @@ namespace RocksDbSharp
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public DbOptions SetWalRecoveryMode(WalRecoveryMode mode)
+        public DbOptions SetWalRecoveryMode(Recovery mode)
         {
             Native.Instance.rocksdb_options_set_wal_recovery_mode(Handle, mode);
             return this;
@@ -148,6 +161,16 @@ namespace RocksDbSharp
         public DbOptions EnableStatistics()
         {
             Native.Instance.rocksdb_options_enable_statistics(Handle);
+            return this;
+        }
+        /// <summary>
+        /// Skips Status Update on DBOpen, useful for increasing DB Open time on slower disks
+        /// default: false
+        /// </summary>
+        /// <returns></returns>
+        public DbOptions SkipStatsUpdateOnOpen(bool val = false)
+        {
+            Native.Instance.rocksdb_options_set_skip_stats_update_on_db_open(Handle, val);
             return this;
         }
 

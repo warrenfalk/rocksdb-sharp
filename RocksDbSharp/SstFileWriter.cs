@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RocksDbSharp
 {
-    public class SstFileWriter
+    public class SstFileWriter : IDisposable
     {
         public IntPtr Handle { get; protected set; }
 
@@ -15,20 +15,19 @@ namespace RocksDbSharp
         {
             if (envOptions == null)
                 envOptions = new EnvOptions();
-            var ioOptionsHandle = ioOptions?.Handle ?? IntPtr.Zero;
+            var opts = ioOptions ?? new ColumnFamilyOptions();
             References.EnvOptions = envOptions;
             References.IoOptions = ioOptions;
-            Handle = Native.Instance.rocksdb_sstfilewriter_create(envOptions.Handle, ioOptionsHandle);
+            Handle = Native.Instance.rocksdb_sstfilewriter_create(envOptions.Handle, opts.Handle);
         }
 
-        ~SstFileWriter()
+        public void Dispose()
         {
             if (Handle != IntPtr.Zero)
             {
-#if !NODESTROY
-                Native.Instance.rocksdb_sstfilewriter_destroy(Handle);
-#endif
+                var handle = Handle;
                 Handle = IntPtr.Zero;
+                Native.Instance.rocksdb_sstfilewriter_destroy(handle);
             }
         }
 
@@ -50,6 +49,21 @@ namespace RocksDbSharp
         public void Finish()
         {
             Native.Instance.rocksdb_sstfilewriter_finish(Handle);
+        }
+
+        public void Put(byte[] key, byte[] val)
+        {
+            Native.Instance.rocksdb_sstfilewriter_put(Handle, key, (UIntPtr)key.Length, val, (UIntPtr)val.Length);
+        }
+
+        public void Merge(byte[] key, byte[] val)
+        {
+            Native.Instance.rocksdb_sstfilewriter_merge(Handle, key, (UIntPtr)key.Length, val, (UIntPtr)val.Length);
+        }
+
+        public void Delete(byte[] key)
+        {
+            Native.Instance.rocksdb_sstfilewriter_delete(Handle, key, (UIntPtr)key.Length);
         }
     }
 }

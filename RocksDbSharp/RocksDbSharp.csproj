@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Versions.targets.include"/>
   <PropertyGroup>
     <Title>RocksDbSharp</Title>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <Version>5.15.10.10</Version>
+    <Version>$(RocksDbVersion).$(RocksDbSharpBuild)</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Description>.Net Bindings for RocksDb.  See the Project Site for more information.  (Note: Also install RocksDbNative package to have native binaries included with build)</Description>
     <Authors>Warren Falk</Authors>
     <Company>Warren Falk</Company>
     <Product>Warren Falk</Product>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/warrenfalk/rocksdb-sharp/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/warrenfalk/rocksdb-sharp</PackageProjectUrl>
     <PackageIconUrl>http://rocksdb.org/static/logo.svg</PackageIconUrl>
     <RepositoryUrl>https://github.com/warrenfalk/rocksdb-sharp.git</RepositoryUrl>
