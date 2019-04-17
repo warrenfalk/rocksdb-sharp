@@ -21,33 +21,47 @@
   </PropertyGroup>
   <!-- "DispatchToInnerBuilds" will cause this to run in the outer build (i.e. once regardless of number of frameworks) -->
   <!--  Condition="!Exists('rocksdb-$(RocksDbVersion)\runtimes\win-x64\native\rocksdb.dll') and !Exists('$(BaseIntermediateOutputPath)\rocksdb-v$(RocksDbVersion)-win-x64.zip')" -->
-  <Target Name="DownloadNativeLibs" BeforeTargets="DispatchToInnerBuilds">
-    <!-- Here we download the native libraries from the rocksdb-sharp-native project releases according to the version number, if they don't exist -->
-    <DownloadFile Condition="!Exists('$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(NativeLib.RuntimeId)\native\%(NativeLib.Lib)') And !Exists('$(BaseIntermediateOutputPath)rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip')" SourceUrl="https://github.com/warrenfalk/rocksdb-sharp-native/releases/download/v$(RocksDbVersion)/rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip" DestinationFolder="$(BaseIntermediateOutputPath)">
-    </DownloadFile>
-    <Unzip Condition="Exists('$(BaseIntermediateOutputPath)rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip') And !Exists('$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(NativeLib.RuntimeId)\native\%(NativeLib.Lib)')" SourceFiles="$(BaseIntermediateOutputPath)rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip" DestinationFolder="$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(NativeLib.RuntimeId)\native\">
-    </Unzip>
-  </Target>
+  <!--<Target Name="DownloadNativeLibs" BeforeTargets="DispatchToInnerBuilds">-->
+    <!--&lt;!&ndash; Here we download the native libraries from the rocksdb-sharp-native project releases according to the version number, if they don't exist &ndash;&gt;-->
+    <!--<DownloadFile Condition="!Exists('$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(NativeLib.RuntimeId)\native\%(NativeLib.Lib)') And !Exists('$(BaseIntermediateOutputPath)rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip')" SourceUrl="https://github.com/warrenfalk/rocksdb-sharp-native/releases/download/v$(RocksDbVersion)/rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip" DestinationFolder="$(BaseIntermediateOutputPath)">-->
+    <!--</DownloadFile>-->
+    <!--<Unzip Condition="Exists('$(BaseIntermediateOutputPath)rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip') And !Exists('$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(NativeLib.RuntimeId)\native\%(NativeLib.Lib)')" SourceFiles="$(BaseIntermediateOutputPath)rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip" DestinationFolder="$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(NativeLib.RuntimeId)\native\">-->
+    <!--</Unzip>-->
+  <!--</Target>-->
   <ItemGroup>
     <!-- Define the native libraries here -->
     <!-- The "Include" attribute is a required attribute in ItemGroups outside of Targets, but I don't know why -->
     <!--<NativeLib Include="win-x64-rocksdb.dll" RuntimeId="win-x64" Lib="rocksdb.dll" />-->
     <!--<NativeLib Include="linux-x64-librocksdb.so" RuntimeId="linux-x64" Lib="librocksdb.so" />-->
     <!--<NativeLib Include="osx-x64-librocksdb.dylib" RuntimeId="osx-x64" Lib="librocksdb.dylib" />-->
+    
+    <!--<Content Include="@(NativeLib -> '.\runtimes\%(RuntimeId)\native\%(Lib)')">-->
+      <!--<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
+    <!--</Content>-->
     <!-- This "Content" is applied for all "NativeLib" and ensures that it is packaged into the correct folder -->
     <!-- This also will cause it to be copied to the output directory, which was so far the only way to get it
          to work correctly when referenced using a ProjectReference.  When packaged as a nupkg and referenced
          with PackageReference, then these go to the runtimes folders in the nuget cache, which is enough for 
          standard consumers, but framework consumers get them copied from the nuget cache to the output via
          the .targets files for those frameworks.-->
-    <Content Include="@(NativeLib -> '$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(RuntimeId)\native\%(Lib)')" PackagePath="runtimes\%(RuntimeId)\native\%(Lib)" Link="runtimes\%(RuntimeId)\native\%(Lib)">
-      <Pack>true</Pack>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Compile Remove="build\**" />
     <EmbeddedResource Remove="build\**" />
     <!-- These target files take care of copying from the nuget cache area into the output folder as required 
          by the .Net Framework frameworks -->
     <None Remove="build\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="runtimes\linux-x64\native\librocksdb.so" />
+    <Content Include="runtimes\linux-x64\native\librocksdb.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="runtimes\osx-x64\native\librocksdb.dylib" />
+    <Content Include="runtimes\osx-x64\native\librocksdb.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="runtimes\win-x64\native\rocksdb.dll" />
+    <Content Include="runtimes\win-x64\native\rocksdb.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
