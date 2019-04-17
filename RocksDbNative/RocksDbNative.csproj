@@ -31,9 +31,9 @@
   <ItemGroup>
     <!-- Define the native libraries here -->
     <!-- The "Include" attribute is a required attribute in ItemGroups outside of Targets, but I don't know why -->
-    <NativeLib Include="win-x64-rocksdb.dll" RuntimeId="win-x64" Lib="rocksdb.dll" />
-    <NativeLib Include="linux-x64-librocksdb.so" RuntimeId="linux-x64" Lib="librocksdb.so" />
-    <NativeLib Include="osx-x64-librocksdb.dylib" RuntimeId="osx-x64" Lib="librocksdb.dylib" />
+    <!--<NativeLib Include="win-x64-rocksdb.dll" RuntimeId="win-x64" Lib="rocksdb.dll" />-->
+    <!--<NativeLib Include="linux-x64-librocksdb.so" RuntimeId="linux-x64" Lib="librocksdb.so" />-->
+    <!--<NativeLib Include="osx-x64-librocksdb.dylib" RuntimeId="osx-x64" Lib="librocksdb.dylib" />-->
     <!-- This "Content" is applied for all "NativeLib" and ensures that it is packaged into the correct folder -->
     <!-- This also will cause it to be copied to the output directory, which was so far the only way to get it
          to work correctly when referenced using a ProjectReference.  When packaged as a nupkg and referenced
