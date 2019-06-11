@@ -51,6 +51,22 @@ namespace RocksDbSharp
             return new Transaction(handle, wo, to);
         }
 
+        /// <summary>
+        /// Usage:
+        /// <code><![CDATA[
+        /// using (var cp = db.Checkpoint())
+        /// {
+        ///     cp.Save("path/to/checkpoint");
+        /// }
+        /// ]]></code>
+        /// </summary>
+        /// <returns></returns>
+        public Checkpoint Checkpoint()
+        {
+            var checkpoint = Native.Instance.rocksdb_transactiondb_checkpoint_object_create(Handle);
+            return new Checkpoint(checkpoint);
+        }
+
         public Snapshot CreateSnapshot()
         {
             IntPtr snapshotHandle = Native.Instance.rocksdb_transactiondb_create_snapshot(Handle);

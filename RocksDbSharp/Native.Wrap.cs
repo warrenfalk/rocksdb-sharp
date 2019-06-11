@@ -82,6 +82,15 @@ namespace RocksDbSharp
             return result;
         }
 
+        public /*(rocksdb_checkpoint_t*)*/ IntPtr rocksdb_transactiondb_checkpoint_object_create(
+    /*(rocksdb_transactiondb_t*)*/ IntPtr txdb)
+        {
+            var result = rocksdb_transactiondb_checkpoint_object_create(txdb, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
         public void rocksdb_checkpoint_create(
             /*(rocksdb_checkpoint_t*)*/ IntPtr checkpoint,
             /*(const char*)*/ string checkpoint_dir,
