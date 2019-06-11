@@ -123,6 +123,165 @@ namespace RocksDbSharp
             }
         }
 
+        public string rocksdb_transaction_get(
+            IntPtr txn,
+            IntPtr read_options,
+            string key,
+            out IntPtr errptr,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            unsafe
+            {
+                fixed (char* k = key)
+                {
+                    var klength = key.Length;
+                    var bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    var bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    var resultPtr = rocksdb_transaction_get(txn, read_options, bk, new UIntPtr((ulong)bklength), out UIntPtr bvlength, out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+
+                    if (errptr != IntPtr.Zero)
+                        return null;
+                    if (resultPtr == IntPtr.Zero)
+                        return null;
+
+                    return MarshalAndFreeRocksDbString(resultPtr, (long)bvlength.ToUInt64(), encoding);
+                }
+            }
+        }
+
+        public void rocksdb_transaction_put(
+            IntPtr txn,
+            string key,
+            string val,
+            out IntPtr errptr,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key, v = val)
+                {
+                    var klength = key.Length;
+                    var vlength = val.Length;
+                    var bklength = encoding.GetByteCount(k, klength);
+                    var bvlength = encoding.GetByteCount(v, vlength);
+                    var buffer = Marshal.AllocHGlobal(bklength + bvlength);
+                    var bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+                    var bv = bk + bklength;
+                    encoding.GetBytes(v, vlength, bv, bvlength);
+
+                    rocksdb_transaction_put(txn, bk, new UIntPtr((ulong)bklength), bv, new UIntPtr((ulong)bvlength), out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+                    Zero(bv, bvlength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
+        public void rocksdb_transaction_delete(
+            IntPtr txn,
+            string key,
+            out IntPtr errptr,
+            Encoding encoding = null)
+        {
+            var bkey = (encoding ?? Encoding.UTF8).GetBytes(key);
+            rocksdb_transaction_delete(txn, bkey, new UIntPtr((ulong)bkey.Length), out errptr);
+        }
+
+        public string rocksdb_transactiondb_get(
+            IntPtr txn_db,
+            IntPtr read_options,
+            string key,
+            out IntPtr errptr,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            unsafe
+            {
+                fixed (char* k = key)
+                {
+                    var klength = key.Length;
+                    var bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    var bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    var resultPtr = rocksdb_transactiondb_get(txn_db, read_options, bk, new UIntPtr((ulong)bklength), out UIntPtr bvlength, out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+
+                    if (errptr != IntPtr.Zero)
+                        return null;
+                    if (resultPtr == IntPtr.Zero)
+                        return null;
+
+                    return MarshalAndFreeRocksDbString(resultPtr, (long)bvlength.ToUInt64(), encoding);
+                }
+            }
+        }
+        
+        public void rocksdb_transactiondb_put(
+            IntPtr txn_db,
+            IntPtr write_options,
+            string key,
+            string val,
+            out IntPtr errptr,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key, v = val)
+                {
+                    var klength = key.Length;
+                    var vlength = val.Length;
+                    var bklength = encoding.GetByteCount(k, klength);
+                    var bvlength = encoding.GetByteCount(v, vlength);
+                    var buffer = Marshal.AllocHGlobal(bklength + bvlength);
+                    var bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+                    var bv = bk + bklength;
+                    encoding.GetBytes(v, vlength, bv, bvlength);
+
+                    rocksdb_transactiondb_put(txn_db, write_options, bk, new UIntPtr((ulong)bklength), bv, new UIntPtr((ulong)bvlength), out errptr);
+#if DEBUG
+                    Zero(bk, bklength);
+                    Zero(bv, bvlength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
+        public void rocksdb_transactiondb_delete(
+            IntPtr txn_db,
+            IntPtr write_options,
+            string key,
+            out IntPtr errptr,
+            Encoding encoding = null)
+        {
+            var bkey = (encoding ?? Encoding.UTF8).GetBytes(key);
+            rocksdb_transactiondb_delete(txn_db, write_options, bkey, new UIntPtr((ulong)bkey.Length), out errptr);
+        }
+
+
         private unsafe string MarshalAndFreeRocksDbString(IntPtr resultPtr, long resultLength, Encoding encoding)
         {
             var result = CurrentFramework.CreateString((sbyte*)resultPtr.ToPointer(), 0, (int)resultLength, encoding);
@@ -152,6 +311,46 @@ namespace RocksDbSharp
                 return null;
             var result = new byte[(ulong)valueLength];
             Marshal.Copy(resultPtr, result, 0, (int)valueLength);
+            rocksdb_free(resultPtr);
+            return result;
+        }
+
+        public byte[] rocksdb_transaction_get(
+            IntPtr txn,
+            IntPtr read_options,
+            byte[] key,
+            ulong keyLength,
+            out IntPtr errptr)
+        {
+            var resultPtr = rocksdb_transaction_get(txn, read_options, key, new UIntPtr(keyLength), out UIntPtr valueLength, out errptr);
+
+            if (errptr != IntPtr.Zero)
+                return null;
+            if (resultPtr == IntPtr.Zero)
+                return null;
+
+            var result = new byte[valueLength.ToUInt64()];
+            Marshal.Copy(resultPtr, result, 0, (int)valueLength.ToUInt64());
+            rocksdb_free(resultPtr);
+            return result;
+        }
+
+        public byte[] rocksdb_transactiondb_get(
+            IntPtr txn_db,
+            IntPtr read_options,
+            byte[] key,
+            ulong keyLength,
+            out IntPtr errptr)
+        {
+            var resultPtr = rocksdb_transactiondb_get(txn_db, read_options, key, new UIntPtr(keyLength), out UIntPtr valueLength, out errptr);
+
+            if (errptr != IntPtr.Zero)
+                return null;
+            if (resultPtr == IntPtr.Zero)
+                return null;
+
+            var result = new byte[valueLength.ToUInt64()];
+            Marshal.Copy(resultPtr, result, 0, (int)valueLength.ToUInt64());
             rocksdb_free(resultPtr);
             return result;
         }
