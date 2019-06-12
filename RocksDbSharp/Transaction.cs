@@ -1,13 +1,16 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
+using Transitional;
 
 namespace RocksDbSharp
 {
     public class Transaction : IDisposable
     {
-        ReadOptions DefaultReadOptions { get; set; }
-        WriteOptions DefaultWriteOptions { get; set; }
-        TransactionOptions Options { get; set; }
+        internal ReadOptions DefaultReadOptions { get; set; }
+        internal WriteOptions WriteOptions { get; set; }
+        internal TransactionOptions Options { get; set; }
+        internal static Encoding DefaultEncoding => Encoding.UTF8;
 
         public IntPtr Handle { get; private set; }
 
@@ -15,7 +18,7 @@ namespace RocksDbSharp
         {
             Handle = h;
             DefaultReadOptions = new ReadOptions();
-            DefaultWriteOptions = wo;
+            WriteOptions = wo;
             Options = to;
         }
 
@@ -42,61 +45,103 @@ namespace RocksDbSharp
                 throw new RocksDbException(err);
         }
 
-        public void Put(string key, string val, Encoding enc = null)
+        public void Put(string key, string value, ColumnFamilyHandle cf = null, Encoding encoding = null)
         {
-            IntPtr err;
-            Native.Instance.rocksdb_transaction_put(Handle, key, val, out err, enc);
-            if (err != IntPtr.Zero)
-                throw new RocksDbException(err); 
+            Native.Instance.rocksdb_transaction_put(Handle, key, value, cf, encoding ?? DefaultEncoding);
         }
 
-        public void Put(byte[] key, byte[] val)
+        public void Put(byte[] key, byte[] value, ColumnFamilyHandle cf = null)
         {
-            IntPtr err;
-            Native.Instance.rocksdb_transaction_put(Handle, key, new UIntPtr((ulong)key.Length), val, new UIntPtr((ulong)val.Length), out err);
-            if (err != IntPtr.Zero)
-                throw new RocksDbException(err); 
+            Put(key, key.GetLongLength(0), value, value.GetLongLength(0), cf);
         }
 
-        public string Get(string key, ReadOptions o = null, Encoding enc = null)
+        public void Put(byte[] key, long keyLength, byte[] value, long valueLength, ColumnFamilyHandle cf = null)
         {
-            IntPtr err;
-            var result = Native.Instance.rocksdb_transaction_get(Handle, (o ?? DefaultReadOptions).Handle, key, out err, enc);
-            if (err != IntPtr.Zero)
-                throw new RocksDbException(err); 
-            
-            return result;
+            Native.Instance.rocksdb_transaction_put(Handle, key, keyLength, value, valueLength, cf);
         }
 
-        public byte[] Get(byte[] key, ReadOptions o = null)
+        public string Get(string key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null, Encoding encoding = null)
         {
-            IntPtr err;
-            var result = Native.Instance.rocksdb_transaction_get(Handle, (o ?? DefaultReadOptions).Handle, key, (ulong)key.Length, out err);
-            if (err != IntPtr.Zero)
-                throw new RocksDbException(err); 
-            
-            return result;
+            return Native.Instance.rocksdb_transaction_get(Handle, (readOptions ?? DefaultReadOptions).Handle, key, cf, encoding ?? DefaultEncoding);
         }
 
-        public void Remove(string key, Encoding enc = null)
+        public byte[] Get(byte[] key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
-            IntPtr err;
-            Native.Instance.rocksdb_transaction_delete(Handle, key, out err, enc);
-            if (err != IntPtr.Zero)
-                throw new RocksDbException(err);
+            return Get(key, key.GetLongLength(0), cf, readOptions);
         }
 
-        public void Remove(byte[] key)
+        public byte[] Get(byte[] key, long keyLength, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
-            IntPtr err;
-            Native.Instance.rocksdb_transaction_delete(Handle, key, new UIntPtr((ulong)key.Length), out err);
-            if (err != IntPtr.Zero)
-                throw new RocksDbException(err);
+            return Native.Instance.rocksdb_transaction_get(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, cf);
         }
 
-        public Iterator NewIterator(ReadOptions readOptions = null)
+        /// <summary>
+        /// Reads the contents of the database value associated with <paramref name="key"/>, if present, into the supplied
+        /// <paramref name="buffer"/> at <paramref name="offset"/> up to <paramref name="length"/> bytes, returning the
+        /// length of the value in the database, or -1 if the key is not present.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <param name="cf"></param>
+        /// <param name="readOptions"></param>
+        /// <returns>The actual length of the database field if it exists, otherwise -1</returns>
+        public long Get(byte[] key, byte[] buffer, long offset, long length, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
-            IntPtr iteratorHandle = Native.Instance.rocksdb_transaction_create_iterator(Handle, (readOptions ?? DefaultReadOptions).Handle);
+            return Get(key, key.GetLongLength(0), buffer, offset, length, cf, readOptions);
+        }
+
+        /// <summary>
+        /// Reads the contents of the database value associated with <paramref name="key"/>, if present, into the supplied
+        /// <paramref name="buffer"/> at <paramref name="offset"/> up to <paramref name="length"/> bytes, returning the
+        /// length of the value in the database, or -1 if the key is not present.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <param name="cf"></param>
+        /// <param name="readOptions"></param>
+        /// <returns>The actual length of the database field if it exists, otherwise -1</returns>
+        public long Get(byte[] key, long keyLength, byte[] buffer, long offset, long length, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
+        {
+            unsafe
+            {
+                var ptr = Native.Instance.rocksdb_transaction_get(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, out long valLength, cf);
+                if (ptr == IntPtr.Zero)
+                    return -1;
+                var copyLength = Math.Min(length, valLength);
+                Marshal.Copy(ptr, buffer, (int)offset, (int)copyLength);
+                Native.Instance.rocksdb_free(ptr);
+                return valLength;
+            }
+        }
+
+        public void Remove(string key, ColumnFamilyHandle cf = null)
+        {
+            Native.Instance.rocksdb_transaction_delete(Handle, key, cf);
+        }
+
+        public void Remove(byte[] key, ColumnFamilyHandle cf = null)
+        {
+            Remove(key, key.Length, cf);
+        }
+
+        public void Remove(byte[] key, long keyLength, ColumnFamilyHandle cf = null)
+        {
+            if (cf == null)
+                Native.Instance.rocksdb_transaction_delete(Handle, key, keyLength);
+            else
+                Native.Instance.rocksdb_transaction_delete_cf(Handle, key, keyLength, cf);
+        }
+
+        public Iterator NewIterator(ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
+        {
+            IntPtr iteratorHandle = cf == null
+                ? Native.Instance.rocksdb_transaction_create_iterator(Handle, (readOptions ?? DefaultReadOptions).Handle)
+                : Native.Instance.rocksdb_transaction_create_iterator_cf(Handle, (readOptions ?? DefaultReadOptions).Handle, cf.Handle);
+            // Note: passing in read options here only to ensure that it is not collected before the iterator
             return new Iterator(iteratorHandle, readOptions);
         }
     }
