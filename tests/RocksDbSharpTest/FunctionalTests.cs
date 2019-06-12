@@ -435,6 +435,150 @@ namespace RocksDbSharpTest
                     Directory.Delete(dbname, true);
             }
 
+            // TransactionDb tests
+            var testtxdb = Path.Combine(testdir, "txdb");
+            var testtxcp = Path.Combine(testdir, "txcp");
+            var txdbpath = Environment.ExpandEnvironmentVariables(testtxdb);
+            var txcppath = Environment.ExpandEnvironmentVariables(testtxcp);
+            var txdboptions = new TransactionDbOptions();
+
+            using (var db = TransactionDb.Open(options, txdboptions, txdbpath))
+            {
+                // With strings
+                string value = db.Get("key");
+                db.Put("key", "value");
+                Assert.Equal("value", db.Get("key"));
+                Assert.Null(db.Get("non-existent-key"));
+                db.Remove("key");
+                Assert.Null(db.Get("value"));
+
+                // With bytes
+                db.Put(Encoding.UTF8.GetBytes("key"), Encoding.UTF8.GetBytes("value"));
+                Assert.True(BinaryComparer.Default.Equals(Encoding.UTF8.GetBytes("value"), db.Get(Encoding.UTF8.GetBytes("key"))));
+                // non-existent kiey
+                Assert.Null(db.Get(new byte[] { 0, 1, 2 }));
+                db.Remove(Encoding.UTF8.GetBytes("key"));
+                Assert.Null(db.Get(Encoding.UTF8.GetBytes("key")));
+
+                db.Put(Encoding.UTF8.GetBytes("key"), new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
+
+                // With buffers
+                var buffer = new byte[100];
+                long length = db.Get(Encoding.UTF8.GetBytes("key"), buffer, 0, buffer.Length);
+                Assert.Equal(8, length);
+                Assert.Equal(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, buffer.Take((int)length).ToList());
+
+                buffer = new byte[5];
+                length = db.Get(Encoding.UTF8.GetBytes("key"), buffer, 0, buffer.Length);
+                Assert.Equal(8, length);
+                Assert.Equal(new byte[] { 0, 1, 2, 3, 4 }, buffer.Take((int)Math.Min(buffer.Length, length)));
+
+                length = db.Get(Encoding.UTF8.GetBytes("bogus"), buffer, 0, buffer.Length);
+                Assert.Equal(-1, length);
+
+                // Write batches
+                // With strings
+                using (WriteBatch batch = new WriteBatch()
+                    .Put("one", "uno")
+                    .Put("two", "deuce")
+                    .Put("two", "dos")
+                    .Put("three", "tres"))
+                {
+                    db.Write(batch);
+                }
+                Assert.Equal("uno", db.Get("one"));
+
+                // With save point
+                using (WriteBatch batch = new WriteBatch())
+                {
+                    batch
+                        .Put("hearts", "red")
+                        .Put("diamonds", "red");
+                    batch.SetSavePoint();
+                    batch
+                        .Put("clubs", "black");
+                    batch.SetSavePoint();
+                    batch
+                        .Put("spades", "black");
+                    batch.RollbackToSavePoint();
+                    db.Write(batch);
+                }
+                Assert.Equal("red", db.Get("diamonds"));
+                Assert.Equal("black", db.Get("clubs"));
+                Assert.Null(db.Get("spades"));
+
+                // Save a checkpoint
+                using (var cp = db.Checkpoint())
+                {
+                    cp.Save(txcppath);
+                }
+
+                // With bytes
+                var utf8 = Encoding.UTF8;
+                using (WriteBatch batch = new WriteBatch()
+                    .Put(utf8.GetBytes("four"), new byte[] { 4, 4, 4 })
+                    .Put(utf8.GetBytes("five"), new byte[] { 5, 5, 5 }))
+                {
+                    db.Write(batch);
+                }
+                Assert.True(BinaryComparer.Default.Equals(new byte[] { 4, 4, 4 }, db.Get(utf8.GetBytes("four"))));
+
+                // Snapshots
+                using (var snapshot = db.CreateSnapshot())
+                {
+                    var before = db.Get("one");
+                    db.Put("one", "1");
+
+                    var useSnapshot = new ReadOptions()
+                        .SetSnapshot(snapshot);
+
+                    // the database value was written
+                    Assert.Equal("1", db.Get("one"));
+                    // but the snapshot still sees the old version
+                    var after = db.Get("one", readOptions: useSnapshot);
+                    Assert.Equal(before, after);
+                }
+
+                var two = db.Get("two");
+                Assert.Equal("dos", two);
+
+                // Iterators
+                using (var iterator = db.NewIterator(
+                    readOptions: new ReadOptions()
+                        .SetIterateUpperBound("t")
+                        ))
+                {
+                    iterator.Seek("k");
+                    Assert.True(iterator.Valid());
+                    Assert.Equal("key", iterator.StringKey());
+                    iterator.Next();
+                    Assert.True(iterator.Valid());
+                    Assert.Equal("one", iterator.StringKey());
+                    Assert.Equal("1", iterator.StringValue());
+                    iterator.Next();
+                    Assert.False(iterator.Valid());
+                }
+
+                // Transaction
+                using (var transaction = db.BeginTransaction(new WriteOptions(), new TransactionOptions()))
+                {
+                    Assert.Equal("dos", transaction.Get("two"));
+                    transaction.Put("two", "2");
+                    Assert.Equal("dos", db.Get("two"));
+                    transaction.Commit();
+                }
+                Assert.Equal("2", db.Get("two"));
+            }
+
+            // Test reading checkpointed db
+            using (var cpdb = TransactionDb.Open(options, txdboptions, txcppath))
+            {
+                Assert.Equal("red", cpdb.Get("diamonds"));
+                Assert.Equal("black", cpdb.Get("clubs"));
+                Assert.Null(cpdb.Get("spades"));
+                // Checkpoint occurred before these changes:
+                Assert.Null(cpdb.Get("four"));
+            }
         }
 
         class IntegerStringComparator : StringComparatorBase
