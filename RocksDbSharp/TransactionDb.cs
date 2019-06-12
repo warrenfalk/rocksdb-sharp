@@ -109,6 +109,11 @@ namespace RocksDbSharp
             return result;
         }
 
+        public void Write(WriteBatch writeBatch, WriteOptions writeOptions = null)
+        {
+            Native.Instance.rocksdb_transactiondb_write(Handle, (writeOptions ?? DefaultWriteOptions).Handle, writeBatch.Handle);
+        }
+
         public void Remove(string key, WriteOptions wo = null, Encoding enc = null)
         {
             IntPtr err;

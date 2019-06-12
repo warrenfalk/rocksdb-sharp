@@ -270,6 +270,16 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_transactiondb_write(
+            /*rocksdb_transactiondb_t**/ IntPtr db,
+            /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
+            /*(rocksdb_writebatch_t*)*/ IntPtr writeBatch)
+        {
+            rocksdb_transactiondb_write(db, writeOptions, writeBatch, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
         public void rocksdb_write_writebatch_wi(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_writeoptions_t**/ IntPtr writeOptions,
