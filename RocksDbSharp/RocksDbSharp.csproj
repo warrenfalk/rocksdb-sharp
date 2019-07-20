@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Versions.targets.include"/>
+  <Import Project="..\Versions.targets.include" />
   <PropertyGroup>
     <Title>RocksDbSharp</Title>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -40,5 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
   </ItemGroup>
 </Project>
