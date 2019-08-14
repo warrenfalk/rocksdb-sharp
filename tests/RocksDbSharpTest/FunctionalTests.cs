@@ -357,6 +357,28 @@ namespace RocksDbSharpTest
                 }
             }
 
+            // Test that GC does not cause access violation on Comparers
+            {
+                if (Directory.Exists("test-av-error"))
+                    Directory.Delete("test-av-error", true);
+                options = new RocksDbSharp.DbOptions()
+                  .SetCreateIfMissing(true)
+                  .SetCreateMissingColumnFamilies(true);
+                var sc = new RocksDbSharp.StringComparator(StringComparer.InvariantCultureIgnoreCase);
+                columnFamilies = new RocksDbSharp.ColumnFamilies
+                {
+                     { "cf1", new RocksDbSharp.ColumnFamilyOptions()
+                        .SetComparator(sc)
+                    },
+                };
+                GC.Collect();
+                using (var db = RocksDbSharp.RocksDb.Open(options, "test-av-error", columnFamilies))
+                {
+                }
+                if (Directory.Exists("test-av-error"))
+                    Directory.Delete("test-av-error", true);
+            }
+
             // Smoke test various options
             {
                 var dbname = "test-options";

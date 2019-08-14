@@ -391,6 +391,37 @@ namespace RocksDbSharp
         /// and L4 using compression_per_level[3]. Compaction for each level can
         /// change when data grows.
         /// </summary>
+        public ColumnFamilyOptions SetCompressionPerLevel(Compression[] levelValues, ulong numLevels)
+        {
+            var values = levelValues.Select(x => (int)x).ToArray();
+            Native.Instance.rocksdb_options_set_compression_per_level(Handle, values, (UIntPtr)numLevels);
+            return this;
+        }
+
+        /// <summary>
+        /// Different levels can have different compression policies. There
+        /// are cases where most lower levels would like to use quick compression
+        /// algorithms while the higher levels (which have more data) use
+        /// compression algorithms that have better compression but could
+        /// be slower. This array, if non-empty, should have an entry for
+        /// each level of the database; these override the value specified in
+        /// the previous field 'compression'.
+        ///
+        /// NOTICE if level_compaction_dynamic_level_bytes=true,
+        /// compression_per_level[0] still determines L0, but other elements
+        /// of the array are based on base level (the level L0 files are merged
+        /// to), and may not match the level users see from info log for metadata.
+        /// If L0 files are merged to level-n, then, for i>0, compression_per_level[i]
+        /// determines compaction type for level n+i-1.
+        /// For example, if we have three 5 levels, and we determine to merge L0
+        /// data to L4 (which means L1..L3 will be empty), then the new files go to
+        /// L4 uses compression type compression_per_level[1].
+        /// If now L0 is merged to L2. Data goes to L2 will be compressed
+        /// according to compression_per_level[1], L3 using compression_per_level[2]
+        /// and L4 using compression_per_level[3]. Compaction for each level can
+        /// change when data grows.
+        /// </summary>
+        [Obsolete("Use Compression enum")]
         public ColumnFamilyOptions SetCompressionPerLevel(Compression[] levelValues, UIntPtr numLevels)
         {
             Native.Instance.rocksdb_options_set_compression_per_level(Handle, levelValues, numLevels);
