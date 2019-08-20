@@ -194,3 +194,4 @@ rocksdbversion
 version
 
 *.orig
+.ionide/
