@@ -295,16 +295,16 @@ namespace RocksDbSharp
         public void CompactRange(byte[] start, byte[] limit, ColumnFamilyHandle cf = null)
         {
             if (cf == null)
-                Native.Instance.rocksdb_compact_range(Handle, start, (UIntPtr)start.GetLongLength(0), limit, (UIntPtr)limit.GetLongLength(0));
+                Native.Instance.rocksdb_compact_range(Handle, start, (UIntPtr)(start?.GetLongLength(0) ?? 0L), limit, (UIntPtr)(limit?.GetLongLength(0) ?? 0L));
             else
-                Native.Instance.rocksdb_compact_range_cf(Handle, cf.Handle, start, (UIntPtr)start.GetLongLength(0), limit, (UIntPtr)limit.GetLongLength(0));
+                Native.Instance.rocksdb_compact_range_cf(Handle, cf.Handle, start, (UIntPtr)(start?.GetLongLength(0) ?? 0L), limit, (UIntPtr)(limit?.GetLongLength(0) ?? 0L));
         }
 
         public void CompactRange(string start, string limit, ColumnFamilyHandle cf = null, Encoding encoding = null)
         {
             if (encoding == null)
                 encoding = Encoding.UTF8;
-            CompactRange(encoding.GetBytes(start), encoding.GetBytes(limit), cf);
+            CompactRange(start == null ? null : encoding.GetBytes(start), limit == null ? null : encoding.GetBytes(limit), cf);
         }
     }
 }

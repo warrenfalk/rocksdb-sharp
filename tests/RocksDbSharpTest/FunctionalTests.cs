@@ -170,6 +170,14 @@ namespace RocksDbSharpTest
                 Assert.Null(cpdb.Get("four"));
             }
 
+            // Test various operations
+            using (var db = RocksDb.Open(options, path))
+            {
+                // Nulls should be allowed here
+                db.CompactRange((byte[])null, (byte[])null);
+                db.CompactRange((string)null, (string)null);
+            }
+
             // Test with column families
             var optionsCf = new DbOptions()
                 .SetCreateIfMissing(true)
