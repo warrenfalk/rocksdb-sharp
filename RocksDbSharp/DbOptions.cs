@@ -248,7 +248,7 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetMaxLogFileSize(ulong value)
         {
-            Native.Instance.rocksdb_options_set_max_log_file_size(Handle, value);
+            Native.Instance.rocksdb_options_set_max_log_file_size(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -260,7 +260,7 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetLogFileTimeToRoll(ulong value)
         {
-            Native.Instance.rocksdb_options_set_log_file_time_to_roll(Handle, value);
+            Native.Instance.rocksdb_options_set_log_file_time_to_roll(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -270,7 +270,7 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetKeepLogFileNum(ulong value)
         {
-            Native.Instance.rocksdb_options_set_keep_log_file_num(Handle, value);
+            Native.Instance.rocksdb_options_set_keep_log_file_num(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -286,7 +286,7 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetRecycleLogFileNum(ulong value)
         {
-            Native.Instance.rocksdb_options_set_recycle_log_file_num(Handle, value);
+            Native.Instance.rocksdb_options_set_recycle_log_file_num(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -297,7 +297,7 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetMaxManifestFileSize(ulong value)
         {
-            Native.Instance.rocksdb_options_set_max_manifest_file_size(Handle, value);
+            Native.Instance.rocksdb_options_set_max_manifest_file_size(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -406,7 +406,7 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetManifestPreallocationSize(ulong value)
         {
-            Native.Instance.rocksdb_options_set_manifest_preallocation_size(Handle, value);
+            Native.Instance.rocksdb_options_set_manifest_preallocation_size(Handle, (UIntPtr)value);
             return this;
         }
 
@@ -504,7 +504,7 @@ namespace RocksDbSharp
         /// </summary>
         public DbOptions SetDbWriteBufferSize(ulong size)
         {
-            Native.Instance.rocksdb_options_set_db_write_buffer_size(Handle, size);
+            Native.Instance.rocksdb_options_set_db_write_buffer_size(Handle, (UIntPtr)size);
             return this;
         }
 

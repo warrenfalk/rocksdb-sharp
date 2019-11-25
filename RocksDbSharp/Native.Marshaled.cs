@@ -609,6 +609,7 @@ namespace RocksDbSharp
             }
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_put(IntPtr writeBatch,
                                    byte[] key, ulong klen,
                                    byte[] val, ulong vlen)
@@ -618,6 +619,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_put(writeBatch, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_wi_put(IntPtr writeBatch,
                                                   byte* key, ulong klen,
                                                   byte* val, ulong vlen)
@@ -627,6 +629,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_put(writeBatch, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_put_cf(IntPtr writeBatch, IntPtr column_family,
                                               byte[] key, ulong klen,
                                               byte[] val, ulong vlen)
@@ -636,6 +639,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_put_cf(writeBatch, column_family, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_wi_put_cf(IntPtr writeBatch, IntPtr column_family,
                                                      byte* key, ulong klen,
                                                      byte* val, ulong vlen)
@@ -674,12 +678,14 @@ namespace RocksDbSharp
             }
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_iter_seek(IntPtr iter, byte* key, ulong klen)
         {
             UIntPtr sklength = (UIntPtr)klen;
             rocksdb_iter_seek(iter, key, sklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_iter_seek(IntPtr iter, byte[] key, ulong klen)
         {
             UIntPtr sklength = (UIntPtr)klen;
@@ -740,12 +746,14 @@ namespace RocksDbSharp
             }
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void  rocksdb_iter_seek_for_prev(IntPtr iter, byte* key, ulong klen)
         {
             UIntPtr sklength = (UIntPtr)klen;
             rocksdb_iter_seek_for_prev(iter, key, sklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_iter_seek_for_prev(IntPtr iter, byte[] key, ulong klen)
         {
             UIntPtr sklength = (UIntPtr)klen;
@@ -791,6 +799,7 @@ namespace RocksDbSharp
             }
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_compact_range(IntPtr db,
             byte* start_key, long start_key_len,
             byte* limit_key, long limit_key_len)
@@ -802,6 +811,7 @@ namespace RocksDbSharp
                                   limit_key, lklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_compact_range(IntPtr db,
             byte[] start_key, long start_key_len,
             byte[] limit_key, long limit_key_len)
@@ -813,6 +823,7 @@ namespace RocksDbSharp
                                   limit_key, lklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_compact_range_cf(IntPtr db, IntPtr column_family,
             byte* start_key, long start_key_len,
             byte* limit_key, long limit_key_len)
@@ -824,6 +835,7 @@ namespace RocksDbSharp
                                                      limit_key, lklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_compact_range_cf(IntPtr db, IntPtr column_family,
             byte[] start_key, long start_key_len,
             byte[] limit_key, long limit_key_len)
@@ -835,12 +847,14 @@ namespace RocksDbSharp
                                                      limit_key, lklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public IntPtr rocksdb_writebatch_create_from(byte[] rep, long size)
         {
             UIntPtr fromSize = (UIntPtr)size;
             return rocksdb_writebatch_create_from(rep, fromSize);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_put(IntPtr writeBatch,
                                            byte[] key, ulong klen,
                                            byte[] val, ulong vlen)
@@ -850,6 +864,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_put(writeBatch, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_put(IntPtr writeBatch,
                                                   byte* key, ulong klen,
                                                   byte* val, ulong vlen)
@@ -859,6 +874,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_put(writeBatch, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_put_cf(IntPtr writeBatch, IntPtr column_family,
                                               byte[] key, ulong klen, 
                                               byte[] val, ulong vlen)
@@ -868,6 +884,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_put_cf(writeBatch, column_family, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_put_cf(IntPtr writeBatch, IntPtr column_family,
                                                      byte* key, ulong klen,
                                                      byte* val, ulong vlen)
@@ -877,6 +894,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_put_cf(writeBatch, column_family, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_merge(IntPtr writeBatch,
                                              byte[] key, ulong klen,
                                              byte[] val, ulong vlen)
@@ -886,6 +904,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_merge(writeBatch, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_merge(IntPtr writeBatch,
                                                              byte* key, ulong klen,
                                                              byte* val, ulong vlen)
@@ -895,6 +914,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_merge(writeBatch, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_merge_cf(IntPtr writeBatch, IntPtr column_family,
                                                          byte[] key, ulong klen,
                                                          byte[] val, ulong vlen)
@@ -904,6 +924,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_merge_cf(writeBatch, column_family, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_merge_cf(IntPtr writeBatch, IntPtr column_family,
                                                                 byte* key, ulong klen,
                                                                 byte* val, ulong vlen)
@@ -913,6 +934,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_merge_cf(writeBatch, column_family, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_delete(IntPtr writeBatch,
                                               byte[] key, ulong klen)
         {
@@ -920,6 +942,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_delete(writeBatch, key, sklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_delete(IntPtr writeBatch,
                                                      byte* key, ulong klen)
         {
@@ -927,6 +950,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_delete(writeBatch, key, sklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_delete_cf(IntPtr writeBatch, IntPtr column_family,
                                                  byte[] key, ulong klen)
         {
@@ -934,6 +958,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_delete_cf(writeBatch, column_family, key, sklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_delete_cf(IntPtr writeBatch, IntPtr column_family,
                                                         byte* key, ulong klen)
         {
@@ -941,6 +966,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_delete_cf(writeBatch, column_family, key, sklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_delete_range(IntPtr b,
                                                              byte[] start_key, ulong start_key_len,
                                                              byte[] end_key, ulong end_key_len)
@@ -950,6 +976,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_delete_range(b, start_key, sklength, end_key, eklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_delete_range(IntPtr b,
                                                                     byte* start_key, ulong start_key_len,
                                                                     byte* end_key, ulong end_key_len)
@@ -959,6 +986,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_delete_range(b, start_key, sklength, end_key, eklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_delete_range_cf(IntPtr b, IntPtr column_family,
                                                                 byte[] start_key, ulong start_key_len,
                                                                 byte[] end_key, ulong end_key_len)
@@ -968,6 +996,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_delete_range_cf(b, column_family, start_key, sklength, end_key, eklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_delete_range_cf(IntPtr b, IntPtr column_family,
                                                                        byte* start_key, ulong start_key_len,
                                                                        byte* end_key, ulong end_key_len)
@@ -977,6 +1006,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_delete_range_cf(b, column_family, start_key, sklength, end_key, eklength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_put_log_data(IntPtr writeBatch, byte[] blob, ulong len)
         {
             UIntPtr bloblength = (UIntPtr)len;
@@ -993,6 +1023,7 @@ namespace RocksDbSharp
             return data;
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public IntPtr rocksdb_writebatch_wi_create(ulong reserved_bytes,
                                                    bool overwrite_keys)
         {
@@ -1042,6 +1073,7 @@ namespace RocksDbSharp
             return (int)size;
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_merge(IntPtr writeBatch,
                                      byte[] key, ulong klen,
                                      byte[] val, ulong vlen)
@@ -1051,6 +1083,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_merge(writeBatch, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_wi_merge(IntPtr writeBatch,
                                                              byte* key, ulong klen,
                                                              byte* val, ulong vlen)
@@ -1060,6 +1093,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_merge(writeBatch, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_merge_cf(IntPtr writeBatch, IntPtr column_family,
                                                          byte[] key, ulong klen,
                                                          byte[] val, ulong vlen)
@@ -1069,6 +1103,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_merge_cf(writeBatch, column_family, key, sklength, val, svlength);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_wi_merge_cf(IntPtr writeBatch, IntPtr column_family,
                                                                 byte* key, ulong klen,
                                                                 byte* val, ulong vlen)
@@ -1091,9 +1126,7 @@ namespace RocksDbSharp
         public unsafe void rocksdb_sstfilewriter_add(
             IntPtr writer,
             string key,
-            ulong keylen,
             string val,
-            ulong vallen,
             out IntPtr errptr,
             Encoding encoding = null)
         {
@@ -1242,30 +1275,35 @@ namespace RocksDbSharp
             return result;
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_delete(IntPtr writeBatch,
                                       byte[] key, ulong klen)
         {
             rocksdb_writebatch_wi_delete(writeBatch, key, new UIntPtr(klen));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_wi_delete(IntPtr writeBatch,
                                                      byte* key, ulong klen)
         {
             rocksdb_writebatch_wi_delete(writeBatch, key, new UIntPtr(klen));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_delete_cf(IntPtr writeBatch, IntPtr column_family,
                                                  byte[] key, ulong klen)
         {
             rocksdb_writebatch_wi_delete_cf(writeBatch, column_family, key, new UIntPtr(klen));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_wi_delete_cf(IntPtr writeBatch, IntPtr column_family,
                                                         byte* key, ulong klen)
         {
             rocksdb_writebatch_wi_delete_cf(writeBatch, column_family, key, new UIntPtr(klen));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_delete_range(IntPtr b,
                                                              byte[] start_key, ulong start_key_len,
                                                              byte[] end_key, ulong end_key_len)
@@ -1273,6 +1311,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_delete_range(b, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_wi_delete_range(IntPtr b,
                                                                     byte* start_key, ulong start_key_len,
                                                                     byte* end_key, ulong end_key_len)
@@ -1280,6 +1319,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_delete_range(b, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_delete_range_cf(IntPtr b, IntPtr column_family,
                                                                 byte[] start_key, ulong start_key_len,
                                                                 byte[] end_key, ulong end_key_len)
@@ -1287,6 +1327,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_delete_range_cf(b, column_family, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public unsafe void rocksdb_writebatch_wi_delete_range_cf(IntPtr b, IntPtr column_family,
                                                                        byte* start_key, ulong start_key_len,
                                                                        byte* end_key, ulong end_key_len)
@@ -1294,6 +1335,7 @@ namespace RocksDbSharp
             rocksdb_writebatch_wi_delete_range_cf(b, column_family, start_key, new UIntPtr(start_key_len), end_key, new UIntPtr(end_key_len));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_compaction_readahead_size(IntPtr options, ulong size)
         {
             rocksdb_options_compaction_readahead_size(options, new UIntPtr(size));
@@ -1304,104 +1346,145 @@ namespace RocksDbSharp
             rocksdb_options_set_compression_per_level(opt, level_values, new UIntPtr(num_levels));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_write_buffer_size(IntPtr options, ulong value)
         {
             rocksdb_options_set_write_buffer_size(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_max_bytes_for_level_multiplier_additional(IntPtr options, int[] level_values, ulong num_levels)
         {
             rocksdb_options_set_max_bytes_for_level_multiplier_additional(options, level_values, new UIntPtr(num_levels));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_soft_pending_compaction_bytes_limit(IntPtr opt, ulong v)
         {
             rocksdb_options_set_soft_pending_compaction_bytes_limit(opt, new UIntPtr(v));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_hash_skip_list_rep(IntPtr options, ulong p1, int p2, int p3)
         {
             rocksdb_options_set_hash_skip_list_rep(options, new UIntPtr(p1), p2, p3);
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_hash_link_list_rep(IntPtr options, ulong value)
         {
             rocksdb_options_set_hash_link_list_rep(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_arena_block_size(IntPtr options, ulong value)
         {
             rocksdb_options_set_arena_block_size(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_hard_pending_compaction_bytes_limit(IntPtr opt, ulong v)
         {
             rocksdb_options_set_hard_pending_compaction_bytes_limit(opt, new UIntPtr(v));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_plain_table_factory(IntPtr options, UInt32 p1, int p2, double p3, ulong p4)
         {
             rocksdb_options_set_plain_table_factory(options, p1, p2, p3, new UIntPtr(p4));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_max_successive_merges(IntPtr options, ulong value)
         {
             rocksdb_options_set_max_successive_merges(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_inplace_update_num_locks(IntPtr options, ulong value)
         {
             rocksdb_options_set_inplace_update_num_locks(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_memtable_huge_page_size(IntPtr options, ulong size)
         {
             rocksdb_options_set_memtable_huge_page_size(options, new UIntPtr(size));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_block_based_options_set_block_size(IntPtr options, ulong blockSize)
         {
             rocksdb_block_based_options_set_block_size(options, new UIntPtr(blockSize));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_max_log_file_size(IntPtr options, ulong value)
         {
             rocksdb_options_set_max_log_file_size(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_log_file_time_to_roll(IntPtr options, ulong value)
         {
             rocksdb_options_set_log_file_time_to_roll(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_keep_log_file_num(IntPtr options, ulong value)
         {
             rocksdb_options_set_keep_log_file_num(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_recycle_log_file_num(IntPtr options, ulong value)
         {
             rocksdb_options_set_recycle_log_file_num(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_max_manifest_file_size(IntPtr options, ulong value)
         {
             rocksdb_options_set_max_manifest_file_size(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_manifest_preallocation_size(IntPtr options, ulong value)
         {
             rocksdb_options_set_manifest_preallocation_size(options, new UIntPtr(value));
         }
 
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_options_set_db_write_buffer_size(IntPtr options,ulong size)
         {
             rocksdb_options_set_db_write_buffer_size(options, new UIntPtr(size));
         }
+        [Obsolete("Use the UIntPtr version instead")]
         public void rocksdb_writebatch_wi_put_log_data(IntPtr writeBatch, byte[] blob, ulong len)
         {
             rocksdb_writebatch_wi_put_log_data(writeBatch, blob, new UIntPtr(len));
         }
+
+        public byte[] rocksdb_iter_key(IntPtr iterator)
+        {
+            IntPtr buffer = rocksdb_iter_key(iterator, out UIntPtr length);
+            byte[] result = new byte[(int)length];
+            Marshal.Copy(buffer, result, 0, (int)length);
+            // Do not free, this is owned by the iterator and will be freed there
+            //rocksdb_free(buffer);
+            return result;
+        }
+
+        public byte[] rocksdb_iter_value(IntPtr iterator)
+        {
+            IntPtr buffer = rocksdb_iter_value(iterator, out UIntPtr length);
+            byte[] result = new byte[(int)length];
+            Marshal.Copy(buffer, result, 0, (int)length);
+            // Do not free, this is owned by the iterator and will be freed there
+            //rocksdb_free(buffer);
+            return result;
+        }
+
 
     }
 }
