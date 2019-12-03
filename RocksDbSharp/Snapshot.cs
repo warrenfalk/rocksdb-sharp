@@ -13,12 +13,15 @@ namespace RocksDbSharp
     public class Snapshot : IDisposable
     {
         private IntPtr dbHandle;
-        public IntPtr Handle { get; private set; }
+        private Action releaseAction;
 
-        internal Snapshot(IntPtr dbHandle, IntPtr snapshotHandle)
+        public IntPtr Handle { get; private set; }
+        
+        internal Snapshot(IntPtr dbHandle, IntPtr snapshotHandle, Action doRelease)
         {
             this.dbHandle = dbHandle;
             Handle = snapshotHandle;
+            releaseAction = doRelease;
         }
 
         public void Dispose()
@@ -26,7 +29,7 @@ namespace RocksDbSharp
             if (Handle != IntPtr.Zero)
             {
 #if !NODESTROY
-                Native.Instance.rocksdb_release_snapshot(dbHandle, Handle);
+                releaseAction?.Invoke();
 #endif
                 Handle = IntPtr.Zero;
             }

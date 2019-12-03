@@ -45,6 +45,69 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_transaction_put(
+             IntPtr txn,
+             string key,
+             string val,
+             ColumnFamilyHandle cf = null,
+             Encoding encoding = null)
+        {
+            rocksdb_transaction_put(txn, key, val, out IntPtr errptr, cf, encoding);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_transaction_put(
+            IntPtr txn,
+            byte[] key,
+            long keyLength,
+            byte[] value,
+            long valueLength,
+            ColumnFamilyHandle cf)
+        {
+            IntPtr errptr;
+            UIntPtr sklength = (UIntPtr)keyLength;
+            UIntPtr svlength = (UIntPtr)valueLength;
+            if (cf == null)
+                rocksdb_transaction_put(txn, key, sklength, value, svlength, out errptr);
+            else
+                rocksdb_transaction_put_cf(txn, cf.Handle, key, sklength, value, svlength, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_transactiondb_put(
+             IntPtr txn_db,
+             IntPtr writeOptions,
+             string key,
+             string val,
+             ColumnFamilyHandle cf = null,
+             Encoding encoding = null)
+        {
+            rocksdb_transactiondb_put(txn_db, writeOptions, key, val, out IntPtr errptr, cf, encoding);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_transactiondb_put(
+            IntPtr txn_db,
+            IntPtr writeOptions,
+            byte[] key,
+            long keyLength,
+            byte[] value,
+            long valueLength,
+            ColumnFamilyHandle cf)
+        {
+            IntPtr errptr;
+            UIntPtr sklength = (UIntPtr)keyLength;
+            UIntPtr svlength = (UIntPtr)valueLength;
+            if (cf == null)
+                rocksdb_transactiondb_put(txn_db, writeOptions, key, sklength, value, svlength, out errptr);
+            else
+                rocksdb_transactiondb_put_cf(txn_db, writeOptions, cf.Handle, key, sklength, value, svlength, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
 
         public string rocksdb_get(
             /*rocksdb_t**/ IntPtr db,
@@ -85,6 +148,94 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf = null)
         {
             var result = rocksdb_get(db, read_options, key, keyLength == 0 ? key.Length : keyLength, out IntPtr errptr, cf);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+                              
+        public string rocksdb_transaction_get(
+            /*rocksdb_t**/ IntPtr txn,
+            /*const rocksdb_readoptions_t**/ IntPtr read_options,
+            string key,
+            ColumnFamilyHandle cf,
+            Encoding encoding = null)
+        {
+            var result = rocksdb_transaction_get(txn, read_options, key, out IntPtr errptr, cf, encoding);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public IntPtr rocksdb_transaction_get(
+            IntPtr txn,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength,
+            out long vallen,
+            ColumnFamilyHandle cf)
+        {
+            UIntPtr sklength = (UIntPtr)keyLength;
+            var result = cf == null
+                ? rocksdb_transaction_get(txn, read_options, key, sklength, out UIntPtr valLength, out IntPtr errptr)
+                : rocksdb_transaction_get_cf(txn, read_options, cf.Handle, key, sklength, out valLength, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            vallen = (long)valLength;
+            return result;
+        }
+
+        public byte[] rocksdb_transaction_get(
+            IntPtr txn,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength = 0,
+            ColumnFamilyHandle cf = null)
+        {
+            var result = rocksdb_transaction_get(txn, read_options, key, keyLength == 0 ? key.Length : keyLength, out IntPtr errptr, cf);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+                          
+        public string rocksdb_transactiondb_get(
+            /*rocksdb_t**/ IntPtr txn_db,
+            /*const rocksdb_readoptions_t**/ IntPtr read_options,
+            string key,
+            ColumnFamilyHandle cf,
+            Encoding encoding = null)
+        {
+            var result = rocksdb_transactiondb_get(txn_db, read_options, key, out IntPtr errptr, cf, encoding);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public IntPtr rocksdb_transactiondb_get(
+            IntPtr txn_db,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength,
+            out long vallen,
+            ColumnFamilyHandle cf)
+        {
+            UIntPtr sklength = (UIntPtr)keyLength;
+            var result = cf == null
+                ? rocksdb_transactiondb_get(txn_db, read_options, key, sklength, out UIntPtr valLength, out IntPtr errptr)
+                : rocksdb_transactiondb_get_cf(txn_db, read_options, cf.Handle, key, sklength, out valLength, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            vallen = (long)valLength;
+            return result;
+        }
+
+        public byte[] rocksdb_transactiondb_get(
+            IntPtr txn_db,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength = 0,
+            ColumnFamilyHandle cf = null)
+        {
+            var result = rocksdb_transactiondb_get(txn_db, read_options, key, keyLength == 0 ? key.Length : keyLength, out IntPtr errptr, cf);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
@@ -134,6 +285,27 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_transaction_delete(
+            IntPtr txn,
+            string key,
+            ColumnFamilyHandle cf)
+        {
+            rocksdb_transaction_delete(txn, key, out IntPtr errptr, cf);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_transactiondb_delete(
+            IntPtr txn_db,
+            IntPtr writeOptions,
+            string key,
+            ColumnFamilyHandle cf)
+        {
+            rocksdb_transactiondb_delete(txn_db, writeOptions, key, out IntPtr errptr, cf);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
         [Obsolete("Use UIntPtr version instead")]
         public void rocksdb_delete(
             /*rocksdb_t**/ IntPtr db,
@@ -147,6 +319,29 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
         }
 
+        public void rocksdb_transaction_delete(
+            IntPtr txn,
+            byte[] key,
+            long keylen)
+        {
+            UIntPtr sklength = (UIntPtr)keylen;
+            rocksdb_transaction_delete(txn, key, sklength, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_transactiondb_delete(
+            IntPtr txn_db,
+            IntPtr writeOptions,
+            byte[] key,
+            long keylen)
+        {
+            UIntPtr sklength = (UIntPtr)keylen;
+            rocksdb_transactiondb_delete(txn_db, writeOptions, key, sklength, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
         [Obsolete("Use UIntPtr version instead")]
         public void rocksdb_delete_cf(
             /*rocksdb_t**/ IntPtr db,
@@ -156,6 +351,29 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf)
         {
             rocksdb_delete_cf(db, writeOptions, cf.Handle, key, (UIntPtr)keylen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_transaction_delete_cf(
+            IntPtr txn,
+            byte[] key,
+            long keylen,
+            ColumnFamilyHandle cf)
+        {
+            rocksdb_transaction_delete_cf(txn, cf.Handle, key, (UIntPtr)keylen, out IntPtr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
+
+        public void rocksdb_transactiondb_delete_cf(
+            IntPtr txn_db,
+            IntPtr writeOptions,
+            byte[] key,
+            long keylen,
+            ColumnFamilyHandle cf)
+        {
+            rocksdb_transactiondb_delete_cf(txn_db, writeOptions, cf.Handle, key, (UIntPtr)keylen, out IntPtr errptr);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }

@@ -84,6 +84,83 @@ namespace RocksDbSharp
             }
         }
 
+        public void rocksdb_transaction_put(
+            IntPtr txn,
+            string key,
+            string val,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key, v = val)
+                {
+                    var klength = key.Length;
+                    var vlength = val.Length;
+                    var bklength = encoding.GetByteCount(k, klength);
+                    var bvlength = encoding.GetByteCount(v, vlength);
+                    var buffer = Marshal.AllocHGlobal(bklength + bvlength);
+                    var bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+                    var bv = bk + bklength;
+                    encoding.GetBytes(v, vlength, bv, bvlength);
+
+                    if (cf == null)
+                        rocksdb_transaction_put(txn, bk, new UIntPtr((ulong)bklength), bv, new UIntPtr((ulong)bvlength), out errptr);
+                    else
+                        rocksdb_transaction_put_cf(txn, cf.Handle, bk, new UIntPtr((ulong)bklength), bv, new UIntPtr((ulong)bvlength), out errptr);
+
+#if DEBUG
+                    Zero(bk, bklength);
+                    Zero(bv, bvlength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
+        public void rocksdb_transactiondb_put(
+            IntPtr txn_db,
+            IntPtr write_options,
+            string key,
+            string val,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            unsafe
+            {
+                if (encoding == null)
+                    encoding = Encoding.UTF8;
+                fixed (char* k = key, v = val)
+                {
+                    var klength = key.Length;
+                    var vlength = val.Length;
+                    var bklength = encoding.GetByteCount(k, klength);
+                    var bvlength = encoding.GetByteCount(v, vlength);
+                    var buffer = Marshal.AllocHGlobal(bklength + bvlength);
+                    var bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+                    var bv = bk + bklength;
+                    encoding.GetBytes(v, vlength, bv, bvlength);
+
+                    if (cf == null)
+                        rocksdb_transactiondb_put(txn_db, write_options, bk, new UIntPtr((ulong)bklength), bv, new UIntPtr((ulong)bvlength), out errptr);
+                    else
+                        rocksdb_transactiondb_put_cf(txn_db, write_options, cf.Handle, bk, new UIntPtr((ulong)bklength), bv, new UIntPtr((ulong)bvlength), out errptr);
+
+#if DEBUG
+                    Zero(bk, bklength);
+                    Zero(bv, bvlength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
+
         public string rocksdb_get(
             /*rocksdb_t**/ IntPtr db,
             /*const rocksdb_readoptions_t**/ IntPtr read_options,
@@ -123,6 +200,84 @@ namespace RocksDbSharp
             }
         }
 
+        public string rocksdb_transaction_get(
+            IntPtr txn,
+            IntPtr read_options,
+            string key,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            unsafe
+            {
+                fixed (char* k = key)
+                {
+                    var klength = key.Length;
+                    var bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    var bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    var resultPtr = cf == null
+                        ? rocksdb_transaction_get(txn, read_options, bk, new UIntPtr((ulong)bklength), out UIntPtr bvlength, out errptr)
+                        : rocksdb_transaction_get_cf(txn, read_options, cf.Handle, bk, new UIntPtr((ulong)bklength), out bvlength, out errptr);
+
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+
+                    if (errptr != IntPtr.Zero)
+                        return null;
+                    if (resultPtr == IntPtr.Zero)
+                        return null;
+
+                    return MarshalAndFreeRocksDbString(resultPtr, (long)bvlength.ToUInt64(), encoding);
+                }
+            }
+        }
+
+        public string rocksdb_transactiondb_get(
+            IntPtr txn_db,
+            IntPtr read_options,
+            string key,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            if (encoding == null)
+                encoding = Encoding.UTF8;
+            unsafe
+            {
+                fixed (char* k = key)
+                {
+                    var klength = key.Length;
+                    var bklength = encoding.GetByteCount(k, klength);
+                    var buffer = Marshal.AllocHGlobal(bklength);
+                    var bk = (byte*)buffer.ToPointer();
+                    encoding.GetBytes(k, klength, bk, bklength);
+
+                    var resultPtr = cf == null
+                        ? rocksdb_transactiondb_get(txn_db, read_options, bk, new UIntPtr((ulong)bklength), out UIntPtr bvlength, out errptr)
+                        : rocksdb_transactiondb_get_cf(txn_db, read_options, cf.Handle, bk, new UIntPtr((ulong)bklength), out bvlength, out errptr);
+
+#if DEBUG
+                    Zero(bk, bklength);
+#endif
+                    Marshal.FreeHGlobal(buffer);
+
+                    if (errptr != IntPtr.Zero)
+                        return null;
+                    if (resultPtr == IntPtr.Zero)
+                        return null;
+
+                    return MarshalAndFreeRocksDbString(resultPtr, (long)bvlength.ToUInt64(), encoding);
+                }
+            }
+        }
+
         private unsafe string MarshalAndFreeRocksDbString(IntPtr resultPtr, long resultLength, Encoding encoding)
         {
             var result = CurrentFramework.CreateString((sbyte*)resultPtr.ToPointer(), 0, (int)resultLength, encoding);
@@ -152,6 +307,52 @@ namespace RocksDbSharp
                 return null;
             var result = new byte[(ulong)valueLength];
             Marshal.Copy(resultPtr, result, 0, (int)valueLength);
+            rocksdb_free(resultPtr);
+            return result;
+        }
+
+        public byte[] rocksdb_transaction_get(
+            IntPtr txn,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null)
+        {
+            var resultPtr = cf == null
+                ? rocksdb_transaction_get(txn, read_options, key, new UIntPtr((ulong)keyLength), out UIntPtr valueLength, out errptr)
+                : rocksdb_transaction_get_cf(txn, read_options, cf.Handle, key, new UIntPtr((ulong)keyLength), out valueLength, out errptr);
+
+            if (errptr != IntPtr.Zero)
+                return null;
+            if (resultPtr == IntPtr.Zero)
+                return null;
+
+            var result = new byte[valueLength.ToUInt64()];
+            Marshal.Copy(resultPtr, result, 0, (int)valueLength.ToUInt64());
+            rocksdb_free(resultPtr);
+            return result;
+        }
+
+        public byte[] rocksdb_transactiondb_get(
+            IntPtr txn_db,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null)
+        {
+            var resultPtr = cf == null
+                ? rocksdb_transactiondb_get(txn_db, read_options, key, new UIntPtr((ulong)keyLength), out UIntPtr valueLength, out errptr)
+                : rocksdb_transactiondb_get_cf(txn_db, read_options, cf.Handle, key, new UIntPtr((ulong)keyLength), out valueLength, out errptr);
+
+            if (errptr != IntPtr.Zero)
+                return null;
+            if (resultPtr == IntPtr.Zero)
+                return null;
+
+            var result = new byte[valueLength.ToUInt64()];
+            Marshal.Copy(resultPtr, result, 0, (int)valueLength.ToUInt64());
             rocksdb_free(resultPtr);
             return result;
         }
@@ -340,6 +541,37 @@ namespace RocksDbSharp
                 rocksdb_delete(db, writeOptions, bkey, kLength, out errptr);
             else
                 rocksdb_delete_cf(db, writeOptions, cf.Handle, bkey, kLength, out errptr);
+        }
+
+        public void rocksdb_transaction_delete(
+            IntPtr txn,
+            string key,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            var bkey = (encoding ?? Encoding.UTF8).GetBytes(key);
+            if (cf == null)
+                rocksdb_transaction_delete(txn, bkey, new UIntPtr((ulong)bkey.Length), out errptr);
+            else
+                rocksdb_transaction_delete_cf(txn, cf.Handle, bkey, new UIntPtr((ulong)bkey.Length), out errptr);
+        }
+
+
+
+        public void rocksdb_transactiondb_delete(
+            IntPtr txn_db,
+            IntPtr write_options,
+            string key,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null,
+            Encoding encoding = null)
+        {
+            var bkey = (encoding ?? Encoding.UTF8).GetBytes(key);
+            if (cf == null)
+                rocksdb_transactiondb_delete(txn_db, write_options, bkey, new UIntPtr((ulong)bkey.Length), out errptr);
+            else
+                rocksdb_transactiondb_delete_cf(txn_db, cf.Handle, write_options, bkey, new UIntPtr((ulong)bkey.Length), out errptr);
         }
 
         public string rocksdb_options_statistics_get_string_marshaled(IntPtr opts)

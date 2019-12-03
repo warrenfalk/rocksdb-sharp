@@ -239,7 +239,7 @@ namespace RocksDbSharp
         public Snapshot CreateSnapshot()
         {
             IntPtr snapshotHandle = Native.Instance.rocksdb_create_snapshot(Handle);
-            return new Snapshot(Handle, snapshotHandle);
+            return new Snapshot(Handle, snapshotHandle, () => Native.Instance.rocksdb_release_snapshot(Handle, snapshotHandle));
         }
 
         public static IEnumerable<string> ListColumnFamilies(DbOptions options, string name)
