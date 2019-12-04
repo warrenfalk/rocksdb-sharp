@@ -429,9 +429,8 @@ namespace RocksDbSharpTest
                   .SetCreateIfMissing(true)
                   .SetMergeOperator(MergeOperators.Create(
                       name: "test-merge-operator",
-                      partialMerge: (key, keyLength, operandsList, operandsListLength, numOperands, success, newValueLength) => IntPtr.Zero,
-                      fullMerge: (key, keyLength, existingValue, existingValueLength, operandsList, operandsListLength, numOperands, success, newValueLength) => IntPtr.Zero,
-                      deleteValue: (value, valueLength) => { }
+                      partialMerge: PartialMerge,
+                      fullMerge: FullMerge
                   ));
                 GC.Collect();
                 using (var db = RocksDbSharp.RocksDb.Open(optsTest, dbname))
@@ -473,6 +472,20 @@ namespace RocksDbSharpTest
 
             public override int Compare(string a, string b)
                 => Comparer(long.TryParse(a, out long avalue) ? avalue : 0, long.TryParse(b, out long bvalue) ? bvalue : 0);
+        }
+
+        private static byte[] PartialMerge(byte[] key, byte[][] operands, out bool success)
+        {
+            success = true;
+
+            return operands[operands.Length - 1];
+        }
+
+        private static byte[] FullMerge(byte[] key, byte[] existingValue, byte[][] operands, out bool success)
+        {
+            success = true;
+
+            return operands[operands.Length - 1];
         }
     }
 }
