@@ -298,16 +298,16 @@ namespace RocksDbSharp
             return getMergeOperator();
         }
 
-        private unsafe static IntPtr MergeOperator_PartialMerge(IntPtr state, IntPtr key, UIntPtr keyLength, IntPtr operandsList, IntPtr operandsListLength, int numOperands, IntPtr success, IntPtr newValueLength)
+        private unsafe static IntPtr MergeOperator_PartialMerge(IntPtr state, IntPtr key, UIntPtr keyLength, IntPtr operandsList, IntPtr operandsListLength, int numOperands, out IntPtr success, out IntPtr newValueLength)
         {
             var mergeOperator = GetMergeOperatorFromPtr((*((MergeOperatorState*)state)).GetMergeOperatorPtr);
-            return mergeOperator.PartialMerge(key, keyLength, operandsList, operandsListLength, numOperands, success, newValueLength);
+            return mergeOperator.PartialMerge(key, keyLength, operandsList, operandsListLength, numOperands, out success, out newValueLength);
         }
 
-        private unsafe static IntPtr MergeOperator_FullMerge(IntPtr state, IntPtr key, UIntPtr keyLength, IntPtr existingValue, UIntPtr existingValueLength, IntPtr operandsList, IntPtr operandsListLength, int numOperands, IntPtr success, IntPtr newValueLength)
+        private unsafe static IntPtr MergeOperator_FullMerge(IntPtr state, IntPtr key, UIntPtr keyLength, IntPtr existingValue, UIntPtr existingValueLength, IntPtr operandsList, IntPtr operandsListLength, int numOperands, out IntPtr success, out IntPtr newValueLength)
         {
             var mergeOperator = GetMergeOperatorFromPtr((*((MergeOperatorState*)state)).GetMergeOperatorPtr);
-            return mergeOperator.FullMerge(key, keyLength, existingValue, existingValueLength, operandsList, operandsListLength, numOperands, success, newValueLength);
+            return mergeOperator.FullMerge(key, keyLength, existingValue, existingValueLength, operandsList, operandsListLength, numOperands, out success, out newValueLength);
         }
 
         private unsafe static void MergeOperator_DeleteValue(IntPtr state, IntPtr value, UIntPtr valueLength)
