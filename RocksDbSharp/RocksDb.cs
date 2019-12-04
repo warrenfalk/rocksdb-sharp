@@ -119,10 +119,20 @@ namespace RocksDbSharp
         {
             return Get(key, key.GetLongLength(0), cf, readOptions);
         }
-
+        
         public byte[] Get(byte[] key, long keyLength, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
             return Native.Instance.rocksdb_get(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, cf);
+        }
+
+        public Span<byte> GetSpan(byte[] key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
+        {
+            return GetSpan(key, key.GetLongLength(0), cf, readOptions);
+        }
+        
+        public Span<byte> GetSpan(byte[] key, long keyLength, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
+        {
+            return Native.Instance.rocksdb_get_span(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, cf);
         }
 
         /// <summary>
@@ -305,6 +315,11 @@ namespace RocksDbSharp
             if (encoding == null)
                 encoding = Encoding.UTF8;
             CompactRange(encoding.GetBytes(start), encoding.GetBytes(limit), cf);
+        }
+
+        public void DangerousReleaseMemory(in Span<byte> span)
+        {
+            Native.Instance.rocksdb_release_span(in span);
         }
     }
 }

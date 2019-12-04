@@ -182,6 +182,19 @@ namespace RocksDbSharp
                 throw new RocksDbException(errptr);
             return result;
         }
+        
+        public Span<byte> rocksdb_get_span(
+            IntPtr db,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength = 0,
+            ColumnFamilyHandle cf = null)
+        {
+            var result = rocksdb_get_span(db, read_options, key, keyLength == 0 ? key.Length : keyLength, out IntPtr errptr, cf);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
 
         public KeyValuePair<string, string>[] rocksdb_multi_get(
             IntPtr db,
