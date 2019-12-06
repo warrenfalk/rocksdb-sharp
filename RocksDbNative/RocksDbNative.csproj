@@ -17,7 +17,8 @@
     <Copyright>Copyright 2016</Copyright>
     <PackageReleaseNotes>Native RocksDb Binaries (Install RocksDbSharp package for managed wraper)</PackageReleaseNotes>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <!-- "DispatchToInnerBuilds" will cause this to run in the outer build (i.e. once regardless of number of frameworks) -->
   <!--  Condition="!Exists('rocksdb-$(RocksDbVersion)\runtimes\win-x64\native\rocksdb.dll') and !Exists('$(BaseIntermediateOutputPath)\rocksdb-v$(RocksDbVersion)-win-x64.zip')" -->
