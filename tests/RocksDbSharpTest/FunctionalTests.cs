@@ -170,6 +170,14 @@ namespace RocksDbSharpTest
                 Assert.Null(cpdb.Get("four"));
             }
 
+            // Test various operations
+            using (var db = RocksDb.Open(options, path))
+            {
+                // Nulls should be allowed here
+                db.CompactRange((byte[])null, (byte[])null);
+                db.CompactRange((string)null, (string)null);
+            }
+
             // Test with column families
             var optionsCf = new DbOptions()
                 .SetCreateIfMissing(true)
@@ -355,6 +363,28 @@ namespace RocksDbSharpTest
                 {
                     db.CompactRange("o", "tw");
                 }
+            }
+
+            // Test that GC does not cause access violation on Comparers
+            {
+                if (Directory.Exists("test-av-error"))
+                    Directory.Delete("test-av-error", true);
+                options = new RocksDbSharp.DbOptions()
+                  .SetCreateIfMissing(true)
+                  .SetCreateMissingColumnFamilies(true);
+                var sc = new RocksDbSharp.StringComparator(StringComparer.InvariantCultureIgnoreCase);
+                columnFamilies = new RocksDbSharp.ColumnFamilies
+                {
+                     { "cf1", new RocksDbSharp.ColumnFamilyOptions()
+                        .SetComparator(sc)
+                    },
+                };
+                GC.Collect();
+                using (var db = RocksDbSharp.RocksDb.Open(options, "test-av-error", columnFamilies))
+                {
+                }
+                if (Directory.Exists("test-av-error"))
+                    Directory.Delete("test-av-error", true);
             }
 
             // Smoke test various options

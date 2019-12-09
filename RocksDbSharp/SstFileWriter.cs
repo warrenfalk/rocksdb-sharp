@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
+using Transitional;
 
 namespace RocksDbSharp
 {
@@ -38,12 +39,12 @@ namespace RocksDbSharp
 
         public void Add(string key, string val)
         {
-            Native.Instance.rocksdb_sstfilewriter_add(Handle, key, (ulong)key.Length, val, (ulong)val.Length);
+            Native.Instance.rocksdb_sstfilewriter_add(Handle, key, val);
         }
 
         public void Add(byte[] key, byte[] val)
         {
-            Native.Instance.rocksdb_sstfilewriter_add(Handle, key, (ulong)key.Length, val, (ulong)val.Length);
+            Native.Instance.rocksdb_sstfilewriter_add(Handle, key, (UIntPtr)key.GetLongLength(0), val, (UIntPtr)val.GetLongLength(0));
         }
 
         public void Finish()
