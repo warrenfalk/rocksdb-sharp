@@ -72,7 +72,7 @@ namespace RocksDbSharp
 
         public unsafe Iterator Seek(byte *key, ulong klen)
         {
-            Native.Instance.rocksdb_iter_seek(handle, key, klen);
+            Native.Instance.rocksdb_iter_seek(handle, key, (UIntPtr)klen);
             return this;
         }
 
@@ -83,7 +83,7 @@ namespace RocksDbSharp
 
         public Iterator Seek(byte[] key, ulong klen)
         {
-            Native.Instance.rocksdb_iter_seek(handle, key, klen);
+            Native.Instance.rocksdb_iter_seek(handle, key, (UIntPtr)klen);
             return this;
         }
 
@@ -95,7 +95,7 @@ namespace RocksDbSharp
 
         public unsafe Iterator SeekForPrev(byte* key, ulong klen)
         {
-            Native.Instance.rocksdb_iter_seek_for_prev(handle, key, klen);
+            Native.Instance.rocksdb_iter_seek_for_prev(handle, key, (UIntPtr)klen);
             return this;
         }
 
@@ -107,7 +107,7 @@ namespace RocksDbSharp
 
         public Iterator SeekForPrev(byte[] key, ulong klen)
         {
-            Native.Instance.rocksdb_iter_seek_for_prev(handle, key, klen);
+            Native.Instance.rocksdb_iter_seek_for_prev(handle, key, (UIntPtr)klen);
             return this;
         }
 
