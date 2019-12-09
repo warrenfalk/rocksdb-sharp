@@ -192,7 +192,7 @@ namespace NativeImport
                 case Architecture.X86:
                     return "i386";
                 case Architecture.X64:
-                    return "amd64";
+                    return "x64";
                 default:
                     return arch.ToString().ToLower();
             }
