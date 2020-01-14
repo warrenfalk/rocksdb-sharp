@@ -215,6 +215,40 @@ namespace RocksDbSharp
             return result;
         }
 
+        public abstract rocksdb_t_ptr rocksdb_open_as_secondary(
+            const_rocksdb_options_t_ptr options,
+            const_char_ptr name,
+            const_char_ptr secondary_path,
+            out const_char_ptr errptr);
+
+        public rocksdb_t_ptr rocksdb_open_as_secondary(
+            const_rocksdb_options_t_ptr options,
+            const_char_ptr name,
+            const_char_ptr secondary_path)
+        {
+            var result = rocksdb_open_as_secondary(options, name, secondary_path, out char_ptr_ptr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public abstract rocksdb_t_ptr rocksdb_open_as_secondary(
+            const_rocksdb_options_t_ptr options,
+            string name,
+            string secondary_path,
+            out const_char_ptr errptr);
+
+        public rocksdb_t_ptr rocksdb_open_as_secondary(
+            const_rocksdb_options_t_ptr options,
+            string name,
+            string secondary_path)
+        {
+            var result = rocksdb_open_as_secondary(options, name, secondary_path, out char_ptr_ptr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
         public abstract rocksdb_backup_engine_t_ptr rocksdb_backup_engine_open(
             const_rocksdb_options_t_ptr options,
             const_char_ptr path,
@@ -514,6 +548,65 @@ namespace RocksDbSharp
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;
+        }
+
+        public abstract rocksdb_t_ptr rocksdb_open_as_secondary_column_families(
+            const_rocksdb_options_t_ptr options,
+            const_char_ptr name,
+            const_char_ptr secondary_path,
+            int num_column_families,
+            const_char_ptr_ptr column_family_names,
+            const_rocksdb_options_t_ptr[] column_family_options,
+            rocksdb_column_family_handle_t_ptr[] column_family_handles,
+            out char_ptr_ptr errptr);
+
+        public rocksdb_t_ptr rocksdb_open_as_secondary_column_families(
+            const_rocksdb_options_t_ptr options,
+            const_char_ptr name,
+            const_char_ptr secondary_path,
+            int num_column_families,
+            const_char_ptr_ptr column_family_names,
+            const_rocksdb_options_t_ptr[] column_family_options,
+            rocksdb_column_family_handle_t_ptr[] column_family_handles)
+        {
+            var result = rocksdb_open_as_secondary_column_families(options, name, secondary_path, num_column_families, column_family_names, column_family_options, column_family_handles, out char_ptr_ptr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public abstract rocksdb_t_ptr rocksdb_open_as_secondary_column_families(
+            const_rocksdb_options_t_ptr options,
+            string name,
+            string secondary_path,
+            int num_column_families,
+            string[] column_family_names,
+            const_rocksdb_options_t_ptr[] column_family_options,
+            rocksdb_column_family_handle_t_ptr[] column_family_handles,
+            out char_ptr_ptr errptr);
+
+        public rocksdb_t_ptr rocksdb_open_as_secondary_column_families(
+            const_rocksdb_options_t_ptr options,
+            string name,
+            string secondary_path,
+            int num_column_families,
+            string[] column_family_names,
+            const_rocksdb_options_t_ptr[] column_family_options,
+            rocksdb_column_family_handle_t_ptr[] column_family_handles)
+        {
+            var result = rocksdb_open_as_secondary_column_families(options, name, secondary_path, num_column_families, column_family_names, column_family_options, column_family_handles, out char_ptr_ptr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+
+        public abstract void rocksdb_try_catch_up_with_primary(rocksdb_t_ptr db, out char_ptr_ptr errptr);
+
+        public void rocksdb_try_catch_up_with_primary(rocksdb_t_ptr db)
+        {
+            rocksdb_try_catch_up_with_primary(db, out char_ptr_ptr errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
         }
 
         public abstract rocksdb_t_ptr rocksdb_open_for_read_only_column_families(

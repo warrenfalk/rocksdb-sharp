@@ -465,6 +465,47 @@ namespace RocksDbSharpTest
                     Directory.Delete(dbname, true);
             }
 
+            // Test OpenAsSecondary
+            {
+                var primeDb = "test-prime";
+                var secondaryDb = "test-secondary";
+
+                if (Directory.Exists(primeDb))
+                    Directory.Delete(primeDb, true);
+
+                if (Directory.Exists(secondaryDb))
+                    Directory.Delete(secondaryDb, true);
+
+                options = new RocksDbSharp.DbOptions()
+                    .SetCreateIfMissing(true)
+                    .SetCreateMissingColumnFamilies(true);
+
+                using (var db = RocksDb.Open(options, primeDb))
+                {
+                    db.Put("one", "uno");
+                }
+
+                using (var db2 = RocksDb.OpenAsSecondary(options, primeDb, secondaryDb))
+                {
+                    Assert.Equal("uno", db2.Get("one"));
+                    using (var db = RocksDb.Open(options, primeDb))
+                    {
+                        db.Put("two", "dos");
+                    }
+
+                    Assert.Null(db2.Get("two"));
+
+                    db2.TryCatchUpWithPrimary();
+
+                    Assert.Equal("dos", db2.Get("two"));
+                }
+
+                if (Directory.Exists(primeDb))
+                    Directory.Delete(primeDb, true);
+
+                if (Directory.Exists(secondaryDb))
+                    Directory.Delete(secondaryDb, true);
+            }
         }
 
         class IntegerStringComparator : StringComparatorBase
