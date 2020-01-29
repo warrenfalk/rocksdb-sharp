@@ -2,7 +2,7 @@
   <Import Project="..\Versions.targets.include"/>
   <PropertyGroup>
     <Title>RocksDbNative</Title>
-    <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net471</TargetFrameworks>
     <Version>$(RocksDbVersion).$(RocksDbNativeBuild)</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
@@ -21,9 +21,9 @@
   </PropertyGroup>
   <!-- "DispatchToInnerBuilds" will cause this to run in the outer build (i.e. once regardless of number of frameworks) -->
   <!--  Condition="!Exists('rocksdb-$(RocksDbVersion)\runtimes\win-x64\native\rocksdb.dll') and !Exists('$(BaseIntermediateOutputPath)\rocksdb-v$(RocksDbVersion)-win-x64.zip')" -->
-  <Target Name="DownloadNativeLibs" BeforeTargets="DispatchToInnerBuilds">
+  <!--Target Name="DownloadNativeLibs" BeforeTargets="DispatchToInnerBuilds"-->
     <!-- Here we download the native libraries from the rocksdb-sharp-native project releases according to the version number, if they don't exist -->
-    <DownloadFile
+    <!--DownloadFile
       Condition="!Exists('$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(NativeLib.RuntimeId)\native\%(NativeLib.Lib)') And !Exists('$(BaseIntermediateOutputPath)rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip')"
       SourceUrl="https://github.com/warrenfalk/rocksdb-sharp-native/releases/download/v$(RocksDbVersion)/rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip"
       DestinationFolder="$(BaseIntermediateOutputPath)">
@@ -33,36 +33,28 @@
       SourceFiles="$(BaseIntermediateOutputPath)rocksdb-v$(RocksDbVersion)-%(NativeLib.RuntimeId).zip"
       DestinationFolder="$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(NativeLib.RuntimeId)\native\">
     </Unzip>
-  </Target>
+  </Target-->
   <ItemGroup>
     <!-- Define the native libraries here -->
     <!-- The "Include" attribute is a required attribute in ItemGroups outside of Targets, but I don't know why -->
-    <NativeLib Include="%(RuntimeId)-%(Lib)" RuntimeId="win-x64" Lib="rocksdb.dll" />
-    <NativeLib Include="%(RuntimeId)-%(Lib)" RuntimeId="linux-x64" Lib="librocksdb.so" />
-    <NativeLib Include="%(RuntimeId)-%(Lib)" RuntimeId="osx-x64" Lib="librocksdb.dylib" />
+    <!--NativeLib Include="%(RuntimeId)-%(Lib)" RuntimeId="win-x64" Lib="rocksdb.dll" /-->
+    <!--NativeLib Include="%(RuntimeId)-%(Lib)" RuntimeId="osx-x64" Lib="librocksdb.dylib" /-->
     <!-- This "Content" is applied for all "NativeLib" and ensures that it is packaged into the correct folder -->
     <!-- This also will cause it to be copied to the output directory, which was so far the only way to get it
          to work correctly when referenced using a ProjectReference.  When packaged as a nupkg and referenced
          with PackageReference, then these go to the runtimes folders in the nuget cache, which is enough for 
          standard consumers, but framework consumers get them copied from the nuget cache to the output via
          the .targets files for those frameworks.-->
-    <Content
-      Include="@(NativeLib -> '$(BaseIntermediateOutputPath)rocksdb-$(RocksDbVersion)\runtimes\%(RuntimeId)\native\%(Lib)')"
-      PackagePath="runtimes\%(RuntimeId)\native\%(Lib)"
-      Link="runtimes\%(RuntimeId)\native\%(Lib)">
+    <None Include="librocksdb.so">
       <Pack>true</Pack>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <!-- These target files take care of copying from the nuget cache area into the output folder as required 
-         by the .Net Framework frameworks -->
-    <None Remove="build\**" />
-    <None Include="build\net40\RocksDbNative.targets">
-      <Pack>true</Pack>
-      <PackagePath>build/net40</PackagePath>
+      <PackagePath>runtimes/linux-x64/native</PackagePath>
     </None>
-    <None Include="build\net45\RocksDbNative.targets">
+
+    <None Include="rocksdb.dll">
       <Pack>true</Pack>
-      <PackagePath>build/net45</PackagePath>
+      <PackagePath>runtimes/win-x64/native</PackagePath>
     </None>
+
+    
   </ItemGroup>
 </Project>
