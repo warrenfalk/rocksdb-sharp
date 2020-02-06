@@ -51,6 +51,12 @@ namespace RocksDbSharp
             return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
         }
 
+        public static RocksDb OpenAsSecondary(OptionsHandle options, string path, string secondaryPath)
+        {
+            IntPtr db = Native.Instance.rocksdb_open_as_secondary(options.Handle, path, secondaryPath);
+            return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
+        }
+
         public static RocksDb OpenWithTtl(OptionsHandle options, string path, int ttlSeconds)
         {
             IntPtr db = Native.Instance.rocksdb_open_with_ttl(options.Handle, path, ttlSeconds);
@@ -78,6 +84,21 @@ namespace RocksDbSharp
             IntPtr[] cfoptions = columnFamilies.OptionHandles.ToArray();
             IntPtr[] cfhandles = new IntPtr[cfnames.Length];
             IntPtr db = Native.Instance.rocksdb_open_for_read_only_column_families(options.Handle, path, cfnames.Length, cfnames, cfoptions, cfhandles, errIfLogFileExists);
+            var cfHandleMap = new Dictionary<string, ColumnFamilyHandleInternal>();
+            foreach (var pair in cfnames.Zip(cfhandles.Select(cfh => new ColumnFamilyHandleInternal(cfh)), (name, cfh) => new { Name = name, Handle = cfh }))
+                cfHandleMap.Add(pair.Name, pair.Handle);
+            return new RocksDb(db,
+                optionsReferences: options.References,
+                cfOptionsRefs: columnFamilies.Select(cfd => cfd.Options.References).ToArray(),
+                columnFamilies: cfHandleMap);
+        }
+
+        public static RocksDb OpenAsSecondary(DbOptions options, string path, string secondaryPath, ColumnFamilies columnFamilies)
+        {
+            string[] cfnames = columnFamilies.Names.ToArray();
+            IntPtr[] cfoptions = columnFamilies.OptionHandles.ToArray();
+            IntPtr[] cfhandles = new IntPtr[cfnames.Length];
+            IntPtr db = Native.Instance.rocksdb_open_as_secondary_column_families(options.Handle, path, secondaryPath, cfnames.Length, cfnames, cfoptions, cfhandles);
             var cfHandleMap = new Dictionary<string, ColumnFamilyHandleInternal>();
             foreach (var pair in cfnames.Zip(cfhandles.Select(cfh => new ColumnFamilyHandleInternal(cfh)), (name, cfh) => new { Name = name, Handle = cfh }))
                 cfHandleMap.Add(pair.Name, pair.Handle);
@@ -305,6 +326,11 @@ namespace RocksDbSharp
             if (encoding == null)
                 encoding = Encoding.UTF8;
             CompactRange(start == null ? null : encoding.GetBytes(start), limit == null ? null : encoding.GetBytes(limit), cf);
+        }
+
+        public void TryCatchUpWithPrimary()
+        {
+            Native.Instance.rocksdb_try_catch_up_with_primary(Handle);
         }
     }
 }
