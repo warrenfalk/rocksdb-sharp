@@ -39,11 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-<<<<<<< HEAD
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.0" />
-=======
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
->>>>>>> 3cac0b5da34466d24e86d6e3f44c870d29d3eb54
   </ItemGroup>
 </Project>
