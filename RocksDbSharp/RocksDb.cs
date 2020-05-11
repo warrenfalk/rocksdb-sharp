@@ -5,11 +5,14 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Transitional;
+// ReSharper disable EmptyGeneralCatchClause
 
 namespace RocksDbSharp
 {
     public class RocksDb : IDisposable
     {
+        bool disposed;
+
         internal static ReadOptions DefaultReadOptions { get; } = new ReadOptions();
         internal static OptionsHandle DefaultOptions { get; } = new DbOptions();
         internal static WriteOptions DefaultWriteOptions { get; } = new WriteOptions();
@@ -29,13 +32,36 @@ namespace RocksDbSharp
             this.columnFamilies = columnFamilies;
         }
 
+        ~RocksDb()
+        {
+            ReleaseUnmanagedResources();
+        }
+
         public void Dispose()
+        {
+            if (disposed) return;
+
+            try
+            {
+                ReleaseUnmanagedResources();
+                GC.SuppressFinalize(this);
+            }
+            finally
+            {
+                disposed = true;
+            }
+        }
+
+        void ReleaseUnmanagedResources()
         {
             if (columnFamilies != null)
             {
                 foreach (var cfh in columnFamilies.Values)
+                {
                     cfh.Dispose();
+                }
             }
+
             Native.Instance.rocksdb_close(Handle);
         }
 
@@ -168,7 +194,7 @@ namespace RocksDbSharp
             }
         }
 
-        public KeyValuePair<byte[],byte[]>[] MultiGet(byte[][] keys, ColumnFamilyHandle[] cf = null, ReadOptions readOptions = null)
+        public KeyValuePair<byte[], byte[]>[] MultiGet(byte[][] keys, ColumnFamilyHandle[] cf = null, ReadOptions readOptions = null)
         {
             return Native.Instance.rocksdb_multi_get(Handle, (readOptions ?? DefaultReadOptions).Handle, keys);
         }
@@ -261,7 +287,7 @@ namespace RocksDbSharp
             Native.Instance.rocksdb_drop_column_family(Handle, cf.Handle);
             columnFamilies.Remove(name);
         }
-        
+
         public ColumnFamilyHandle GetDefaultColumnFamily()
         {
             return GetColumnFamily(ColumnFamilies.DefaultName);
