@@ -44,6 +44,26 @@ namespace RocksDbSharp
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
+        
+        public unsafe void rocksdb_put(
+            IntPtr db,
+            IntPtr writeOptions,
+            byte* key,
+            long keyLength,
+            byte* value,
+            long valueLength,
+            ColumnFamilyHandle cf)
+        {
+            IntPtr errptr;
+            UIntPtr sklength = (UIntPtr)keyLength;
+            UIntPtr svlength = (UIntPtr)valueLength;
+            if (cf == null)
+                rocksdb_put(db, writeOptions, key, sklength, value, svlength, out errptr);
+            else
+                rocksdb_put_cf(db, writeOptions, cf.Handle, key, sklength, value, svlength, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
 
 
         public string rocksdb_get(

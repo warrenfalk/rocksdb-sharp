@@ -225,10 +225,23 @@ namespace RocksDbSharp
         {
             Put(key, key.GetLongLength(0), value, value.GetLongLength(0), cf, writeOptions);
         }
+        
+        public void Put(Span<byte> key, Span<byte> value, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
+        {
+            Put(key, key.Length, value, value.Length, cf, writeOptions);
+        }
 
         public void Put(byte[] key, long keyLength, byte[] value, long valueLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
         {
             Native.Instance.rocksdb_put(Handle, (writeOptions ?? DefaultWriteOptions).Handle, key, keyLength, value, valueLength, cf);
+        }
+        
+        public unsafe void Put(Span<byte> key, long keyLength, Span<byte> value, long valueLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
+        {
+            fixed (byte* keyPtr = &MemoryMarshal.GetReference(key), valuePtr = &MemoryMarshal.GetReference(value))
+            {
+                Native.Instance.rocksdb_put(Handle, (writeOptions ?? DefaultWriteOptions).Handle, keyPtr, keyLength, valuePtr, valueLength, cf);
+            }
         }
 
         public Iterator NewIterator(ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
