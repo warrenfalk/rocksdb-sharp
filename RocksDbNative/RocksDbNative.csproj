@@ -52,16 +52,13 @@
     <None Remove="build\**" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="runtimes\linux-x64\native\librocksdb.so" />
-    <Content Include="runtimes\linux-x64\native\librocksdb.so">
+    <Content Include="runtimes\linux-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower())\native\librocksdb.so" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Remove="runtimes\osx-x64\native\librocksdb.dylib" />
-    <Content Include="runtimes\osx-x64\native\librocksdb.dylib">
+    <Content Include="runtimes\osx-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower())\native\librocksdb.dylib" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Remove="runtimes\win-x64\native\rocksdb.dll" />
-    <Content Include="runtimes\win-x64\native\rocksdb.dll">
+    <Content Include="runtimes\win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower())\native\rocksdb.dll" Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
