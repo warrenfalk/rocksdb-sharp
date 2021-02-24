@@ -318,12 +318,18 @@ namespace RocksDbSharp
             Native.Instance.rocksdb_flush(Handle, flushOptions.Handle);
         }
 
-        public List<LiveFileMetadata> GetLiveFilesMetadata()
+
+        /// <summary>
+        /// Returns metadata about the file and data in the file. 
+        /// </summary>
+        /// <param name="populateFileMetadataOnly">setting it to true only populates FileName, Filesize and filelevel; By default it is false</param>
+        /// <returns><c>LiveFilesMetadata</c> or null in case of failure</returns>
+        public List<LiveFileMetadata> GetLiveFilesMetadata(bool populateFileMetadataOnly=false)
         {
             IntPtr buffer = Native.Instance.rocksdb_livefiles(Handle);
             if (buffer == IntPtr.Zero)
             {
-                return new List<LiveFileMetadata>();
+                return null;
             }
 
             try
@@ -333,6 +339,9 @@ namespace RocksDbSharp
                 int fileCount = Native.Instance.rocksdb_livefiles_count(buffer);
                 for (int index = 0; index < fileCount; index++)
                 {
+                    LiveFileMetadata liveFileMetadata = new LiveFileMetadata();
+
+                    FileMetadata metadata = new FileMetadata();
                     IntPtr fileMetadata = Native.Instance.rocksdb_livefiles_name(buffer, index);
                     string fileName = Marshal.PtrToStringAnsi(fileMetadata);
 
@@ -341,26 +350,33 @@ namespace RocksDbSharp
                     UIntPtr fS = Native.Instance.rocksdb_livefiles_size(buffer, index);
                     ulong fileSize = fS.ToUInt64();
 
-                    var smallestKeyPtr = Native.Instance.rocksdb_livefiles_smallestkey(buffer, index, out var smallestKeySize);
-                    string smallestKey = Marshal.PtrToStringAnsi(smallestKeyPtr);
+                    metadata.FileName = fileName;
+                    metadata.FileLevel = level;
+                    metadata.FileSize = fileSize;
 
-                    var largestKeyPtr = Native.Instance.rocksdb_livefiles_largestkey(buffer, index, out var largestKeySize);
-                    string largestKey = Marshal.PtrToStringAnsi(largestKeyPtr);
+                    liveFileMetadata.FileMetadata = metadata;
 
-                    ulong entries = Native.Instance.rocksdb_livefiles_entries(buffer, index);
-
-                    ulong deletions = Native.Instance.rocksdb_livefiles_deletions(buffer, index);
-
-                    filesMetadata.Add(new LiveFileMetadata()
+                    if (!populateFileMetadataOnly)
                     {
-                        FileName = fileName,
-                        FileLevel = level,
-                        FileSize = fileSize,
-                        SmallestKeyInFile = smallestKey,
-                        LargestKeyInFile = largestKey,
-                        NumEntriesInFile = entries,
-                        NumDeletionsInFile = deletions
-                    });
+                        FileDataMetadata fileDataMetadata = new FileDataMetadata();
+                        var smallestKeyPtr = Native.Instance.rocksdb_livefiles_smallestkey(buffer, index, out var smallestKeySize);
+                        string smallestKey = Marshal.PtrToStringAnsi(smallestKeyPtr);
+
+                        var largestKeyPtr = Native.Instance.rocksdb_livefiles_largestkey(buffer, index, out var largestKeySize);
+                        string largestKey = Marshal.PtrToStringAnsi(largestKeyPtr);
+
+                        ulong entries = Native.Instance.rocksdb_livefiles_entries(buffer, index);
+                        ulong deletions = Native.Instance.rocksdb_livefiles_deletions(buffer, index);
+
+                        fileDataMetadata.SmallestKeyInFile = smallestKey;
+                        fileDataMetadata.LargestKeyInFile = largestKey;
+                        fileDataMetadata.NumEntriesInFile = entries;
+                        fileDataMetadata.NumDeletionsInFile = deletions;
+
+                        liveFileMetadata.FileDataMetadata = fileDataMetadata;
+                    }
+
+                    filesMetadata.Add(liveFileMetadata);
                 }           
                 
                 return filesMetadata;

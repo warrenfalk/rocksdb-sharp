@@ -83,24 +83,35 @@ namespace RocksDbSharpTest
             var options = new DbOptions().SetCreateIfMissing(true);
             var flushOptions = new FlushOptions().SetWaitForFlush(true);
 
-            using (var db = RocksDb.Open(options, dbName))
             {
-                db.Put("key0", "value0");
-                db.Put("key1", "value0");
-                db.Flush(flushOptions);
+                using (var db = RocksDb.Open(options, dbName))
+                {
+                    var files = db.GetLiveFilesMetadata();
 
-                db.Put("key7", "value0");
-                db.Put("key8", "value0");
+                    Assert.True(files.Count == 0);                    
+                }
+            }
 
-                db.Flush(flushOptions);
+            {
+                using (var db = RocksDb.Open(options, dbName))
+                {
+                    db.Put("key0", "value0");
+                    db.Put("key1", "value0");
+                    db.Flush(flushOptions);
 
-                var files = db.GetLiveFilesMetadata();
-                var fileNames = files.Select(file => file.FileName);
-                var fileList = Directory.EnumerateFiles(dbName);
+                    db.Put("key7", "value0");
+                    db.Put("key8", "value0");
 
-                Assert.True(fileList.All(file => fileList.Contains(file)));
-                Assert.Equal(db.Get("key0"), "value0");
-            }   
+                    db.Flush(flushOptions);
+
+                    var files = db.GetLiveFilesMetadata();
+                    var fileNames = files.Select(file => file.FileMetadata.FileName);
+                    var fileList = Directory.EnumerateFiles(dbName);
+
+                    Assert.True(fileList.All(file => fileList.Contains(file)));
+                    Assert.Equal(db.Get("key0"), "value0");
+                }
+            }            
         }
 
         [Fact]
