@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using Transitional;
 
 namespace RocksDbSharp
@@ -43,6 +44,11 @@ namespace RocksDbSharp
         {
             IntPtr db = Native.Instance.rocksdb_open(options.Handle, path);
             return new RocksDb(db, optionsReferences: null, cfOptionsRefs: null);
+        }
+
+        public static void RepairDB(OptionsHandle options, string path)
+        {
+            Native.Instance.rocksdb_repair_db(options.Handle, path);
         }
 
         public static RocksDb OpenReadOnly(OptionsHandle options, string path, bool errorIfLogFileExists)
@@ -168,7 +174,7 @@ namespace RocksDbSharp
             }
         }
 
-        public KeyValuePair<byte[],byte[]>[] MultiGet(byte[][] keys, ColumnFamilyHandle[] cf = null, ReadOptions readOptions = null)
+        public KeyValuePair<byte[], byte[]>[] MultiGet(byte[][] keys, ColumnFamilyHandle[] cf = null, ReadOptions readOptions = null)
         {
             return Native.Instance.rocksdb_multi_get(Handle, (readOptions ?? DefaultReadOptions).Handle, keys);
         }
@@ -261,7 +267,7 @@ namespace RocksDbSharp
             Native.Instance.rocksdb_drop_column_family(Handle, cf.Handle);
             columnFamilies.Remove(name);
         }
-        
+
         public ColumnFamilyHandle GetDefaultColumnFamily()
         {
             return GetColumnFamily(ColumnFamilies.DefaultName);
@@ -306,5 +312,98 @@ namespace RocksDbSharp
                 encoding = Encoding.UTF8;
             CompactRange(start == null ? null : encoding.GetBytes(start), limit == null ? null : encoding.GetBytes(limit), cf);
         }
+
+        public void Flush(FlushOptions flushOptions)
+        {
+            Native.Instance.rocksdb_flush(Handle, flushOptions.Handle);
+        }
+
+        public List<LiveFileMetadata> GetLiveFilesMetadata()
+        {
+            IntPtr buffer = Native.Instance.rocksdb_livefiles(Handle);
+            if (buffer == IntPtr.Zero)
+            {
+                return new List<LiveFileMetadata>();
+            }
+
+            try
+            {
+                List<LiveFileMetadata> filesMetadata = new List<LiveFileMetadata>();
+
+                int fileCount = Native.Instance.rocksdb_livefiles_count(buffer);
+                for (int index = 0; index < fileCount; index++)
+                {
+                    IntPtr fileMetadata = Native.Instance.rocksdb_livefiles_name(buffer, index);
+                    string fileName = Marshal.PtrToStringAnsi(fileMetadata);
+
+                    int level = Native.Instance.rocksdb_livefiles_level(buffer, index);
+
+                    UIntPtr fS = Native.Instance.rocksdb_livefiles_size(buffer, index);
+                    ulong fileSize = fS.ToUInt64();
+
+                    var smallestKeyPtr = Native.Instance.rocksdb_livefiles_smallestkey(buffer, index, out var smallestKeySize);
+                    string smallestKey = Marshal.PtrToStringAnsi(smallestKeyPtr);
+
+                    var largestKeyPtr = Native.Instance.rocksdb_livefiles_largestkey(buffer, index, out var largestKeySize);
+                    string largestKey = Marshal.PtrToStringAnsi(largestKeyPtr);
+
+                    ulong entries = Native.Instance.rocksdb_livefiles_entries(buffer, index);
+
+                    ulong deletions = Native.Instance.rocksdb_livefiles_deletions(buffer, index);
+
+                    filesMetadata.Add(new LiveFileMetadata()
+                    {
+                        FileName = fileName,
+                        FileLevel = level,
+                        FileSize = fileSize,
+                        SmallestKeyInFile = smallestKey,
+                        LargestKeyInFile = largestKey,
+                        NumEntriesInFile = entries,
+                        NumDeletionsInFile = deletions
+                    });
+                }           
+                
+                return filesMetadata;
+            }
+            finally
+            {
+                Native.Instance.rocksdb_livefiles_destroy(buffer);
+                buffer = IntPtr.Zero;
+            }
+        }
+
+        /// <summary>
+        /// Lean API to just get Live file names. Refer to GetLiveFilesMetadata() for the complete metadata
+        /// </summary>
+        /// <returns></returns>
+        public List<string> GetLiveFileNames()
+        {
+            IntPtr buffer = Native.Instance.rocksdb_livefiles(Handle);
+            if (buffer == IntPtr.Zero)
+            {
+                return new List<string>();
+            }
+
+            try
+            {
+                List<string> liveFiles = new List<string>();
+
+                int fileCount = Native.Instance.rocksdb_livefiles_count(buffer);
+
+                for (int index = 0; index < fileCount; index++)
+                {
+                    IntPtr fileMetadata = Native.Instance.rocksdb_livefiles_name(buffer, index);
+                    string fileName = Marshal.PtrToStringAnsi(fileMetadata);
+                    liveFiles.Add(fileName);
+                }
+                
+                return liveFiles;
+            }
+            finally
+            {
+                Native.Instance.rocksdb_livefiles_destroy(buffer);
+                buffer = IntPtr.Zero;
+            }
+        }        
     }
 }
