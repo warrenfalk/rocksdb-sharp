@@ -38,7 +38,8 @@ namespace RocksDbSharpTest
                 db.Flush(flushOptions);
             }
 
-            sstFiles = Directory.EnumerateFiles(dbName).Where(s => s.EndsWith(".sst", StringComparison.OrdinalIgnoreCase));
+            sstFiles = Directory.EnumerateFiles(dbName)
+                       .Where(s => s.EndsWith(".sst", StringComparison.OrdinalIgnoreCase));
             Assert.True(sstFiles.Any());
         }
 
@@ -56,7 +57,10 @@ namespace RocksDbSharpTest
                 db.Flush(flushOptions);
             }
 
-            var firstSSTfile = Directory.EnumerateFiles(dbName).Where(s => s.EndsWith(".sst", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            var firstSSTfile = Directory.EnumerateFiles(dbName)
+                              .Where(s => s.EndsWith(".sst", StringComparison.OrdinalIgnoreCase))
+                              .FirstOrDefault();
+
             var checkKey = "key1";
             var checkValue = "value0";
             using (var db = RocksDb.Open(options, dbName))

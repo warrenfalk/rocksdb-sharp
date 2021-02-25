@@ -322,7 +322,8 @@ namespace RocksDbSharp
         /// <summary>
         /// Returns metadata about the file and data in the file. 
         /// </summary>
-        /// <param name="populateFileMetadataOnly">setting it to true only populates FileName, Filesize and filelevel; By default it is false</param>
+        /// <param name="populateFileMetadataOnly">setting it to true only populates FileName, 
+        /// Filesize and filelevel; By default it is false</param>
         /// <returns><c>LiveFilesMetadata</c> or null in case of failure</returns>
         public List<LiveFileMetadata> GetLiveFilesMetadata(bool populateFileMetadataOnly=false)
         {
@@ -359,10 +360,14 @@ namespace RocksDbSharp
                     if (!populateFileMetadataOnly)
                     {
                         FileDataMetadata fileDataMetadata = new FileDataMetadata();
-                        var smallestKeyPtr = Native.Instance.rocksdb_livefiles_smallestkey(buffer, index, out var smallestKeySize);
+                        var smallestKeyPtr = Native.Instance.rocksdb_livefiles_smallestkey(buffer, 
+                                                                                           index, 
+                                                                         out var smallestKeySize);
                         string smallestKey = Marshal.PtrToStringAnsi(smallestKeyPtr);
 
-                        var largestKeyPtr = Native.Instance.rocksdb_livefiles_largestkey(buffer, index, out var largestKeySize);
+                        var largestKeyPtr = Native.Instance.rocksdb_livefiles_largestkey(buffer, 
+                                                                                          index,
+                                                                         out var largestKeySize);
                         string largestKey = Marshal.PtrToStringAnsi(largestKeyPtr);
 
                         ulong entries = Native.Instance.rocksdb_livefiles_entries(buffer, index);
@@ -389,7 +394,8 @@ namespace RocksDbSharp
         }
 
         /// <summary>
-        /// Lean API to just get Live file names. Refer to GetLiveFilesMetadata() for the complete metadata
+        /// Lean API to just get Live file names. 
+        /// Refer to GetLiveFilesMetadata() for the complete metadata
         /// </summary>
         /// <returns></returns>
         public List<string> GetLiveFileNames()

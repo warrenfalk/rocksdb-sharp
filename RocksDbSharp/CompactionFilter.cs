@@ -9,7 +9,10 @@ namespace RocksDbSharp
         private readonly FilterDelegate filterDelegate;
         private readonly DestructorDelegate destroyDelegate;
 
-        public CompactionFilter(NameDelegate nameDelegate, FilterDelegate filterDelegate, DestructorDelegate destroyDelegate, IntPtr state)
+        public CompactionFilter(NameDelegate nameDelegate, 
+                                FilterDelegate filterDelegate, 
+                                DestructorDelegate destroyDelegate, 
+                                IntPtr state)
         {
             this.getNameDelegate = nameDelegate;
             this.filterDelegate = filterDelegate;

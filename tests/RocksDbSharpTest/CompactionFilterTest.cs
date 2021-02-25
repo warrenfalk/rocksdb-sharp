@@ -17,7 +17,10 @@ namespace RocksDbSharpTest
             var dbName = "TestCompactionFilterDb";
             FlushOptions flushOptions = new FlushOptions().SetWaitForFlush(true);
             DbOptions options = new DbOptions().SetCreateIfMissing(true);
-            var filter = new CompactionFilter(DefaultNameDelegate, TestFilterDelegate, DefaultDestructorDelegate, IntPtr.Zero);
+            var filter = new CompactionFilter(DefaultNameDelegate, 
+                                              TestFilterDelegate, 
+                                              DefaultDestructorDelegate, 
+                                              IntPtr.Zero);
             options.SetCompactionFilter(filter.Handle);
             options.SetDisableAutoCompactions(1);
 
