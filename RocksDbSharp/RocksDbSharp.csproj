@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Versions.targets.include"/>
+  <Import Project="..\Versions.targets.include" />
   <PropertyGroup>
     <Title>RocksDbSharp</Title>
     <TargetFrameworks>netstandard1.6;net40;net45</TargetFrameworks>
@@ -31,7 +31,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
@@ -42,6 +42,6 @@
     <PackageReference Include="System.Reflection" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
-  </ItemGroup>
+  </ItemGroup>  
 
 </Project>
