@@ -119,10 +119,20 @@ namespace RocksDbSharp
         {
             return Get(key, key.GetLongLength(0), cf, readOptions);
         }
-
+        
         public byte[] Get(byte[] key, long keyLength, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
         {
             return Native.Instance.rocksdb_get(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, cf);
+        }
+
+        public Span<byte> GetSpan(byte[] key, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
+        {
+            return GetSpan(key, key.GetLongLength(0), cf, readOptions);
+        }
+        
+        public Span<byte> GetSpan(byte[] key, long keyLength, ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
+        {
+            return Native.Instance.rocksdb_get_span(Handle, (readOptions ?? DefaultReadOptions).Handle, key, keyLength, cf);
         }
 
         /// <summary>
@@ -215,10 +225,23 @@ namespace RocksDbSharp
         {
             Put(key, key.GetLongLength(0), value, value.GetLongLength(0), cf, writeOptions);
         }
+        
+        public void Put(Span<byte> key, Span<byte> value, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
+        {
+            Put(key, key.Length, value, value.Length, cf, writeOptions);
+        }
 
         public void Put(byte[] key, long keyLength, byte[] value, long valueLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
         {
             Native.Instance.rocksdb_put(Handle, (writeOptions ?? DefaultWriteOptions).Handle, key, keyLength, value, valueLength, cf);
+        }
+        
+        public unsafe void Put(Span<byte> key, long keyLength, Span<byte> value, long valueLength, ColumnFamilyHandle cf = null, WriteOptions writeOptions = null)
+        {
+            fixed (byte* keyPtr = &MemoryMarshal.GetReference(key), valuePtr = &MemoryMarshal.GetReference(value))
+            {
+                Native.Instance.rocksdb_put(Handle, (writeOptions ?? DefaultWriteOptions).Handle, keyPtr, keyLength, valuePtr, valueLength, cf);
+            }
         }
 
         public Iterator NewIterator(ColumnFamilyHandle cf = null, ReadOptions readOptions = null)
@@ -305,6 +328,11 @@ namespace RocksDbSharp
             if (encoding == null)
                 encoding = Encoding.UTF8;
             CompactRange(start == null ? null : encoding.GetBytes(start), limit == null ? null : encoding.GetBytes(limit), cf);
+        }
+
+        public void DangerousReleaseMemory(in Span<byte> span)
+        {
+            Native.Instance.rocksdb_release_span(in span);
         }
     }
 }

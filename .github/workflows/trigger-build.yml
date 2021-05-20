@@ -1,0 +1,16 @@
+name: Trigger RocksDB build on nethermind repo
+
+on: 
+  push:
+    branches:
+    - master
+
+jobs:
+  bls-building:
+    name: Building RocksDB
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send dispatch event to nethermind repo
+      run: |
+        curl -v -X POST -u "${{ secrets.PAT_USERNAME }}:${{ secrets.PAT_TOKEN }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" --data '{"event_type":"rocksdb_build"}' https://api.github.com/repos/nethermindeth/nethermind/dispatches
+
