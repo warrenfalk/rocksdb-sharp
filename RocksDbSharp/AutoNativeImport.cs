@@ -386,9 +386,9 @@ namespace NativeImport
             var basePaths = new string[] {
                 nativeCodeBase,
                 Path.GetDirectoryName(UriToPath(Transitional.CurrentFramework.GetBaseDirectory())),
-                Path.GetDirectoryName(UriToPath(Assembly.GetEntryAssembly()?.CodeBase)),
+                Path.GetDirectoryName(UriToPath(Assembly.GetEntryAssembly()?.Location)),
                 Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location),
-                Path.GetDirectoryName(UriToPath(typeof(PosixImporter).GetTypeInfo().Assembly.CodeBase)),
+                Path.GetDirectoryName(UriToPath(typeof(PosixImporter).GetTypeInfo().Assembly.Location)),
                 Path.GetDirectoryName(typeof(PosixImporter).GetTypeInfo().Assembly.Location),
             };
             var search = basePaths
