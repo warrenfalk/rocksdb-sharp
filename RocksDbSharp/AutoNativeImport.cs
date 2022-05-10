@@ -368,6 +368,20 @@ namespace NativeImport
                 "",
             };
 
+            HashSet<string> basePaths = new();
+            void TryAddBasePath(string path)
+            {
+                if (path is not null)
+                {
+                    try { basePaths.Add(path); }
+                    catch
+                    {
+                        /* Ignore */
+                    }
+                }
+            }
+            
+            
             // If the RocksDbNative package is referenced, then dynamically load it here so that it can tell us where the native libraries are
             string nativeCodeBase = null;
             try
@@ -379,18 +393,24 @@ namespace NativeImport
                 var getCodeBase = getCodeBaseMethod.CreateDelegate<Func<string>>();
                 nativeCodeBase = getCodeBase();
             }
-            catch (Exception)
-            {
-            }
+            catch { /* Ignore */ }
 
-            var basePaths = new string[] {
-                nativeCodeBase,
-                Path.GetDirectoryName(UriToPath(Transitional.CurrentFramework.GetBaseDirectory())),
-                Path.GetDirectoryName(UriToPath(Assembly.GetEntryAssembly()?.Location)),
-                Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location),
-                Path.GetDirectoryName(UriToPath(typeof(PosixImporter).GetTypeInfo().Assembly.Location)),
-                Path.GetDirectoryName(typeof(PosixImporter).GetTypeInfo().Assembly.Location),
-            };
+            //Some paths might throw NotSupportedException when used from single file deployment. We could test for that, but we can also just ignore it
+            TryAddBasePath(nativeCodeBase);
+            TryAddBasePath(Directory.GetCurrentDirectory());
+            TryAddBasePath(Path.GetDirectoryName(UriToPath(AppContext.BaseDirectory)));
+            TryAddBasePath(Path.GetDirectoryName(UriToPath(Transitional.CurrentFramework.GetBaseDirectory())));
+            TryAddBasePath(Path.GetDirectoryName(UriToPath(Assembly.GetEntryAssembly()?.Location)));
+            TryAddBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location));
+            TryAddBasePath(Path.GetDirectoryName(UriToPath(typeof(PosixImporter).GetTypeInfo().Assembly.Location)));
+            TryAddBasePath(Path.GetDirectoryName(typeof(PosixImporter).GetTypeInfo().Assembly.Location));
+            
+            // for Apple ARM64 - M1
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+            {
+                TryAddBasePath("/opt/homebrew/lib");
+            } 
+
             var search = basePaths
                 .Where(p => p != null)
                 .Distinct()
