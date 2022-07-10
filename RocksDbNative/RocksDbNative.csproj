@@ -19,6 +19,7 @@
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <!-- "DispatchToInnerBuilds" will cause this to run in the outer build (i.e. once regardless of number of frameworks) -->
   <!--  Condition="!Exists('rocksdb-$(RocksDbVersion)\runtimes\win-x64\native\rocksdb.dll') and !Exists('$(BaseIntermediateOutputPath)\rocksdb-v$(RocksDbVersion)-win-x64.zip')" -->
@@ -35,19 +36,19 @@
     <!--<NativeLib Include="win-x64-rocksdb.dll" RuntimeId="win-x64" Lib="rocksdb.dll" />-->
     <!--<NativeLib Include="linux-x64-librocksdb.so" RuntimeId="linux-x64" Lib="librocksdb.so" />-->
     <!--<NativeLib Include="osx-x64-librocksdb.dylib" RuntimeId="osx-x64" Lib="librocksdb.dylib" />-->
-    
+
     <!--<Content Include="@(NativeLib -> '.\runtimes\%(RuntimeId)\native\%(Lib)')">-->
       <!--<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>-->
     <!--</Content>-->
     <!-- This "Content" is applied for all "NativeLib" and ensures that it is packaged into the correct folder -->
     <!-- This also will cause it to be copied to the output directory, which was so far the only way to get it
          to work correctly when referenced using a ProjectReference.  When packaged as a nupkg and referenced
-         with PackageReference, then these go to the runtimes folders in the nuget cache, which is enough for 
+         with PackageReference, then these go to the runtimes folders in the nuget cache, which is enough for
          standard consumers, but framework consumers get them copied from the nuget cache to the output via
          the .targets files for those frameworks.-->
     <Compile Remove="build\**" />
     <EmbeddedResource Remove="build\**" />
-    <!-- These target files take care of copying from the nuget cache area into the output folder as required 
+    <!-- These target files take care of copying from the nuget cache area into the output folder as required
          by the .Net Framework frameworks -->
     <None Remove="build\**" />
   </ItemGroup>
