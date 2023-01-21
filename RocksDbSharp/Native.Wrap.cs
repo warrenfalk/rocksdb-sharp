@@ -44,6 +44,26 @@ namespace RocksDbSharp
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
         }
+        
+        public unsafe void rocksdb_put(
+            IntPtr db,
+            IntPtr writeOptions,
+            byte* key,
+            long keyLength,
+            byte* value,
+            long valueLength,
+            ColumnFamilyHandle cf)
+        {
+            IntPtr errptr;
+            UIntPtr sklength = (UIntPtr)keyLength;
+            UIntPtr svlength = (UIntPtr)valueLength;
+            if (cf == null)
+                rocksdb_put(db, writeOptions, key, sklength, value, svlength, out errptr);
+            else
+                rocksdb_put_cf(db, writeOptions, cf.Handle, key, sklength, value, svlength, out errptr);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+        }
 
 
         public string rocksdb_get(
@@ -85,6 +105,19 @@ namespace RocksDbSharp
             ColumnFamilyHandle cf = null)
         {
             var result = rocksdb_get(db, read_options, key, keyLength == 0 ? key.Length : keyLength, out IntPtr errptr, cf);
+            if (errptr != IntPtr.Zero)
+                throw new RocksDbException(errptr);
+            return result;
+        }
+        
+        public Span<byte> rocksdb_get_span(
+            IntPtr db,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength = 0,
+            ColumnFamilyHandle cf = null)
+        {
+            var result = rocksdb_get_span(db, read_options, key, keyLength == 0 ? key.Length : keyLength, out IntPtr errptr, cf);
             if (errptr != IntPtr.Zero)
                 throw new RocksDbException(errptr);
             return result;

@@ -1,10 +1,11 @@
-﻿/*
+/*
     The functions in this file provide some wrappers around the lowest level C API to aid in marshalling.
     This is kept separate so that the lowest level imports can be kept as close as possible to c.h from rocksdb.
     See Native.Raw.cs for more information.
 */
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Transitional;
@@ -155,7 +156,37 @@ namespace RocksDbSharp
             rocksdb_free(resultPtr);
             return result;
         }
-
+        
+        public unsafe Span<byte> rocksdb_get_span(
+            IntPtr db,
+            IntPtr read_options,
+            byte[] key,
+            long keyLength,
+            out IntPtr errptr,
+            ColumnFamilyHandle cf = null)
+        {
+            UIntPtr skLength = (UIntPtr)keyLength;
+            var resultPtr = cf == null
+                ? rocksdb_get(db, read_options, key, skLength, out UIntPtr valueLength, out errptr)
+                : rocksdb_get_cf(db, read_options, cf.Handle, key, skLength, out valueLength, out errptr);
+            if (errptr != IntPtr.Zero)
+                return null;
+            if (resultPtr == IntPtr.Zero)
+                return null;
+            Span<byte> span = new Span<byte>((void*)resultPtr, (int)valueLength);
+            //MemoryMarshal.GetReference(span);
+			
+            
+            return span;
+        }
+        
+        public unsafe void rocksdb_release_span(in Span<byte> span)
+        {
+            ref byte ptr = ref MemoryMarshal.GetReference(span);
+            IntPtr intPtr = new IntPtr(Unsafe.AsPointer(ref ptr));
+            rocksdb_free(intPtr);
+        }
+        
         /// <summary>
         /// Executes a multi_get with automatic marshalling
         /// </summary>

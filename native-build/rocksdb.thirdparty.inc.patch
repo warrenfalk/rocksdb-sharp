@@ -1,0 +1,34 @@
+diff --git a/thirdparty.inc b/thirdparty.inc
+index 46da30c..a5eb8ee 100644
+--- a/thirdparty.inc
++++ b/thirdparty.inc
+@@ -19,10 +19,10 @@ set (THIRDPARTY_LIBS "")         # Initialization, don't touch
+ #
+ # Edit these 4 lines to define paths to GFLAGS
+ #
+-set(GFLAGS_HOME $ENV{THIRDPARTY_HOME}/Gflags.Library)
+-set(GFLAGS_INCLUDE ${GFLAGS_HOME}/build/native/include)
+-set(GFLAGS_LIB_DEBUG ${GFLAGS_HOME}/lib/native/debug/amd64/gflags.lib)
+-set(GFLAGS_LIB_RELEASE ${GFLAGS_HOME}/lib/native/retail/amd64/gflags.lib)
++set(GFLAGS_HOME ../gflags/build)
++set(GFLAGS_INCLUDE ${GFLAGS_HOME}/include)
++set(GFLAGS_LIB_DEBUG ../${GFLAGS_HOME}/lib/Debug/gflags)
++set(GFLAGS_LIB_RELEASE ../${GFLAGS_HOME}/lib/Release/gflags)
+ 
+ # ================================================== GFLAGS ==================================================
+ #
+@@ -63,10 +63,10 @@ endif ()
+ #
+ # Edit these 4 lines to define paths to Snappy
+ #
+-set(SNAPPY_HOME $ENV{THIRDPARTY_HOME}/Snappy.Library)
+-set(SNAPPY_INCLUDE ${SNAPPY_HOME}/build/native/inc/inc)
+-set(SNAPPY_LIB_DEBUG ${SNAPPY_HOME}/lib/native/debug/amd64/snappy.lib)
+-set(SNAPPY_LIB_RELEASE ${SNAPPY_HOME}/lib/native/retail/amd64/snappy.lib)
++set(SNAPPY_HOME ../snappy)
++set(SNAPPY_INCLUDE ${SNAPPY_HOME}/build)
++set(SNAPPY_LIB_DEBUG ../${SNAPPY_HOME}/build/Debug/libsnappy)
++set(SNAPPY_LIB_RELEASE ../${SNAPPY_HOME}/build/Release/libsnappy)
+ 
+ #
+ # Don't touch these lines
